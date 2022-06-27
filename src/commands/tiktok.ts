@@ -5,6 +5,7 @@ import {
   MessageButton,
 } from "discord.js";
 import axios from "axios";
+import getTikTokResponse from "../utils/getTikTokResponse";
 export default {
   data: new SlashCommandBuilder()
     .setName("tiktok")
@@ -24,28 +25,7 @@ export default {
       )
       .catch(console.error)
       .then((response) => {
-        interaction.reply({
-          content: `https://clicktok.xyz/api/v/${(response as any).data.id}`,
-          components: [
-            new MessageActionRow().addComponents(
-              new MessageButton()
-                .setCustomId("info")
-                .setLabel("Info")
-                .setStyle("PRIMARY")
-                .setEmoji("🖥️"),
-              new MessageButton()
-                .setLabel("Download")
-                .setStyle("LINK")
-                .setURL(`https://clicktok.xyz/v/${(response as any).data.id}`)
-                .setEmoji("💾"),
-              new MessageButton()
-                .setCustomId("delete")
-                .setLabel("Delete")
-                .setStyle("DANGER")
-                .setEmoji("🗑️")
-            ),
-          ],
-        });
+        interaction.reply(getTikTokResponse((response as any).data.id));
       });
   },
 };

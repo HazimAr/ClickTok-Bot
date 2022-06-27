@@ -10,6 +10,7 @@ import {
 } from "discord.js";
 import { readdirSync } from "fs";
 import axios from "axios";
+import getTikTokResponse from "./utils/getTikTokResponse";
 
 const client = new Client({
   intents: [
@@ -100,28 +101,7 @@ client.on("messageCreate", async (message) => {
   getIdFromText(message.content).then((id) => {
     if (id) {
       message.suppressEmbeds(true);
-      message.reply({
-        content: `https://clicktok.xyz/api/v/${id}`,
-        components: [
-          new MessageActionRow().addComponents(
-            new MessageButton()
-              .setCustomId("info")
-              .setLabel("Info")
-              .setStyle("PRIMARY")
-              .setEmoji("🖥️"),
-            new MessageButton()
-              .setLabel("Download")
-              .setStyle("LINK")
-              .setURL(`https://clicktok.xyz/v/${id}`)
-              .setEmoji("💾"),
-            new MessageButton()
-              .setCustomId("delete")
-              .setLabel("Delete")
-              .setStyle("DANGER")
-              .setEmoji("🗑️")
-          ),
-        ],
-      });
+      message.reply(getTikTokResponse(id));
     }
   });
 });
