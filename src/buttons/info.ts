@@ -12,7 +12,7 @@ export default async function (interaction: ButtonInteraction) {
 
   // check if voted in the last 24 hours
   if (!(mongoUser.lastVotedAt.getTime() > Date.now() - 86400000))
-    return interaction.reply({
+    return await interaction.reply({
       embeds: [
         new MessageEmbed()
           .setTitle(`Hey, ${interaction.user.username}`)
@@ -34,4 +34,23 @@ export default async function (interaction: ButtonInteraction) {
         ),
       ],
     });
+  interaction.reply({
+    embeds: [
+      new MessageEmbed()
+        .setAuthor({
+          name: "Author Name",
+          iconURL: "https://hazim.tech/logo.png",
+        })
+        .setTitle("Video Title")
+        .setThumbnail("https://hazim.tech/logo.png")
+        .setDescription("[TikTok](link)")
+        .addFields([
+          {
+            name: "Views",
+            value: "312,312",
+            inline: true,
+          },
+        ]),
+    ],
+  });
 }
