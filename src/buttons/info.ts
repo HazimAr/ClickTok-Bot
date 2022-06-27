@@ -29,7 +29,7 @@ export default async function (interaction: ButtonInteraction) {
             .setStyle("LINK"),
           new MessageButton()
             .setCustomId("info")
-            .setLabel("Info")
+            .setLabel("I voted (give me my info)")
             .setStyle("PRIMARY")
             .setEmoji("🖥️")
         ),
