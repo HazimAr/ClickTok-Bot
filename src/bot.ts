@@ -33,9 +33,9 @@ client.once("ready", async () => {
     type: "PLAYING",
     name: "clicktok.xyz | /tiktok",
   });
-  readdirSync("./src/buttons").map(async (buttonFile) => {
+  readdirSync("./src/buttons").forEach(async (buttonFile) => {
     const buttonFunction = (await import(`./buttons/${buttonFile}`)).default;
-    buttons.push({ id: buttonFile, run: buttonFunction });
+    buttons.push({ id: buttonFile.split(".")[0], run: buttonFunction });
   });
   commands = await Promise.all(
     readdirSync("./src/commands").map(async (commandFile) => {

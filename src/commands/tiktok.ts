@@ -25,7 +25,7 @@ export default {
       .catch(console.error)
       .then((response) => {
         interaction.reply({
-          content: `https://clicktok.xyz/v/${(response as any).data.id}`,
+          content: `https://clicktok.xyz/api/v/${(response as any).data.id}`,
           components: [
             new MessageActionRow().addComponents(
               new MessageButton()
@@ -33,6 +33,11 @@ export default {
                 .setLabel("Info")
                 .setStyle("PRIMARY")
                 .setEmoji("🖥️"),
+              new MessageButton()
+                .setLabel("Download")
+                .setStyle("LINK")
+                .setURL(`https://clicktok.xyz/v/${(response as any).data.id}`)
+                .setEmoji("💾"),
               new MessageButton()
                 .setCustomId("delete")
                 .setLabel("Delete")
