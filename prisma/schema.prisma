@@ -7,7 +7,36 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE")
 }
 
+type Settings {
+  autoEmbed    Boolean @default(true)
+  deleteOrigin Boolean @default(false)
+  suppressEmbed Boolean @default(true)
+}
 
+model Guild {
+  id             String   @id @map("_id")
+  settings       Settings
+  lastConversion DateTime @default(now())
+  createdAt      DateTime @default(now())
+}
+
+model User {
+  id          String       @id @map("_id")
+  conversions Conversion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Conversion {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tiktok    String   @unique
+  user      String   @unique
+  guild     String   @unique
+  createdAt DateTime @default(now())
+
+  User User? @relation(fields: [user], references: [id])
+}

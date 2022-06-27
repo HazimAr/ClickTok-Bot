@@ -4,13 +4,13 @@ import {
   ButtonInteraction,
   Client,
   CommandInteraction,
+  Guild,
   Intents,
-  MessageActionRow,
-  MessageButton,
 } from "discord.js";
 import { readdirSync } from "fs";
 import axios from "axios";
-import getTikTokResponse from "./utils/getTikTokResponse";
+import getTikTokResponse from "./utils/handleTikTok";
+import { PrismaClient } from "@prisma/client";
 
 const client = new Client({
   intents: [
@@ -19,6 +19,9 @@ const client = new Client({
     Intents.FLAGS.GUILDS,
   ],
 });
+
+const prisma = new PrismaClient();
+prisma.$connect().then(() => console.log("Connected to Prisma"));
 
 let commands: {
   data: ApplicationCommandDataResolvable;
@@ -51,6 +54,23 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
+});
+
+client.on("guildCreate", async (guild: Guild) => {
+  await prisma.guild.create({
+    data: {
+      id: guild.id,
+      settings: {},
+    },
+  });
+});
+
+client.on("guildDelete", async (guild: Guild) => {
+  await prisma.guild.deleteMany({
+    where: {
+      id: guild.id,
+    },
+  });
 });
 
 client.on("messageCreate", async (message) => {
@@ -98,22 +118,32 @@ client.on("messageCreate", async (message) => {
     return null;
   }
 
-  getIdFromText(message.content).then((id) => {
-    if (id) {
-      message.suppressEmbeds(true);
-      message.reply(getTikTokResponse(id));
-    }
+  const guild = await prisma.guild.findFirst({
+    where: {
+      id: message.guild.id,
+    },
   });
+
+  if (guild?.settings?.autoEmbed) {
+    getIdFromText(message.content).then(async (id) => {
+      if (id) {
+        await message.reply(getTikTokResponse(id));
+        if (guild.settings.deleteOrigin) await message.delete();
+        else if (guild.settings.suppressEmbed)
+          await message.suppressEmbeds(true);
+      }
+    });
+  }
 });
 
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
-    return commands
+    return await commands
       .find((c) => c.data.name === interaction.commandName)
       .run(interaction);
   }
   if (interaction.isButton()) {
-    return buttons
+    return await buttons
       .find((button) => button.id == interaction.customId)
       .run(interaction);
   }

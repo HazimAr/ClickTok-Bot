@@ -4,7 +4,8 @@
   "main": "./dist/index",
   "scripts": {
     "start": "ts-node ./src/index.ts",
-    "dev": "ts-node-dev ./src/bot.ts"
+    "dev": "ts-node-dev ./src/bot.ts",
+    "prisma": "prisma generate && prisma db push"
   },
   "dependencies": {
     "@discordjs/builders": "^0.15.0",

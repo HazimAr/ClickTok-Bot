@@ -1,11 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import {
-  CommandInteraction,
-  MessageActionRow,
-  MessageButton,
-} from "discord.js";
+import { CommandInteraction } from "discord.js";
 import axios from "axios";
-import getTikTokResponse from "../utils/getTikTokResponse";
+import getTikTokResponse from "../utils/handleTikTok";
 export default {
   data: new SlashCommandBuilder()
     .setName("tiktok")
