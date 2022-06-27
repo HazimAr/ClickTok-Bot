@@ -5,9 +5,11 @@ import {
   Client,
   CommandInteraction,
   Intents,
+  MessageActionRow,
+  MessageButton,
 } from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
 import { readdirSync } from "fs";
+import axios from "axios";
 
 const client = new Client({
   intents: [
@@ -52,7 +54,76 @@ client.once("ready", async () => {
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
+  async function getId(url: string, regex: RegExp) {
+    let match = url.match(regex);
+    if (!match) return null;
+    let id = match[match.length - 1];
 
+    if (isNaN(parseInt(id)) && url.length > 5) {
+      id = await axios
+        .get(url)
+        .then(async (response) => {
+          return await getIdFromText(response.request.res.responseUrl);
+        })
+        .catch(() => null);
+    }
+    return id;
+  }
+
+  async function getIdFromText(url: string) {
+    let regex =
+      /(http:|https:\/\/)?(www\.)?tiktok\.com\/(@.{1,24})\/video\/(\d{15,30})/;
+    let id = await getId(url, regex);
+    if (id) return id;
+
+    regex = /(http:|https:\/\/)?((?!ww)\w{2})\.tiktok.com\/(\w{5,15})/;
+    id = await getId(url, regex);
+    // get real id from tiktok
+    if (id) return id;
+
+    regex = /(http:|https:\/\/)?(www\.)?tiktok.com\/t\/(\w{5,15})/;
+    id = await getId(url, regex);
+    // get real id from tiktok
+    if (id) return id;
+
+    regex = /(http:|https:\/\/)?m\.tiktok\.com\/v\/(\d{15,30})/;
+    id = await getId(url, regex);
+    if (id) return id;
+
+    regex = /(http:|https:\/\/)?(www)?\.tiktok\.com\/(.*)item_id=(\d{5,30})/;
+    id = await getId(url, regex);
+    if (id) return id;
+
+    return null;
+  }
+
+  getIdFromText(message.content).then((id) => {
+    if (id) {
+      message.suppressEmbeds(true);
+      message.reply({
+        content: `https://clicktok.xyz/api/v/${id}`,
+        components: [
+          new MessageActionRow().addComponents(
+            new MessageButton()
+              .setCustomId("info")
+              .setLabel("Info")
+              .setStyle("PRIMARY")
+              .setEmoji("🖥️"),
+            new MessageButton()
+              .setLabel("Download")
+              .setStyle("LINK")
+              .setURL(`https://clicktok.xyz/v/${id}`)
+              .setEmoji("💾"),
+            new MessageButton()
+              .setCustomId("delete")
+              .setLabel("Delete")
+              .setStyle("DANGER")
+              .setEmoji("🗑️")
+          ),
+        ],
+      });
+    }
+  });
 });
 
 client.on("interactionCreate", async (interaction) => {
