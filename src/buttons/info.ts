@@ -35,19 +35,21 @@ export default async function (interaction: ButtonInteraction) {
         ),
       ],
     });
-  const { data: video } = await axios.get(
+  const { data: tiktok } = await axios.get(
     `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${
       interaction.message.content.split("/")[
         interaction.message.content.split("/").length - 1
       ]
     }`
   );
-  const author = video.aweme_detail.author;
-  const statistics = video.aweme_detail.statistics;
-  let description = video.aweme_detail.desc;
-  let tags: String[] = (video.aweme_detail.desc as string).match(/#[\w]+/g);
+  const author = tiktok.aweme_detail.author;
+  const statistics = tiktok.aweme_detail.statistics;
+  let description = tiktok.aweme_detail.desc;
+  let tags: String[] = (tiktok.aweme_detail.desc as string).match(/#[\w]+/g);
 
-  interaction.reply({
+
+
+  await interaction.reply({
     embeds: [
       new MessageEmbed()
         .setAuthor({
@@ -56,7 +58,9 @@ export default async function (interaction: ButtonInteraction) {
         })
         .setTitle(description)
         .setThumbnail("https://hazim.tech/logo.png")
-        .setDescription(`https://clicktok.xyz/v/${video.aweme_detail.aweme_id}`)
+        .setDescription(
+          `https://clicktok.xyz/v/${tiktok.aweme_detail.aweme_id}`
+        )
         .addFields([
           {
             name: "Views 👀",
@@ -86,7 +90,7 @@ export default async function (interaction: ButtonInteraction) {
           {
             name: "Created 🕒",
             value: `<t:${new Date(
-              video.aweme_detail.create_time
+              tiktok.aweme_detail.create_time
             ).getTime()}:R>`,
             inline: true,
           },

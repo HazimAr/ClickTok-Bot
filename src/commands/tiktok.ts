@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import axios from "axios";
-import getTikTokResponse from "../utils/handleTikTok";
+import getTikTokResponse, { getIdFromText } from "../utils/handleTikTok";
 export default {
   data: new SlashCommandBuilder()
     .setName("tiktok")
@@ -15,13 +15,13 @@ export default {
   run: async function run(interaction: CommandInteraction) {
     await axios
       .get(
-        `https://clicktok.xyz/api/getId?url=${
-          interaction.options.get("link").value
-        }`
+        `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${getIdFromText(
+          interaction.options.get("link").value as string
+        )}`
       )
       .catch(console.error)
       .then((response) => {
-        interaction.reply(getTikTokResponse((response as any).data.id));
+        interaction.reply(getTikTokResponse((response as any).data));
       });
   },
 };
