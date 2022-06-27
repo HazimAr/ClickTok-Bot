@@ -50,6 +50,11 @@ client.once("ready", async () => {
   client.application.commands.set(commands.map((command) => command.data));
 });
 
+client.on("messageCreate", async (message) => {
+  if (message.author.bot) return;
+
+});
+
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     return commands
