@@ -37,27 +37,26 @@ export default {
     const settings = mongoGuild.settings;
 
     const auto_embed = interaction.options.get("auto_embed")?.value;
-    console.log(auto_embed);
+
     if (auto_embed != undefined) {
       if (auto_embed == true) settings.autoEmbed = true;
       else settings.autoEmbed = false;
     }
 
     const delete_origin = interaction.options.get("delete_origin")?.value;
-    console.log(delete_origin);
+
     if (delete_origin != undefined) {
       if (delete_origin == true) settings.deleteOrigin = true;
       else settings.deleteOrigin = false;
     }
 
     const suppress_embed = interaction.options.get("suppress_embed")?.value;
-    console.log(suppress_embed);
+
     if (suppress_embed != undefined) {
       if (suppress_embed == true) settings.suppressEmbed = true;
       else settings.suppressEmbed = false;
     }
 
-    console.log(settings);
     await prisma.guild.update({
       where: { id: interaction.guild.id },
       data: {

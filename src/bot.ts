@@ -11,6 +11,7 @@ import { readdirSync } from "fs";
 import axios from "axios";
 import getTikTokResponse from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
+import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
 
 const client = new Client({
   intents: [
@@ -118,21 +119,25 @@ client.on("messageCreate", async (message) => {
     return null;
   }
 
-  const guild = await prisma.guild.findFirst({
-    where: {
-      id: message.guild.id,
-    },
-  });
+  const guild = await getOrCreateGuild(message.guild);
 
-  if (guild?.settings?.autoEmbed) {
-    getIdFromText(message.content).then(async (id) => {
-      if (id) {
-        await message.reply(getTikTokResponse(id));
-        if (guild.settings.deleteOrigin) await message.delete();
-        else if (guild.settings.suppressEmbed)
-          await message.suppressEmbeds(true);
-      }
+  if (guild.settings.autoEmbed) {
+    const id = await getIdFromText(message.content);
+    if (!id) return;
+
+    await message.reply(getTikTokResponse(id)).then(async () => {
+      getOrCreateGuild(message.guild);
+      getOrCreateUser(message.author);
+      await prisma.conversion.create({
+        data: {
+          tiktok: id,
+          guild: message.guild.id,
+          user: message.author.id,
+        },
+      });
     });
+    if (guild.settings.deleteOrigin) await message.delete();
+    else if (guild.settings.suppressEmbed) await message.suppressEmbeds(true);
   }
 });
 
