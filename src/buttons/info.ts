@@ -84,7 +84,7 @@ export default async function (interaction: ButtonInteraction) {
             inline: true,
           },
           {
-            name: "Created At 🕒",
+            name: "Created 🕒",
             value: `<t:${new Date(
               video.aweme_detail.create_time
             ).getTime()}:R>`,
