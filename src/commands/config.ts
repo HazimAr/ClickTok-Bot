@@ -70,7 +70,7 @@ export default {
     await interaction.reply({
       embeds: [
         new MessageEmbed()
-          .setTitle("Settings updated!")
+          .setTitle("Current Settings!")
           .addField("auto_embed", `${settings.autoEmbed}`, true)
           .addField("delete_origin", `${settings.deleteOrigin}`, true)
           .addField("suppress_embed", `${settings.suppressEmbed}`, true),
