@@ -20,8 +20,10 @@ export default {
         )}`
       )
       .catch(console.error)
-      .then((response) => {
-        interaction.reply(getTikTokResponse((response as any).data));
+      .then(async (response) => {
+        await interaction.reply(
+          await getTikTokResponse((response as any).data, interaction.user)
+        );
       });
   },
 };

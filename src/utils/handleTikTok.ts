@@ -1,5 +1,9 @@
 import axios from "axios";
-import { Message, MessageActionRow, MessageButton } from "discord.js";
+import { Message, MessageActionRow, MessageButton, User } from "discord.js";
+import { getOrCreateUser } from "./db";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 async function getId(url: string, regex: RegExp) {
   let match = url.match(regex);
@@ -12,7 +16,10 @@ async function getId(url: string, regex: RegExp) {
       .then(async (response) => {
         return await getIdFromText(response.request.res.responseUrl);
       })
-      .catch(() => null);
+      .catch((err) => {
+        console.error(err);
+        return null;
+      });
   }
   return id;
 }
@@ -44,10 +51,21 @@ export async function getIdFromText(url: string) {
   return null;
 }
 
-export default function (tiktok) {
+export default async function (tiktok, user: User) {
+  getOrCreateUser(user).then(
+    async () =>
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          lastConversion: new Date(Date.now()),
+        },
+      })
+  );
+
   if (tiktok.aweme_detail.image_post_info) {
     return {
-      content: "We currently do not support TikTok slideshows. They will be supported in the near future.",
+      content:
+        "We currently do not support TikTok slideshows. They will be supported in the near future.",
       // components: [
       //   new MessageActionRow().addComponents(
       //     new MessageButton()
@@ -62,7 +80,7 @@ export default function (tiktok) {
       //     .setEmoji("🗑️")
       //   )
       // ]
-      ephemeral: true
+      ephemeral: true,
     };
   }
 

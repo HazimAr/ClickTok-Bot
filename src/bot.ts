@@ -86,7 +86,9 @@ client.on("messageCreate", async (message) => {
       .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
       .catch(console.error)
       .then(async (response) => {
-        await message.reply(getTikTokResponse((response as any).data));
+        await message.reply(
+          await getTikTokResponse((response as any).data, message.author)
+        );
         if (guild.settings.deleteOrigin) await message.delete();
         else if (guild.settings.suppressEmbed)
           await message.suppressEmbeds(true);
