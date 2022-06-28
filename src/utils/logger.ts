@@ -35,7 +35,7 @@ export async function logConversion(
         .addField("TikTok", conversion.tiktok, true)
         .addField(
           "Last Converted",
-          `<t:${mongoUser.lastConvertedAt.getTime()}:R>`,
+          `<t:${Math.floor(mongoUser.lastConvertedAt.getTime() / 1000)}:R>`,
           true
         )
         .addField(
@@ -65,7 +65,11 @@ export function logGuild(guild: Guild, joined = true) {
         )
         .addField("Channels", guild.channels.cache.size.toLocaleString(), true)
         .addField("Roles", guild.roles.cache.size.toLocaleString(), true)
-        .addField("Created", `<t:${guild.createdAt.getTime()}:R>`, true)
+        .addField(
+          "Created",
+          `<t:${Math.floor(guild.createdAt.getTime() / 1000)}:R>`,
+          true
+        )
         .setTimestamp()
         .setColor(joined ? "#00ff00" : "#ff0000"),
     ],
