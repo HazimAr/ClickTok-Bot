@@ -87,7 +87,11 @@ client.on("messageCreate", async (message) => {
       .catch(console.error)
       .then(async (response) => {
         await message.reply(
-          await getTikTokResponse((response as any).data, message.author)
+          await getTikTokResponse(
+            (response as any).data,
+            message.author,
+            message.guild
+          )
         );
         if (guild.settings.deleteOrigin) await message.delete();
         else if (guild.settings.suppressEmbed)

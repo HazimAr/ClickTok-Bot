@@ -22,7 +22,11 @@ export default {
       .catch(console.error)
       .then(async (response) => {
         await interaction.reply(
-          await getTikTokResponse((response as any).data, interaction.user)
+          await getTikTokResponse(
+            (response as any).data,
+            interaction.user,
+            interaction.guild
+          )
         );
       });
   },

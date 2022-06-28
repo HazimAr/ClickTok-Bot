@@ -1,6 +1,12 @@
 import axios from "axios";
-import { Message, MessageActionRow, MessageButton, User } from "discord.js";
-import { getOrCreateUser } from "./db";
+import {
+  Guild,
+  Message,
+  MessageActionRow,
+  MessageButton,
+  User,
+} from "discord.js";
+import { getOrCreateGuild, getOrCreateUser } from "./db";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -51,16 +57,31 @@ export async function getIdFromText(url: string) {
   return null;
 }
 
-export default async function (tiktok, user: User) {
-  getOrCreateUser(user).then(
-    async () =>
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          lastConversion: new Date(Date.now()),
-        },
-      })
-  );
+export default async function (tiktok, user: User, guild: Guild) {
+  prisma.user
+    .upsert({
+      where: { id: user.id },
+      update: {
+        lastConversion: new Date(Date.now()),
+      },
+      create: {
+        id: user.id,
+      },
+    })
+    .catch(console.error);
+
+  prisma.guild
+    .upsert({
+      where: { id: guild.id },
+      update: {
+        lastConversion: new Date(Date.now()),
+      },
+      create: {
+        id: guild.id,
+        settings: {},
+      },
+    })
+    .catch(console.error);
 
   if (tiktok.aweme_detail.image_post_info) {
     return {
