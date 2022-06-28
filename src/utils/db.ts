@@ -13,7 +13,7 @@ export async function getOrCreateGuild(guild: Guild) {
     mongoGuild = await prisma.guild.create({
       data: { id: guild.id, settings: {} },
     });
-    logGuild(mongoGuild);
+    logGuild(guild);
   }
 
   return mongoGuild;

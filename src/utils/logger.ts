@@ -1,6 +1,6 @@
-import { Conversion, Guild, User } from "@prisma/client";
+import { Conversion, User } from "@prisma/client";
 import { client } from "../bot";
-import { MessageEmbed, WebhookClient } from "discord.js";
+import { MessageEmbed, WebhookClient, Guild } from "discord.js";
 import { getOrCreateUser } from "./db";
 
 const conversionWebhook = new WebhookClient({
@@ -48,8 +48,7 @@ export async function logConversion(
   });
 }
 
-export function logGuild(mongoGuild: Guild) {
-  const guild = client.guilds.cache.get(mongoGuild.id);
+export function logGuild(guild: Guild, joined = true) {
   guildWebhook.send({
     username: "ClickTok",
     avatarURL: "https://clicktok.xyz/logo.png",
@@ -67,7 +66,8 @@ export function logGuild(mongoGuild: Guild) {
         .addField("Channels", guild.channels.cache.size.toLocaleString(), true)
         .addField("Roles", guild.roles.cache.size.toLocaleString(), true)
         .addField("Created", `<t:${guild.createdAt}:R>`, true)
-        .setTimestamp(),
+        .setTimestamp()
+        .setColor(joined ? "#00ff00" : "#ff0000"),
     ],
   });
 }
