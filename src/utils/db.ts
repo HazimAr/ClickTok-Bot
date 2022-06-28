@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Guild, User } from "discord.js";
-import { logGuild, logUser } from "./logger";
+import { logGuild } from "./logger";
 
 const prisma = new PrismaClient();
 
@@ -22,13 +22,18 @@ export async function getOrCreateGuild(guild: Guild) {
 export async function getOrCreateUser(user: User) {
   let mongoUser = await prisma.user.findFirst({
     where: { id: user.id },
+    include: {
+      conversions: true,
+    },
   });
 
   if (!mongoUser) {
     mongoUser = await prisma.user.create({
       data: { id: user.id },
+      include: {
+        conversions: true,
+      },
     });
-    logUser(mongoUser);
   }
 
   return mongoUser;
