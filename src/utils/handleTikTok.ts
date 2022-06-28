@@ -83,7 +83,7 @@ export default async function (tiktok, user: User, guild: Guild) {
     })
     .catch(console.error);
 
-  if (tiktok.aweme_detail.image_post_info) {
+  if (tiktok.aweme_detail?.image_post_info) {
     return {
       content:
         "We currently do not support TikTok slideshows. They will be supported in the near future.",

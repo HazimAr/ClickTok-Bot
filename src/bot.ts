@@ -98,8 +98,6 @@ client.on("messageCreate", async (message) => {
           await message.suppressEmbeds(true);
       })
       .then(async () => {
-        getOrCreateGuild(message.guild);
-        getOrCreateUser(message.author);
         await prisma.conversion.create({
           data: {
             tiktok: id,
