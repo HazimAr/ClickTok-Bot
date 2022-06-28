@@ -6,7 +6,6 @@ import {
   MessageButton,
   User,
 } from "discord.js";
-import { getOrCreateGuild, getOrCreateUser } from "./db";
 import { PrismaClient } from "@prisma/client";
 import { logConversion } from "./logger";
 

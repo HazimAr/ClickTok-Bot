@@ -78,11 +78,6 @@ export async function logGuild(guild: Guild, joined = true) {
           `<t:${Math.floor(guild.createdAt.getTime() / 1000)}>`,
           true
         )
-        .addField(
-          "Last Converted",
-          `<t:${Math.floor(mongoGuild.lastConvertedAt.getTime() / 1000)}:R>`,
-          true
-        )
         .setTimestamp()
         .setColor(joined ? "#00ff00" : "#ff0000"),
     ],
