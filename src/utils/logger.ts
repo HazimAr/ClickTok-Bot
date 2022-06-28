@@ -41,7 +41,6 @@ export function logGuild(mongoGuild: Guild) {
         .setTitle(guild.name)
         .setDescription(guild.id)
         .setThumbnail(guild.iconURL())
-        .setTimestamp()
         .addField("Members", guild.memberCount.toLocaleString(), true)
         .addField(
           "Boosts",
@@ -50,7 +49,8 @@ export function logGuild(mongoGuild: Guild) {
         )
         .addField("Channels", guild.channels.cache.size.toLocaleString(), true)
         .addField("Roles", guild.roles.cache.size.toLocaleString(), true)
-        .addField("Created", `<t:${mongoGuild.createdAt.getTime()}:R>`, true),
+        .addField("Created", `<t:${mongoGuild.createdAt.getTime()}:R>`, true)
+        .setTimestamp(),
     ],
   });
 }
