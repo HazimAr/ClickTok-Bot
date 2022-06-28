@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { PrismaClient } from "@prisma/client";
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { CommandInteraction, MessageEmbed, Permissions } from "discord.js";
+import { getOrCreateGuild } from "../utils/db";
 
 const prisma = new PrismaClient();
 
@@ -30,9 +31,8 @@ export default {
         )
     ),
   run: async function run(interaction: CommandInteraction) {
-    const mongoGuild = await prisma.guild.findFirst({
-      where: { id: interaction.guild.id },
-    });
+    if(interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR))
+    const mongoGuild = await getOrCreateGuild(interaction.guild)
 
     const settings = mongoGuild.settings;
 
