@@ -62,7 +62,7 @@ export default async function (tiktok, user: User, guild: Guild) {
     .upsert({
       where: { id: user.id },
       update: {
-        lastConversion: new Date(Date.now()),
+        lastConvertedAt: new Date(Date.now()),
       },
       create: {
         id: user.id,
@@ -74,7 +74,7 @@ export default async function (tiktok, user: User, guild: Guild) {
     .upsert({
       where: { id: guild.id },
       update: {
-        lastConversion: new Date(Date.now()),
+        lastConvertedAt: new Date(Date.now()),
       },
       create: {
         id: guild.id,
