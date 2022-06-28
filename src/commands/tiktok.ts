@@ -2,6 +2,7 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import axios from "axios";
 import getTikTokResponse, { getIdFromText } from "../utils/handleTikTok";
+import validTikTokUrl from "../utils/validTikTokUrl";
 export default {
   data: new SlashCommandBuilder()
     .setName("tiktok")
@@ -13,12 +14,19 @@ export default {
         .setRequired(true)
     ),
   run: async function run(interaction: CommandInteraction) {
+    if (!validTikTokUrl(interaction.options.get("link").value as string))
+      return await interaction.reply({
+        content: "Invalid TikTok link.",
+        ephemeral: true,
+      });
+
     await axios
       .get(
-        `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${getIdFromText(
+        `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${await getIdFromText(
           interaction.options.get("link").value as string
         )}`
       )
+
       .catch(console.error)
       .then(async (response) => {
         await interaction.reply(

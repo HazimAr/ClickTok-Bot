@@ -101,12 +101,12 @@ export default async function (tiktok, user: User, guild: Guild) {
       //     .setEmoji("🗑️")
       //   )
       // ]
-      ephemeral: true,
     };
   }
 
+  const id = tiktok.aweme_detail.aweme_id;
   return {
-    content: `https://clicktok.xyz/api/v/${tiktok.aweme_detail.aweme_id}`,
+    content: `https://clicktok.xyz/api/v/${id}`,
     components: [
       new MessageActionRow().addComponents(
         new MessageButton()
@@ -117,7 +117,7 @@ export default async function (tiktok, user: User, guild: Guild) {
         new MessageButton()
           .setLabel("Download")
           .setStyle("LINK")
-          .setURL(`https://clicktok.xyz/v/${tiktok.aweme_detail.aweme_id}`)
+          .setURL(`https://clicktok.xyz/v/${id}`)
           .setEmoji("💾"),
         new MessageButton()
           .setCustomId("delete")

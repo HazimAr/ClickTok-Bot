@@ -12,6 +12,7 @@ import axios from "axios";
 import getTikTokResponse, { getIdFromText } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
+import validTikTokUrl from "./utils/validTikTokUrl";
 
 const client = new Client({
   intents: [
@@ -77,6 +78,7 @@ client.on("guildDelete", async (guild: Guild) => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
+  if (!validTikTokUrl(message.content)) return;
   const guild = await getOrCreateGuild(message.guild);
 
   if (guild.settings.autoEmbed) {
