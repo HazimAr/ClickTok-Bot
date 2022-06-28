@@ -47,7 +47,7 @@ export function logGuild(mongoGuild: Guild) {
 }
 
 export function logUser(mongoUser: User) {
-  const author = client.users.cache.get(user.id);
+  const author = client.users.cache.get(mongoUser.id);
 
   userWebhook.send({
     embeds: [
