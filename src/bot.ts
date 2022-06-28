@@ -13,6 +13,7 @@ import getTikTokResponse, { getIdFromText } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
+import { logGuild } from "./utils/logger";
 
 export const client = new Client({
   intents: [
@@ -62,7 +63,11 @@ client.once("ready", async () => {
 });
 
 client.on("guildCreate", async (guild: Guild) => {
-  await getOrCreateGuild(guild);
+  logGuild(
+    await prisma.guild.create({
+      data: { id: guild.id, settings: {} },
+    })
+  );
 });
 
 client.on("guildDelete", async (guild: Guild) => {

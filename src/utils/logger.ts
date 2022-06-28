@@ -18,6 +18,8 @@ export function logConversion(conversion: Conversion) {
   const author = client.users.cache.get(conversion.user);
   const guild = client.guilds.cache.get(conversion.guild);
   conversionWebhook.send({
+    username: "ClickTok",
+    avatarURL: "https://clicktok.xyz/logo.png",
     embeds: [
       new MessageEmbed()
         .setAuthor({
@@ -36,6 +38,8 @@ export function logConversion(conversion: Conversion) {
 export function logGuild(mongoGuild: Guild) {
   const guild = client.guilds.cache.get(mongoGuild.id);
   guildWebhook.send({
+    username: "ClickTok",
+    avatarURL: "https://clicktok.xyz/logo.png",
     embeds: [
       new MessageEmbed()
         .setTitle(guild.name)
@@ -59,6 +63,8 @@ export function logUser(mongoUser: User) {
   const author = client.users.cache.get(mongoUser.id);
 
   userWebhook.send({
+    username: "ClickTok",
+    avatarURL: "https://clicktok.xyz/logo.png",
     embeds: [
       new MessageEmbed()
         .setTitle(`${author.username}#${author.discriminator}`)
