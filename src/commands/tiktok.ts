@@ -27,7 +27,6 @@ export default {
         )}`
       )
 
-      .catch(console.error)
       .then(async (response) => {
         await interaction.reply(
           await getTikTokResponse(
@@ -36,6 +35,7 @@ export default {
             interaction.guild
           )
         );
-      });
+      })
+      .catch(console.error);
   },
 };

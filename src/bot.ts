@@ -11,10 +11,10 @@ import { readdirSync } from "fs";
 import axios from "axios";
 import getTikTokResponse, { getIdFromText } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
-import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
+import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
 
-const client = new Client({
+export const client = new Client({
   intents: [
     Intents.FLAGS.GUILD_MEMBERS,
     Intents.FLAGS.GUILD_MESSAGES,
@@ -23,7 +23,10 @@ const client = new Client({
 });
 
 const prisma = new PrismaClient();
-prisma.$connect().then(() => console.log("Connected to Prisma"));
+prisma
+  .$connect()
+  .then(() => console.log("Connected to Prisma"))
+  .catch(console.error);
 
 let commands: {
   data: ApplicationCommandDataResolvable;
@@ -86,7 +89,6 @@ client.on("messageCreate", async (message) => {
     if (!id) return;
     await axios
       .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
-      .catch(console.error)
       .then(async (response) => {
         await message.reply(
           await getTikTokResponse(
@@ -99,15 +101,7 @@ client.on("messageCreate", async (message) => {
         else if (guild.settings.suppressEmbed)
           await message.suppressEmbeds(true);
       })
-      .then(async () => {
-        await prisma.conversion.create({
-          data: {
-            tiktok: id,
-            guild: message.guild.id,
-            user: message.author.id,
-          },
-        });
-      });
+      .catch(console.error);
   }
 });
 

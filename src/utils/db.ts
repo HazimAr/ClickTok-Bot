@@ -9,9 +9,11 @@ export async function getOrCreateGuild(guild: Guild) {
   });
 
   if (!mongoGuild)
+  {
     mongoGuild = await prisma.guild.create({
       data: { id: guild.id, settings: {} },
     });
+  }
 
   return mongoGuild;
 }

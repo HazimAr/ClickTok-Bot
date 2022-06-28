@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import { getOrCreateGuild, getOrCreateUser } from "./db";
 import { PrismaClient } from "@prisma/client";
+import { logConversion } from "./logger";
 
 const prisma = new PrismaClient();
 
@@ -83,6 +84,18 @@ export default async function (tiktok, user: User, guild: Guild) {
     })
     .catch(console.error);
 
+  const id = tiktok.aweme_detail.aweme_id;
+  prisma.conversion
+    .create({
+      data: {
+        tiktok: id,
+        guild: guild.id,
+        user: user.id,
+      },
+    })
+    .then((conversion) => logConversion(conversion))
+    .catch(console.error);
+
   if (tiktok.aweme_detail?.image_post_info) {
     return {
       content:
@@ -104,7 +117,6 @@ export default async function (tiktok, user: User, guild: Guild) {
     };
   }
 
-  const id = tiktok.aweme_detail.aweme_id;
   return {
     content: `https://clicktok.xyz/api/v/${id}`,
     components: [
