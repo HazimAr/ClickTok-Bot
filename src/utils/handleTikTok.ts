@@ -93,7 +93,7 @@ export default async function (tiktok, user: User, guild: Guild) {
         user: user.id,
       },
     })
-    .then((conversion) => logConversion(conversion))
+    .then(async (conversion) => await logConversion(conversion).catch(console.error))
     .catch(console.error);
 
   if (tiktok.aweme_detail?.image_post_info) {

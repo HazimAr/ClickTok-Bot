@@ -66,11 +66,11 @@ client.on("guildCreate", async (guild: Guild) => {
   await prisma.guild.create({
     data: { id: guild.id, settings: {} },
   });
-  logGuild(guild);
+  logGuild(guild).catch(console.error);
 });
 
 client.on("guildDelete", async (guild: Guild) => {
-  logGuild(guild, false);
+  await logGuild(guild, false).catch(console.error);
   await prisma.guild.deleteMany({
     where: {
       id: guild.id,

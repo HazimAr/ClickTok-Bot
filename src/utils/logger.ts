@@ -1,7 +1,7 @@
 import { Conversion, User } from "@prisma/client";
 import { client } from "../bot";
 import { MessageEmbed, WebhookClient, Guild } from "discord.js";
-import { getOrCreateUser } from "./db";
+import { getOrCreateGuild, getOrCreateUser } from "./db";
 
 const conversionWebhook = new WebhookClient({
   url: "https://discord.com/api/webhooks/991419871097278484/aaj0GnqFDYXG_fp67pDUvQjMDF7B2Si7_nuGe5m-Oyj-ic4DKEvdTiQY5vTXdg3UXHVf",
@@ -53,7 +53,8 @@ export async function logConversion(
   });
 }
 
-export function logGuild(guild: Guild, joined = true) {
+export async function logGuild(guild: Guild, joined = true) {
+  const mongoGuild = await getOrCreateGuild(guild);
   guildWebhook.send({
     username: "ClickTok",
     avatarURL: "https://clicktok.xyz/logo.png",
@@ -70,9 +71,16 @@ export function logGuild(guild: Guild, joined = true) {
         )
         .addField("Channels", guild.channels.cache.size.toLocaleString(), true)
         .addField("Roles", guild.roles.cache.size.toLocaleString(), true)
+
+        .addField("Language", guild.preferredLocale, true)
         .addField(
           "Created",
-          `<t:${Math.floor(guild.createdAt.getTime() / 1000)}:R>`,
+          `<t:${Math.floor(guild.createdAt.getTime() / 1000)}>`,
+          true
+        )
+        .addField(
+          "Last Converted",
+          `<t:${Math.floor(mongoGuild.lastConvertedAt.getTime() / 1000)}:R>`,
           true
         )
         .setTimestamp()
