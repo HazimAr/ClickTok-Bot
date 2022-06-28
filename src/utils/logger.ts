@@ -34,13 +34,18 @@ export async function logConversion(
         .addField("Guild", guild.name, true)
         .addField("TikTok", conversion.tiktok, true)
         .addField(
-          "Last Converted",
-          `<t:${Math.floor(mongoUser.lastConvertedAt.getTime() / 1000)}:R>`,
+          "Conversions",
+          mongoUser.conversions.length.toLocaleString(),
           true
         )
         .addField(
-          "Conversions",
-          mongoUser.conversions.length.toLocaleString(),
+          "Created",
+          `<t:${Math.floor(author.createdAt.getTime() / 1000)}>`,
+          true
+        )
+        .addField(
+          "Last Converted",
+          `<t:${Math.floor(mongoUser.lastConvertedAt.getTime() / 1000)}:R>`,
           true
         )
         .setTimestamp(),
