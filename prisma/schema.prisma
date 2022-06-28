@@ -21,7 +21,7 @@ model Guild {
   conversions Conversion[]
 
   settings       Settings
-  lastConversion DateTime @default(now())
+  lastConvertedAt DateTime @default(now())
   createdAt      DateTime @default(now())
 }
 
@@ -30,7 +30,7 @@ model User {
   conversions Conversion[]
 
   lastVotedAt    DateTime @default(now())
-  lastConversion DateTime @default(now())
+  lastConvertedAt DateTime @default(now())
   createdAt      DateTime @default(now())
 }
 
