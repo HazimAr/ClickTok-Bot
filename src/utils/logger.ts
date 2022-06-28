@@ -53,7 +53,11 @@ export function logGuild(mongoGuild: Guild) {
         )
         .addField("Channels", guild.channels.cache.size.toLocaleString(), true)
         .addField("Roles", guild.roles.cache.size.toLocaleString(), true)
-        .addField("Created", `<t:${mongoGuild.createdAt.getTime()}:R>`, true)
+        .addField(
+          "Created",
+          `<t:${new Date(mongoGuild.createdAt).getTime()}:R>`,
+          true
+        )
         .setTimestamp(),
     ],
   });
