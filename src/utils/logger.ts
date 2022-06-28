@@ -55,7 +55,7 @@ export function logGuild(mongoGuild: Guild) {
         .addField("Roles", guild.roles.cache.size.toLocaleString(), true)
         .addField(
           "Created",
-          `<t:${new Date(mongoGuild.createdAt).getTime()}:R>`,
+          `<t:${new Date(guild.createdAt).getTime()}:R>`,
           true
         )
         .setTimestamp(),
