@@ -62,12 +62,7 @@ client.once("ready", async () => {
 });
 
 client.on("guildCreate", async (guild: Guild) => {
-  await prisma.guild.create({
-    data: {
-      id: guild.id,
-      settings: {},
-    },
-  });
+  await getOrCreateGuild(guild);
 });
 
 client.on("guildDelete", async (guild: Guild) => {
