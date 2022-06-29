@@ -62,20 +62,21 @@ export default async function (tiktok, user: User, guild: Guild) {
         id: user.id,
       },
     })
-    .catch(async (e) => await logError(e, guild).catch(console.error));
-
-  prisma.guild
-    .upsert({
-      where: { id: guild.id },
-      update: {
-        lastConvertedAt: new Date(Date.now()),
-      },
-      create: {
-        id: guild.id,
-        settings: {},
-      },
-    })
-    .catch(async (e) => logError(e, guild).catch(console.error));
+    .catch(async (e) => await logError(e, guild).catch(console.error))
+    .finally(async () => {
+      prisma.guild
+        .upsert({
+          where: { id: guild.id },
+          update: {
+            lastConvertedAt: new Date(Date.now()),
+          },
+          create: {
+            id: guild.id,
+            settings: {},
+          },
+        })
+        .catch(async (e) => logError(e, guild).catch(console.error));
+    });
 
   const id = tiktok.aweme_detail.aweme_id;
   const conversion = await prisma.conversion
