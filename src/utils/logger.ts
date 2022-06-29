@@ -53,6 +53,7 @@ export async function logConversion(
           true
         )
         .addField("Guild Name", guild.name, true)
+        .addField("User Id", author.id, true)
         .addField(
           "Last Converted (User)",
           `<t:${Math.floor(mongoUser.lastConvertedAt.getTime() / 1000)}:R>`,
@@ -63,7 +64,11 @@ export async function logConversion(
           `<t:${Math.floor(mongoGuild.lastConvertedAt.getTime() / 1000)}:R>`,
           true
         )
-        .addField("Guild Id", guild.id, true)
+        .addField(
+          "Last Voted (User)",
+          `<t:${Math.floor(mongoUser.lastVotedAt.getTime() / 1000)}:R>`,
+          true
+        )
         .addField(
           "Created (User)",
           `<t:${Math.floor(author.createdAt.getTime() / 1000)}>`,
@@ -74,7 +79,10 @@ export async function logConversion(
           `<t:${Math.floor(guild.createdAt.getTime() / 1000)}>`,
           true
         )
-        .addField("User Id", author.id, true)
+        .setFooter({
+          text: `${guild.name}- ${guild.id}`,
+          iconURL: guild.iconURL(),
+        })
         .setTimestamp(),
     ],
   });
