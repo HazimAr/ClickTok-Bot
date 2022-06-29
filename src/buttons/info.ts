@@ -108,12 +108,6 @@ export default async function (interaction: ButtonInteraction) {
     ephemeral: true,
   });
 
-  const conversion = await prisma.conversion.findFirst({
-    where: {
-      id: interaction.customId.split("-")[1],
-    },
-  });
-
   await logConversion({
     user: interaction.user,
     guild: interaction.guild,
