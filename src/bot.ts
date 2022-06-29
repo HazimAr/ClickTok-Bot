@@ -114,7 +114,7 @@ client.on("messageCreate", async (message) => {
           if (guild.settings.deleteOrigin) {
             if (message.deletable) await message.delete();
           } else if (guild.settings.suppressEmbed) {
-            if (message.deletable) await message.suppressEmbeds(true);
+            await message.suppressEmbeds(true).then(console.error);
           }
         });
     }
