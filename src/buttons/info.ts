@@ -47,7 +47,7 @@ export default async function (interaction: ButtonInteraction) {
   let description = tiktok.aweme_detail.desc;
   let tags: String[] = (tiktok.aweme_detail.desc as string).match(/#[\w]+/g);
 
-  await interaction.reply({
+  const embed = await interaction.reply({
     embeds: [
       new MessageEmbed()
         .setAuthor({
@@ -92,11 +92,12 @@ export default async function (interaction: ButtonInteraction) {
             ).getTime()}:R>`,
             inline: true,
           },
-          tags && {
+          {
             name: "Tags 📖",
-            value: tags
-              .map((tag) => `[${tag}](https://tiktok.com/tags/${tag})`)
-              .join(" "),
+            value:
+              tags
+                ?.map((tag) => `[${tag}](https://tiktok.com/tags/${tag})`)
+                ?.join(" ") || "No tags",
             inline: true,
           },
         ]),
