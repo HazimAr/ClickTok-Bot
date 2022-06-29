@@ -27,16 +27,12 @@ const errorWebhook = new WebhookClient({
   url: "https://discord.com/api/webhooks/991489446383980544/tu4__lpejm079WmGIF9g3c3kJei93AjRY9C7CKjsh4iUukQ8l576Twb8dguEfxmf4fuz",
 });
 
-export async function logConversion(
-  conversion: Conversion,
-  mongoUser: MongoUser & { conversions: Conversion[] } = null,
-  mongoGuild: MongoGuild & { conversions: Conversion[] } = null
-) {
+export async function logConversion(conversion: Conversion) {
   const author = client.users.cache.get(conversion.user);
   const guild = client.guilds.cache.get(conversion.guild);
 
-  mongoUser = mongoUser || (await getOrCreateUser(author));
-  mongoGuild = mongoGuild || (await getOrCreateGuild(guild));
+  const mongoUser = await getOrCreateUser(author);
+  const mongoGuild = await getOrCreateGuild(guild);
 
   conversionWebhook.send({
     username: "ClickTok",

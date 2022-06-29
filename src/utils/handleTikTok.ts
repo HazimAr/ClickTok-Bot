@@ -1,13 +1,7 @@
 import axios from "axios";
-import {
-  Guild,
-  Message,
-  MessageActionRow,
-  MessageButton,
-  User,
-} from "discord.js";
+import { Guild, MessageActionRow, MessageButton, User } from "discord.js";
 import { PrismaClient } from "@prisma/client";
-import { logConversion } from "./logger";
+import { logConversion, logError } from "./logger";
 
 const prisma = new PrismaClient();
 
@@ -68,7 +62,7 @@ export default async function (tiktok, user: User, guild: Guild) {
         id: user.id,
       },
     })
-    .catch(console.error);
+    .catch(async (e) => await logError(e, guild).catch(console.error));
 
   prisma.guild
     .upsert({
@@ -81,10 +75,10 @@ export default async function (tiktok, user: User, guild: Guild) {
         settings: {},
       },
     })
-    .catch(console.error);
+    .catch(async (e) => logError(e, guild).catch(console.error));
 
   const id = tiktok.aweme_detail.aweme_id;
-  prisma.conversion
+  const conversion = await prisma.conversion
     .create({
       data: {
         tiktok: id,
@@ -92,8 +86,10 @@ export default async function (tiktok, user: User, guild: Guild) {
         user: user.id,
       },
     })
-    .then(async (conversion) => await logConversion(conversion).catch(console.error))
-    .catch(console.error);
+    .then(async (conversion) => {
+      logConversion(conversion).catch(console.error);
+      return conversion;
+    });
 
   if (tiktok.aweme_detail?.image_post_info) {
     return {
@@ -121,7 +117,7 @@ export default async function (tiktok, user: User, guild: Guild) {
     components: [
       new MessageActionRow().addComponents(
         new MessageButton()
-          .setCustomId("info")
+          .setCustomId(`info-${conversion.id}}`)
           .setLabel("Info")
           .setStyle("PRIMARY")
           .setEmoji("🖥️"),

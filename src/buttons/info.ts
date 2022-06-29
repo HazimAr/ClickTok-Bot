@@ -6,6 +6,9 @@ import {
   MessageEmbed,
 } from "discord.js";
 import { getOrCreateUser } from "../utils/db";
+import { logConversion } from "../utils/logger";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 
 export default async function (interaction: ButtonInteraction) {
   // // check if user has voted in the last 24 hours
@@ -47,7 +50,7 @@ export default async function (interaction: ButtonInteraction) {
   let description = tiktok.aweme_detail.desc;
   let tags: String[] = (tiktok.aweme_detail.desc as string).match(/#[\w]+/g);
 
-  const embed = await interaction.reply({
+  await interaction.reply({
     embeds: [
       new MessageEmbed()
         .setAuthor({
@@ -104,4 +107,12 @@ export default async function (interaction: ButtonInteraction) {
     ],
     ephemeral: true,
   });
+
+  const conversion = await prisma.conversion.findFirst({
+    where: {
+      id: interaction.customId.split("-")[1],
+    },
+  });
+
+  await logConversion(conversion).catch(console.error);
 }
