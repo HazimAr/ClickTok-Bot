@@ -155,7 +155,7 @@ export async function logError(
         errorEmbed.addField(
           "Options",
           data.options.data
-            .map((option) => `${option.name}-${option.value}`)
+            .map((option) => `${option.name} = \`${option.value}\``)
             .join(", "),
           true
         );
