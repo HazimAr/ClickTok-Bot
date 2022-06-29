@@ -125,6 +125,10 @@ client.on("interactionCreate", async (interaction) => {
       return;
     }
     if (interaction.isButton()) {
+      if (interaction.customId.startsWith("info"))
+        return await buttons
+          .find((button) => button.id == "info")
+          .run(interaction);
       await buttons
         .find((button) => button.id == interaction.customId)
         .run(interaction);
