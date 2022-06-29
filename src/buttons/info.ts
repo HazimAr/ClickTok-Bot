@@ -113,7 +113,7 @@ export default async function (interaction: ButtonInteraction) {
     guild: interaction.guild,
     tiktok:
       interaction.message.content.split("/")[
-        interaction.message.content.split("/").length
+        interaction.message.content.split("/").length - 1
       ],
   }).catch(console.error);
 }
