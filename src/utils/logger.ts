@@ -1,8 +1,4 @@
-import {
-  Conversion,
-  Guild as MongoGuild,
-  User as MongoUser,
-} from "@prisma/client";
+import { Conversion } from "@prisma/client";
 import {
   Guild,
   GuildChannel,
@@ -27,9 +23,17 @@ const errorWebhook = new WebhookClient({
   url: "https://discord.com/api/webhooks/991489446383980544/tu4__lpejm079WmGIF9g3c3kJei93AjRY9C7CKjsh4iUukQ8l576Twb8dguEfxmf4fuz",
 });
 
-export async function logConversion(conversion: Conversion) {
-  const author = client.users.cache.get(conversion.user);
-  const guild = client.guilds.cache.get(conversion.guild);
+export async function logConversion(
+  conversion: Conversion | { user: User; guild: Guild; tiktok: string }
+) {
+  const author =
+    conversion.user instanceof User
+      ? conversion.user
+      : client.users.cache.get(conversion.user);
+  const guild =
+    conversion.guild instanceof Guild
+      ? conversion.guild
+      : client.guilds.cache.get(conversion.guild);
 
   const mongoUser = await getOrCreateUser(author);
   const mongoGuild = await getOrCreateGuild(guild);
@@ -45,7 +49,6 @@ export async function logConversion(conversion: Conversion) {
         })
         .setDescription(`https://clicktok.xyz/v/${conversion.tiktok}`)
         .setThumbnail(guild.iconURL())
-
         .addField(
           "Conversions (User)",
           mongoUser.conversions.length.toLocaleString(),

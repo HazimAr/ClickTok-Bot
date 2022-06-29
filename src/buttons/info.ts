@@ -114,5 +114,12 @@ export default async function (interaction: ButtonInteraction) {
     },
   });
 
-  await logConversion(conversion).catch(console.error);
+  await logConversion({
+    user: interaction.user,
+    guild: interaction.guild,
+    tiktok:
+      interaction.message.content.split("/")[
+        interaction.message.content.split("/").length
+      ],
+  }).catch(console.error);
 }
