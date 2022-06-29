@@ -79,6 +79,7 @@ export async function logConversion(
           `<t:${Math.floor(guild.createdAt.getTime() / 1000)}>`,
           true
         )
+        .addField("Tiktok", conversion.tiktok, true)
         .setFooter({
           text: `${guild.name}-${guild.id}`,
           iconURL: guild.iconURL(),
