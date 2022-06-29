@@ -5,6 +5,7 @@ import {
 } from "@prisma/client";
 import {
   Guild,
+  GuildChannel,
   Interaction,
   Message,
   MessageEmbed,
@@ -138,6 +139,7 @@ export async function logError(
 
   if (!(data instanceof Guild)) {
     const user = data.member.user as User;
+    const channel = data.channel as GuildChannel;
     const guild = data.guild;
     errorEmbed.setAuthor({
       name: `${user.username}#${user.discriminator}-${user.id}`,
@@ -160,10 +162,12 @@ export async function logError(
           true
         );
       } else if (data.isButton()) {
-        errorEmbed.addField("Button Label", data.component.label, true);
         errorEmbed.addField("Button Id", data.customId, true);
+        errorEmbed.addField("Button Label", data.component.label, true);
       }
     }
+    errorEmbed.addField("Channel Name", channel.name, true);
+    errorEmbed.addField("Channel Id", channel.id, true);
   } else {
     errorEmbed.setAuthor({
       name: data.name,
