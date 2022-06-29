@@ -79,7 +79,7 @@ export default async function (tiktok, user: User, guild: Guild) {
     });
 
   const id = tiktok.aweme_detail.aweme_id;
-  const conversion = await prisma.conversion
+  await prisma.conversion
     .create({
       data: {
         tiktok: id,
