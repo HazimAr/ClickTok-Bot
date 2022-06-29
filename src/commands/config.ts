@@ -37,11 +37,13 @@ export default {
     ),
   run: async function run(interaction: CommandInteraction) {
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has(Permissions.FLAGS.ADMINISTRATOR))
-      return interaction.reply({
+    if (!member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+      await interaction.reply({
         content: "You do not have permission to run this command",
         ephemeral: true,
       });
+      return;
+    }
     const mongoGuild = await getOrCreateGuild(interaction.guild);
 
     const settings = mongoGuild.settings;

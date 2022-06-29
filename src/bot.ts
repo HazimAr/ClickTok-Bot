@@ -13,7 +13,7 @@ import getTikTokResponse, { getIdFromText } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
-import { logGuild } from "./utils/logger";
+import { logError, logGuild } from "./utils/logger";
 
 export const client = new Client({
   intents: [
@@ -63,58 +63,75 @@ client.once("ready", async () => {
 });
 
 client.on("guildCreate", async (guild: Guild) => {
-  await prisma.guild.create({
-    data: { id: guild.id, settings: {} },
-  });
-  logGuild(guild).catch(console.error);
+  try {
+    await prisma.guild.create({
+      data: { id: guild.id, settings: {} },
+    });
+    await logGuild(guild);
+  } catch (e) {
+    logError(e, guild).catch(console.error);
+  }
 });
 
 client.on("guildDelete", async (guild: Guild) => {
-  await logGuild(guild, false).catch(console.error);
-  await prisma.guild.deleteMany({
-    where: {
-      id: guild.id,
-    },
-  });
+  try {
+    await logGuild(guild, false);
+    await prisma.guild.deleteMany({
+      where: {
+        id: guild.id,
+      },
+    });
+  } catch (e) {
+    logError(e, guild).catch(console.error);
+  }
 });
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-
   if (!validTikTokUrl(message.content)) return;
-  const guild = await getOrCreateGuild(message.guild);
 
-  if (guild.settings.autoEmbed) {
-    const id = await getIdFromText(message.content);
-    if (!id) return;
-    await axios
-      .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
-      .then(async (response) => {
-        await message.reply(
-          await getTikTokResponse(
-            (response as any).data,
-            message.author,
-            message.guild
-          )
-        );
-        if (guild.settings.deleteOrigin) await message.delete();
-        else if (guild.settings.suppressEmbed)
-          await message.suppressEmbeds(true);
-      })
-      .catch(console.error);
+  try {
+    const guild = await getOrCreateGuild(message.guild);
+
+    if (guild.settings.autoEmbed) {
+      const id = await getIdFromText(message.content);
+      if (!id) return;
+      await axios
+        .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
+        .then(async (response) => {
+          await message.reply(
+            await getTikTokResponse(
+              (response as any).data,
+              message.author,
+              message.guild
+            )
+          );
+          if (guild.settings.deleteOrigin) await message.delete();
+          else if (guild.settings.suppressEmbed)
+            await message.suppressEmbeds(true);
+        });
+    }
+  } catch (e) {
+    logError(e, message).catch(console.error);
   }
 });
 
 client.on("interactionCreate", async (interaction) => {
-  if (interaction.isCommand()) {
-    return await commands
-      .find((c) => c.data.name === interaction.commandName)
-      .run(interaction);
-  }
-  if (interaction.isButton()) {
-    return await buttons
-      .find((button) => button.id == interaction.customId)
-      .run(interaction);
+  try {
+    if (interaction.isCommand()) {
+      await commands
+        .find((c) => c.data.name === interaction.commandName)
+        .run(interaction);
+      return;
+    }
+    if (interaction.isButton()) {
+      await buttons
+        .find((button) => button.id == interaction.customId)
+        .run(interaction);
+      return;
+    }
+  } catch (e) {
+    logError(e, interaction).catch(console.error);
   }
 });
 

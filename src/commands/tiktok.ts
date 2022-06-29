@@ -14,11 +14,13 @@ export default {
         .setRequired(true)
     ),
   run: async function run(interaction: CommandInteraction) {
-    if (!validTikTokUrl(interaction.options.get("link").value as string))
-      return await interaction.reply({
+    if (!validTikTokUrl(interaction.options.get("link").value as string)) {
+      await interaction.reply({
         content: "Invalid TikTok link.",
         ephemeral: true,
       });
+      return;
+    }
 
     await axios
       .get(
@@ -35,7 +37,6 @@ export default {
             interaction.guild
           )
         );
-      })
-      .catch(console.error);
+      });
   },
 };

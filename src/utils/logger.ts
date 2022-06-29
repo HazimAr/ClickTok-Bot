@@ -3,7 +3,14 @@ import {
   Guild as MongoGuild,
   User as MongoUser,
 } from "@prisma/client";
-import { Guild, MessageEmbed, User, WebhookClient } from "discord.js";
+import {
+  Guild,
+  Interaction,
+  Message,
+  MessageEmbed,
+  User,
+  WebhookClient,
+} from "discord.js";
 import { client } from "../bot";
 import { getOrCreateGuild, getOrCreateUser } from "./db";
 
@@ -121,18 +128,56 @@ export async function logGuild(guild: Guild, joined = true) {
 
 export async function logError(
   error: Error,
-  data: { guild: Guild; user: User }
+  data: Interaction | Message | Guild = null
 ) {
+  const errorEmbed = new MessageEmbed()
+    .setTitle("Error")
+    .setDescription(error.message)
+    .setColor("#ff0000")
+    .setTimestamp();
+
+  if (!(data instanceof Guild)) {
+    const user = data.member.user as User;
+    const guild = data.guild;
+    errorEmbed.setAuthor({
+      name: user.username,
+      iconURL: user.avatarURL(),
+    });
+    errorEmbed.setFooter({
+      text: `${guild.name}-${guild.id}`,
+    });
+    errorEmbed.setThumbnail(guild.iconURL());
+    if (data instanceof Message) {
+      errorEmbed.addField("Message", data.content, true);
+    } else {
+      if (data.isCommand()) {
+        errorEmbed.addField("Command", data.commandName, true);
+        errorEmbed.addField(
+          "Options",
+          data.options.data
+            .map((option) => `${option.name}-${option.value}`)
+            .join(", "),
+          true
+        );
+      } else if (data.isButton()) {
+        errorEmbed.addField("Button Label", data.component.label, true);
+        errorEmbed.addField("Button Id", data.customId, true);
+      }
+    }
+  } else {
+    errorEmbed.setAuthor({
+      name: data.name,
+      iconURL: data.iconURL(),
+    });
+    errorEmbed.setFooter({
+      text: `${data.id}`,
+    });
+    errorEmbed.setThumbnail(data.iconURL());
+  }
+
   errorWebhook.send({
     username: "ClickTok",
     avatarURL: "https://clicktok.xyz/logo.png",
-    embeds: [
-      new MessageEmbed()
-        .setTitle("Error")
-        .setDescription(error.message)
-        .addField("Guild", data.guild.name, true)
-        .setTimestamp()
-        .setColor("#ff0000"),
-    ],
+    embeds: [errorEmbed],
   });
 }
