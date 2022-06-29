@@ -117,7 +117,7 @@ export default async function (tiktok, user: User, guild: Guild) {
     components: [
       new MessageActionRow().addComponents(
         new MessageButton()
-          .setCustomId(`info-${conversion.id}}`)
+          .setCustomId("info")
           .setLabel("Info")
           .setStyle("PRIMARY")
           .setEmoji("🖥️"),
