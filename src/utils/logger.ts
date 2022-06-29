@@ -131,8 +131,8 @@ export async function logError(
   data: Interaction | Message | Guild = null
 ) {
   const errorEmbed = new MessageEmbed()
-    .setTitle("Error")
-    .setDescription(error.message)
+    .setTitle(error.message)
+    .setDescription(error.stack)
     .setColor("#ff0000")
     .setTimestamp();
 
@@ -170,11 +170,10 @@ export async function logError(
       iconURL: data.iconURL(),
     });
     errorEmbed.setFooter({
-      text: `${data.id}`,
+      text: data.id,
     });
     errorEmbed.setThumbnail(data.iconURL());
   }
-
   errorWebhook.send({
     username: "ClickTok",
     avatarURL: "https://clicktok.xyz/logo.png",
