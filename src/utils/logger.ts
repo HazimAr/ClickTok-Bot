@@ -23,6 +23,10 @@ const errorWebhook = new WebhookClient({
   url: "https://discord.com/api/webhooks/991489446383980544/tu4__lpejm079WmGIF9g3c3kJei93AjRY9C7CKjsh4iUukQ8l576Twb8dguEfxmf4fuz",
 });
 
+const infoWebhook = new WebhookClient({
+  url: "https://discord.com/api/webhooks/991534525811265596/9YLJx5sAnE0-wplz2TF3kWXjBpzC6OD5y_W_for_E0FuiRpYNgKGjaV2pG40mVDvHMjo",
+});
+
 export async function logConversion(
   conversion: Conversion | { user: User; guild: Guild; tiktok: string }
 ) {
@@ -38,7 +42,8 @@ export async function logConversion(
   const mongoUser = await getOrCreateUser(author);
   const mongoGuild = await getOrCreateGuild(guild);
 
-  conversionWebhook.send({
+  // @ts-ignore
+  (conversion.id ? conversionWebhook : infoWebhook).send({
     username: "ClickTok",
     avatarURL: "https://clicktok.xyz/logo.png",
     embeds: [
