@@ -7,8 +7,7 @@ import {
 } from "discord.js";
 import { getOrCreateUser } from "../utils/db";
 import { logConversion } from "../utils/logger";
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from "../bot";
 
 export default async function (interaction: ButtonInteraction) {
   // // check if user has voted in the last 24 hours

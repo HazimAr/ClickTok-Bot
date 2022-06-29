@@ -13,7 +13,7 @@ import getTikTokResponse, { getIdFromText } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
-import { logError, logGuild, logQuery } from "./utils/logger";
+import { logError, logGuild } from "./utils/logger";
 
 export const client = new Client({
   intents: [
@@ -23,10 +23,10 @@ export const client = new Client({
   ],
 });
 
-const prisma = new PrismaClient({
+export const prisma = new PrismaClient({
   log: [
     {
-      emit: "event",
+      emit: "stdout",
       level: "query",
     },
     {
@@ -47,11 +47,7 @@ prisma
   .$connect()
   .then(() => {
     console.log("Connected to Prisma");
-    prisma.$on("query", (e) => {
-      logQuery(e).catch(console.error);
-    });
   })
-
   .catch(console.error);
 
 let commands: {

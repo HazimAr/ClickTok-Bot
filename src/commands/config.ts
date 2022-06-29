@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../bot";
+
 import {
   CommandInteraction,
   GuildMember,
@@ -8,7 +9,7 @@ import {
 } from "discord.js";
 import { getOrCreateGuild } from "../utils/db";
 
-const prisma = new PrismaClient();
+
 
 export default {
   data: new SlashCommandBuilder()

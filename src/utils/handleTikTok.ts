@@ -1,9 +1,7 @@
 import axios from "axios";
 import { Guild, MessageActionRow, MessageButton, User } from "discord.js";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../bot";
 import { logConversion, logError } from "./logger";
-
-const prisma = new PrismaClient();
 
 async function getId(url: string, regex: RegExp) {
   let match = url.match(regex);
