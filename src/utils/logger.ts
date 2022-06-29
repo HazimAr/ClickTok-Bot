@@ -140,7 +140,7 @@ export async function logError(
     const user = data.member.user as User;
     const guild = data.guild;
     errorEmbed.setAuthor({
-      name: user.username,
+      name: `${user.username}#${user.discriminator}-${user.id}`,
       iconURL: user.avatarURL(),
     });
     errorEmbed.setFooter({
