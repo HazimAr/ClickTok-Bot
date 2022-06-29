@@ -52,34 +52,32 @@ export async function getIdFromText(url: string) {
 }
 
 export default async function (tiktok, user: User, guild: Guild) {
-  prisma.user
-    .upsert({
-      where: { id: user.id },
-      update: {
-        lastConvertedAt: new Date(Date.now()),
-      },
-      create: {
-        id: user.id,
-      },
-    })
-    .catch(async (e) => await logError(e, guild).catch(console.error))
-    .finally(async () => {
-      prisma.guild
-        .upsert({
-          where: { id: guild.id },
-          update: {
-            lastConvertedAt: new Date(Date.now()),
-          },
-          create: {
-            id: guild.id,
-            settings: {},
-          },
-        })
-        .catch(async (e) => logError(e, guild).catch(console.error));
-    });
+  prisma
+    .$transaction([
+      prisma.user.upsert({
+        where: { id: user.id },
+        update: {
+          lastConvertedAt: new Date(Date.now()),
+        },
+        create: {
+          id: user.id,
+        },
+      }),
 
+      prisma.guild.upsert({
+        where: { id: guild.id },
+        update: {
+          lastConvertedAt: new Date(Date.now()),
+        },
+        create: {
+          id: guild.id,
+          settings: {},
+        },
+      }),
+    ])
+    .catch(async (e) => await logError(e, guild).catch(console.error));
   const id = tiktok.aweme_detail.aweme_id;
-  await prisma.conversion
+  const conversion = await prisma.conversion
     .create({
       data: {
         tiktok: id,
