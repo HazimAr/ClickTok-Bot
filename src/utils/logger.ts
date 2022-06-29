@@ -36,7 +36,7 @@ export async function logConversion(
     embeds: [
       new MessageEmbed()
         .setAuthor({
-          name: `${author.username}#${author.discriminator}`,
+          name: `${author.username}#${author.discriminator}-${author.id}`,
           iconURL: author.avatarURL(),
         })
         .setDescription(`https://clicktok.xyz/v/${conversion.tiktok}`)
@@ -52,8 +52,8 @@ export async function logConversion(
           mongoGuild.conversions.length.toLocaleString(),
           true
         )
-        .addField("Guild Name", guild.name, true)
-        .addField("User Id", author.id, true)
+        .addField("Votes (User)", mongoUser.votes.toLocaleString(), true)
+
         .addField(
           "Last Converted (User)",
           `<t:${Math.floor(mongoUser.lastConvertedAt.getTime() / 1000)}:R>`,
@@ -80,7 +80,7 @@ export async function logConversion(
           true
         )
         .setFooter({
-          text: `${guild.name}- ${guild.id}`,
+          text: `${guild.name}-${guild.id}`,
           iconURL: guild.iconURL(),
         })
         .setTimestamp(),
