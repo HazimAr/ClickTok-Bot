@@ -136,7 +136,7 @@ export async function logError(
   data: Interaction | Message | Guild = null
 ) {
   const errorEmbed = new MessageEmbed()
-    .setTitle(typeof data)
+    .setTitle("New error stupid")
     .setDescription(`${error.message}\n${error.stack}`)
     .setColor("#ff0000")
     .setTimestamp();

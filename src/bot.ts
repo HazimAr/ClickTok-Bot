@@ -99,16 +99,23 @@ client.on("messageCreate", async (message) => {
       await axios
         .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
         .then(async (response) => {
-          await message.reply(
-            await getTikTokResponse(
-              (response as any).data,
-              message.author,
-              message.guild
-            )
+          const messageResponse = await getTikTokResponse(
+            (response as any).data,
+            message.author,
+            message.guild
           );
-          if (guild.settings.deleteOrigin) await message.delete();
-          else if (guild.settings.suppressEmbed)
-            await message.suppressEmbeds(true);
+          await message.reply(messageResponse).catch(() => {
+            // message doesn't exist anymore
+            message.channel.send(messageResponse).catch(() => {
+              // channel doesn't exist anymore (prolly got kicked as message was sent lol)
+            });
+          });
+          if (guild.settings.deleteOrigin) {
+            if (message.deletable) await message.delete();
+          } else if (guild.settings.suppressEmbed){
+            if (message.deletable) await message.suppressEmbeds(true);
+          }
+            
         });
     }
   } catch (e) {
