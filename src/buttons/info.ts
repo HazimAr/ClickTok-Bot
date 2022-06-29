@@ -47,8 +47,6 @@ export default async function (interaction: ButtonInteraction) {
   let description = tiktok.aweme_detail.desc;
   let tags: String[] = (tiktok.aweme_detail.desc as string).match(/#[\w]+/g);
 
-
-
   await interaction.reply({
     embeds: [
       new MessageEmbed()
