@@ -92,7 +92,7 @@ export default async function (interaction: ButtonInteraction) {
             ).getTime()}:R>`,
             inline: true,
           },
-          {
+          tags && {
             name: "Tags 📖",
             value: tags
               .map((tag) => `[${tag}](https://tiktok.com/tags/${tag})`)
