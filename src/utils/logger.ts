@@ -1,4 +1,4 @@
-import { Conversion } from "@prisma/client";
+import { Conversion, Prisma } from "@prisma/client";
 import {
   Guild,
   GuildChannel,
@@ -25,6 +25,10 @@ const errorWebhook = new WebhookClient({
 
 const infoWebhook = new WebhookClient({
   url: "https://discord.com/api/webhooks/991534525811265596/9YLJx5sAnE0-wplz2TF3kWXjBpzC6OD5y_W_for_E0FuiRpYNgKGjaV2pG40mVDvHMjo",
+});
+
+const queryWebhook = new WebhookClient({
+  url: "https://discord.com/api/webhooks/991754772501774366/NCg2dvQyq-DWer0uGrgzqgtW1w_ycj9MZVtC_yBx6LmADyFU_fG7TuT1X03pOD2a25Xi",
 });
 
 export async function logConversion(
@@ -186,5 +190,21 @@ export async function logError(
     username: "ClickTok",
     avatarURL: "https://clicktok.xyz/logo.png",
     embeds: [errorEmbed],
+  });
+}
+
+export async function logQuery(e: Prisma.QueryEvent) {
+  await queryWebhook.send({
+    username: "ClickTok",
+    avatarURL: "https://clicktok.xyz/logo.png",
+    embeds: [
+      new MessageEmbed()
+        .setTitle(e.target)
+        .setDescription(e.query)
+        .addField("Duration", e.duration.toLocaleString(), true)
+        .addField("Params", e.params, true)
+        .setColor("#0000ff")
+        .setTimestamp(e.timestamp),
+    ],
   });
 }
