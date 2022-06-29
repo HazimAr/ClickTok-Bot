@@ -7,11 +7,17 @@ const prisma = new PrismaClient();
 export async function getOrCreateGuild(guild: Guild) {
   let mongoGuild = await prisma.guild.findFirst({
     where: { id: guild.id },
+    include: {
+      conversions: true,
+    },
   });
 
   if (!mongoGuild) {
     mongoGuild = await prisma.guild.create({
       data: { id: guild.id, settings: {} },
+      include: {
+        conversions: true,
+      },
     });
     logGuild(guild);
   }
