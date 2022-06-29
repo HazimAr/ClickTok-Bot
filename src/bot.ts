@@ -106,16 +106,16 @@ client.on("messageCreate", async (message) => {
           );
           await message.reply(messageResponse).catch(() => {
             // message doesn't exist anymore
+            messageResponse.content = `${message.author} ${messageResponse.content}`;
             message.channel.send(messageResponse).catch(() => {
               // channel doesn't exist anymore (prolly got kicked as message was sent lol)
             });
           });
           if (guild.settings.deleteOrigin) {
             if (message.deletable) await message.delete();
-          } else if (guild.settings.suppressEmbed){
+          } else if (guild.settings.suppressEmbed) {
             if (message.deletable) await message.suppressEmbeds(true);
           }
-            
         });
     }
   } catch (e) {
