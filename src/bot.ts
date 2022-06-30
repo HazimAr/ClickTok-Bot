@@ -6,7 +6,6 @@ import {
   CommandInteraction,
   Guild,
   Intents,
-  Message,
 } from "discord.js";
 import { readdirSync } from "fs";
 import axios from "axios";
@@ -89,7 +88,7 @@ client.on("guildDelete", async (guild: Guild) => {
   }
 });
 
-async function handleMessage(message: Message) {
+client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   if (!validTikTokUrl(message.content)) return;
 
@@ -128,10 +127,7 @@ async function handleMessage(message: Message) {
   } catch (e) {
     logError(e, message).catch(console.error);
   }
-}
-
-client.on("messageCreate", handleMessage);
-client.on("messageUpdate", handleMessage);
+});
 
 client.on("interactionCreate", async (interaction) => {
   try {
