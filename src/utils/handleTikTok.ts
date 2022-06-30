@@ -81,7 +81,6 @@ export default async function (tiktok, user: User, guild: Guild) {
           },
         })
         .catch(async (e) => await logError(e, guild).catch(console.error));
-
       if (
         mongoUser.lastConvertedAt.getTime() == mongoUser.createdAt.getTime()
       ) {
@@ -90,11 +89,11 @@ export default async function (tiktok, user: User, guild: Guild) {
             new MessageEmbed()
               .setTitle("Thank you for using ClickTok!")
               .setDescription(
-                "You have converted for the first time 🥳! As a sign of our gratitude, we are hosting a nitro giveaway for the first 1000 users that sign up to our giveaway 🤯. To sign up, join our support server https://discord.gg/tg2QTMEc9g and react to the message inside of the giveaway channel 🤗. Hope to see you there!"
+                "You have converted for the first time 🥳!\nAs a sign of our gratitude, we are hosting a nitro giveaway for the first 1000 users that sign up 🤯.\nTo get your chance at winning nitro for **FREE**, join our support server https://discord.gg/tg2QTMEc9g and react to the message inside of the giveaway channel 🤗. Hope to see you there!"
               )
               .setAuthor({
                 name: "ClickTok",
-                url: "https://clicktok.xyz/logo.png",
+                iconURL: "https://clicktok.xyz/logo.png",
               })
               .setThumbnail("https://clicktok.xyz/logo.png")
               .setColor("#00ff00")

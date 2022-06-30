@@ -17,7 +17,7 @@ type Settings {
 }
 
 model Guild {
-  id          String       @id @map("_id")
+  id          String       @id @map("_id") @db.ObjectId
   conversions Conversion[]
 
   settings        Settings
@@ -26,7 +26,7 @@ model Guild {
 }
 
 model User {
-  id          String       @id @map("_id")
+  id          String       @id @map("_id") @db.ObjectId
   conversions Conversion[]
 
   votes           Int      @default(0)
