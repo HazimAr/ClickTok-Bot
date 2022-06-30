@@ -134,7 +134,9 @@ async function handleMessage(message: Message) {
 client.on("messageCreate", handleMessage);
 client.on("messageUpdate", async (oldMessage, newMessage) => {
   // oldMessage.content is == to newMessage.content return fr
-
+if(oldMessage.content == newMessage.content){
+  return
+}
   await handleMessage(newMessage as Message);
 });
 
