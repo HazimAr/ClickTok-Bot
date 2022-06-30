@@ -121,7 +121,8 @@ async function handleMessage(message: Message) {
           if (guild.settings.deleteOrigin) {
             if (message.deletable) await message.delete();
           } else if (guild.settings.suppressEmbed) {
-            await message.suppressEmbeds(true).then(console.error);
+            if (message.embeds.length)
+              await message.suppressEmbeds(true).then(console.error);
           }
         });
     }
