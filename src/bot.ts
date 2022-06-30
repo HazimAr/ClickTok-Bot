@@ -23,7 +23,7 @@ export const client = new Client({
     Intents.FLAGS.GUILDS,
   ],
 });
-
+export const jr = false;
 export const prisma = new PrismaClient();
 prisma
   .$connect()
@@ -134,10 +134,14 @@ async function handleMessage(message: Message) {
 client.on("messageCreate", handleMessage);
 client.on("messageUpdate", async (oldMessage, newMessage) => {
   // oldMessage.content is == to newMessage.content return fr
-  await getIdFromText(oldMessage.content) == await getIdFromText(newMessage.content)
-if(await getIdFromText(oldMessage.content) == await getIdFromText(newMessage.content)){
-  return
-}
+  (await getIdFromText(oldMessage.content)) ==
+    (await getIdFromText(newMessage.content));
+  if (
+    (await getIdFromText(oldMessage.content)) ==
+    (await getIdFromText(newMessage.content))
+  ) {
+    return;
+  }
   await handleMessage(newMessage as Message);
 });
 
@@ -160,4 +164,4 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-client.login(process.env.TOKEN);
+client.login(jr ? process.env.TOKEN_JR : process.env.TOKEN);

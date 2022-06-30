@@ -1,5 +1,13 @@
+import { PrismaPromise } from "@prisma/client";
 import axios from "axios";
-import { Guild, MessageActionRow, MessageButton, User } from "discord.js";
+import {
+  Guild,
+  Message,
+  MessageActionRow,
+  MessageButton,
+  MessageEmbed,
+  User,
+} from "discord.js";
 import { prisma } from "../bot";
 import { logConversion, logError } from "./logger";
 
@@ -50,29 +58,56 @@ export async function getIdFromText(url: string) {
 }
 
 export default async function (tiktok, user: User, guild: Guild) {
-  prisma
-    .$transaction([
-      prisma.user.upsert({
-        where: { id: user.id },
-        update: {
-          lastConvertedAt: new Date(Date.now()),
-        },
-        create: {
-          id: user.id,
-        },
-      }),
+  prisma.user
+    .upsert({
+      where: { id: user.id },
+      update: {
+        lastConvertedAt: new Date(Date.now()),
+      },
+      create: {
+        id: user.id,
+      },
+    })
+    .then((mongoUser) => {
+      prisma.guild
+        .upsert({
+          where: { id: guild.id },
+          update: {
+            lastConvertedAt: new Date(Date.now()),
+          },
+          create: {
+            id: guild.id,
+            settings: {},
+          },
+        })
+        .catch(async (e) => await logError(e, guild).catch(console.error));
 
-      prisma.guild.upsert({
-        where: { id: guild.id },
-        update: {
-          lastConvertedAt: new Date(Date.now()),
-        },
-        create: {
-          id: guild.id,
-          settings: {},
-        },
-      }),
-    ])
+      if (
+        mongoUser.lastConvertedAt.getTime() == mongoUser.createdAt.getTime()
+      ) {
+        user.send({
+          embeds: [
+            new MessageEmbed()
+              .setTitle("Thank you for using ClickTok!")
+              .setDescription(
+                "You have converted for the first time 🥳! As a sign of our gratitude, we are hosting a nitro giveaway for the first 1000 users that sign up to our giveaway 🤯. To sign up, join our support server https://discord.gg/tg2QTMEc9g and react to the message inside of the giveaway channel 🤗. Hope to see you there!"
+              )
+              .setAuthor({
+                name: "ClickTok",
+                url: "https://clicktok.xyz/logo.png",
+              })
+              .setThumbnail("https://clicktok.xyz/logo.png")
+              .setColor("#00ff00")
+              .setFooter({
+                text: "ClickTok",
+                iconURL: "https://clicktok.xyz/logo.png",
+              })
+              .setTimestamp(),
+          ],
+        });
+      }
+    })
+
     .catch(async (e) => await logError(e, guild).catch(console.error));
   const id = tiktok.aweme_detail.aweme_id;
   const conversion = await prisma.conversion

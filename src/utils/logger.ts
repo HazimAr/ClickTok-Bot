@@ -8,7 +8,7 @@ import {
   User,
   WebhookClient,
 } from "discord.js";
-import { client } from "../bot";
+import { client, jr } from "../bot";
 import { getOrCreateGuild, getOrCreateUser } from "./db";
 
 const conversionWebhook = new WebhookClient({
@@ -44,7 +44,7 @@ export async function logConversion(
 
   // @ts-ignore
   (conversion.id ? conversionWebhook : infoWebhook).send({
-    username: "ClickTok",
+    username: "ClickTok" + (jr && " Jr."),
     avatarURL: "https://clicktok.xyz/logo.png",
     embeds: [
       new MessageEmbed()
@@ -103,7 +103,7 @@ export async function logConversion(
 
 export async function logGuild(guild: Guild, joined = true) {
   guildWebhook.send({
-    username: "ClickTok",
+    username: "ClickTok" + (jr && " Jr."),
     avatarURL: "https://clicktok.xyz/logo.png",
     embeds: [
       new MessageEmbed()
@@ -183,7 +183,7 @@ export async function logError(
     errorEmbed.setThumbnail(data.iconURL());
   }
   errorWebhook.send({
-    username: "ClickTok",
+    username: "ClickTok" + (jr && " Jr."),
     avatarURL: "https://clicktok.xyz/logo.png",
     embeds: [errorEmbed],
   });
