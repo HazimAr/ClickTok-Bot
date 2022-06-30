@@ -90,6 +90,11 @@ client.on("guildDelete", async (guild: Guild) => {
 });
 
 async function handleMessage(message: Message) {
+  if (jr) {
+    if (message.channel.id != "991183722957254657") return;
+  } else {
+    if (message.channel.id == "991183722957254657") return;
+  }
   if (message.author.bot) return;
   if (!validTikTokUrl(message.content)) return;
 
