@@ -11,7 +11,7 @@ import { getOrCreateUser } from "../utils/db";
 export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
 
-  if (mongoUser.lastVotedAt.getTime() > Date.now() - 1000 * 60 * 60 * 12) {
+  if (mongoUser.lastVotedAt.getTime() < Date.now() - 1000 * 60 * 60 * 12) {
     return await interaction.reply({
       embeds: [
         new MessageEmbed()
