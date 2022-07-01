@@ -36,7 +36,8 @@ const username = "ClickTok" + (jr ? " Jr." : " Sr.");
 const avatarURL = "https://clicktok.xyz/logo.png";
 
 export async function logConversion(
-  conversion: Conversion | { user: User; guild: Guild; tiktok: string }
+  conversion: Conversion | { user: User; guild: Guild; tiktok: string },
+  isCommand: boolean
 ) {
   const author =
     conversion.user instanceof User
@@ -99,7 +100,7 @@ export async function logConversion(
           `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
           true
         )
-        .addField("Tiktok", conversion.tiktok, true)
+        .addField("Type", isCommand ? "Command" : "Message", true)
         .setFooter({
           text: `${guild.name}-${guild.id}`,
           iconURL: guild.iconURL(),

@@ -56,7 +56,7 @@ export async function getIdFromText(url: string) {
   return null;
 }
 
-export default async function (tiktok, user: User, guild: Guild) {
+export default async function (isCommand, tiktok, user: User, guild: Guild) {
   const mongoUser = await getOrCreateUser(user);
   if (!mongoUser.lastConvertedAt) {
     user
@@ -114,7 +114,7 @@ export default async function (tiktok, user: User, guild: Guild) {
       },
     })
     .then(async (conversion) => {
-      logConversion(conversion).catch(console.error);
+      logConversion(conversion, isCommand).catch(console.error);
       return conversion;
     });
 
