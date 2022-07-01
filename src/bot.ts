@@ -49,9 +49,10 @@ app.use(cors());
 app.use(json());
 app.post(
   "/",
-  topggWebhook.listener((vote) => {
+  topggWebhook.listener(async (vote) => {
+    console.log(vote);
     if (vote.type === "upvote") {
-      prisma.user.update({
+      await prisma.user.update({
         where: { id: vote.user },
         data: {
           votes: {
