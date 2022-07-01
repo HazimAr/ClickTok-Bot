@@ -20,7 +20,7 @@ model Guild {
   id String @id @map("_id")
 
   settings        Settings
-  lastConvertedAt DateTime @default(now())
+  lastConvertedAt DateTime?
   createdAt       DateTime @default(now())
 
   conversions Conversion[]
@@ -30,8 +30,8 @@ model User {
   id String @id @map("_id")
 
   votes           Int      @default(0)
-  lastVotedAt     DateTime @default(now())
-  lastConvertedAt DateTime @default(now())
+  lastVotedAt     DateTime?
+  lastConvertedAt DateTime?
   createdAt       DateTime @default(now())
 
   giveawayEntries GiveawayEntries[]

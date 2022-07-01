@@ -66,6 +66,8 @@ export default async function (tiktok, user: User, guild: Guild) {
       },
       create: {
         id: user.id,
+        lastConvertedAt: null,
+        lastVotedAt: null,
       },
     })
     .then((mongoUser) => {
@@ -78,6 +80,7 @@ export default async function (tiktok, user: User, guild: Guild) {
           create: {
             id: guild.id,
             settings: {},
+            lastConvertedAt: null,
           },
         })
         .catch(async (e) => await logError(e, guild).catch(console.error));

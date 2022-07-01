@@ -12,7 +12,7 @@ export async function getOrCreateGuild(guild: Guild) {
 
   if (!mongoGuild) {
     mongoGuild = await prisma.guild.create({
-      data: { id: guild.id, settings: {} },
+      data: { id: guild.id, settings: {}, lastConvertedAt: null },
       include: {
         conversions: true,
       },
@@ -34,7 +34,7 @@ export async function getOrCreateUser(user: User) {
 
   if (!mongoUser) {
     mongoUser = await prisma.user.create({
-      data: { id: user.id },
+      data: { id: user.id, lastConvertedAt: null, lastVotedAt: null },
       include: {
         conversions: true,
         giveawayEntries: true,

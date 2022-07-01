@@ -146,7 +146,7 @@ client.once("ready", async () => {
 client.on("guildCreate", async (guild: Guild) => {
   try {
     await prisma.guild.create({
-      data: { id: guild.id, settings: {} },
+      data: { id: guild.id, settings: {}, lastConvertedAt: null },
     });
     await logGuild(guild);
   } catch (e) {
