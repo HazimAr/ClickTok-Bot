@@ -58,7 +58,6 @@ export default async function (interaction: ButtonInteraction) {
           mongoUser.giveawayEntries.length.toLocaleString(),
           true
         )
-        .addField("Votes", mongoUser.votes.toLocaleString(), true)
         .setColor("#00ff00")
         .setFooter({
           text: "ClickTok",
