@@ -58,14 +58,7 @@ export async function getIdFromText(url: string) {
 
 export default async function (tiktok, user: User, guild: Guild) {
   const mongoUser = await getOrCreateUser(user);
-  if (mongoUser.lastConvertedAt) {
-    prisma.user.update({
-      where: { id: user.id },
-      data: {
-        lastConvertedAt: new Date(Date.now()),
-      },
-    });
-  } else {
+  if (!mongoUser.lastConvertedAt) {
     user
       .send({
         embeds: [
@@ -91,6 +84,13 @@ export default async function (tiktok, user: User, guild: Guild) {
         console.error("Failed to send welcome message");
       });
   }
+
+  prisma.user.update({
+    where: { id: user.id },
+    data: {
+      lastConvertedAt: new Date(Date.now()),
+    },
+  });
 
   prisma.guild
     .upsert({
