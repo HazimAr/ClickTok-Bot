@@ -1,4 +1,4 @@
-import { Conversion, Prisma } from "@prisma/client";
+import { Conversion } from "@prisma/client";
 import {
   Guild,
   GuildChannel,
@@ -71,27 +71,27 @@ export async function logConversion(
 
         .addField(
           "Last Converted (User)",
-          `<t:${Math.floor(mongoUser.lastConvertedAt.getTime() / 1000)}:R>`,
+          `<t:${Math.floor(mongoUser.lastConvertedAt?.getTime() / 1000)}:R>`,
           true
         )
         .addField(
           "Last Converted (Guild)",
-          `<t:${Math.floor(mongoGuild.lastConvertedAt.getTime() / 1000)}:R>`,
+          `<t:${Math.floor(mongoGuild.lastConvertedAt?.getTime() / 1000)}:R>`,
           true
         )
         .addField(
           "Last Voted (User)",
-          `<t:${Math.floor(mongoUser.lastVotedAt.getTime() / 1000)}:R>`,
+          `<t:${Math.floor(mongoUser.lastVotedAt?.getTime() / 1000)}:R>`,
           true
         )
         .addField(
           "Created (User)",
-          `<t:${Math.floor(author.createdAt.getTime() / 1000)}>`,
+          `<t:${Math.floor(author.createdAt?.getTime() / 1000)}>`,
           true
         )
         .addField(
           "Created (Guild)",
-          `<t:${Math.floor(guild.createdAt.getTime() / 1000)}>`,
+          `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
           true
         )
         .addField("Tiktok", conversion.tiktok, true)
@@ -125,7 +125,7 @@ export async function logGuild(guild: Guild, joined = true) {
         .addField("Language", guild.preferredLocale, true)
         .addField(
           "Created",
-          `<t:${Math.floor(guild.createdAt.getTime() / 1000)}>`,
+          `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
           true
         )
         .setTimestamp()

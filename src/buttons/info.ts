@@ -11,7 +11,7 @@ import { logConversion } from "../utils/logger";
 export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
 
-  if (mongoUser.lastVotedAt.getTime() + 1000 * 60 * 60 * 12 < Date.now())
+  if (mongoUser.lastVotedAt?.getTime() + 1000 * 60 * 60 * 12 < Date.now())
     return await interaction.reply({
       embeds: [
         new MessageEmbed()
@@ -88,7 +88,7 @@ export default async function (interaction: ButtonInteraction) {
             name: "Created 🕒",
             value: `<t:${new Date(
               tiktok.aweme_detail.create_time
-            ).getTime()}:R>`,
+            )?.getTime()}:R>`,
             inline: true,
           },
           {

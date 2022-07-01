@@ -11,12 +11,12 @@ export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
 
   const userEntries = mongoUser.giveawayEntries.sort(
-    (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    (a, b) => a.createdAt?.getTime() - b.createdAt?.getTime()
   );
 
   if (
     userEntries.length &&
-    userEntries[userEntries.length - 1].createdAt.getTime() +
+    userEntries[userEntries.length - 1].createdAt?.getTime() +
       1000 * 60 * 60 * 12 >
       Date.now()
   ) {
@@ -41,7 +41,7 @@ export default async function (interaction: ButtonInteraction) {
     });
   }
 
-  if (mongoUser.lastVotedAt.getTime() < Date.now() - 1000 * 60 * 60 * 12) {
+  if (mongoUser.lastVotedAt?.getTime() < Date.now() - 1000 * 60 * 60 * 12) {
     return await interaction.reply({
       embeds: [
         new MessageEmbed()

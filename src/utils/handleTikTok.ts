@@ -1,8 +1,6 @@
-import { PrismaPromise } from "@prisma/client";
 import axios from "axios";
 import {
   Guild,
-  Message,
   MessageActionRow,
   MessageButton,
   MessageEmbed,
@@ -84,9 +82,7 @@ export default async function (tiktok, user: User, guild: Guild) {
           },
         })
         .catch(async (e) => await logError(e, guild).catch(console.error));
-      if (
-        mongoUser.lastConvertedAt.getTime() == mongoUser.createdAt.getTime()
-      ) {
+      if (!mongoUser.lastConvertedAt?.getTime()) {
         user
           .send({
             embeds: [
