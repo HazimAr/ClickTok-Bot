@@ -7,6 +7,7 @@ import {
   User,
 } from "discord.js";
 import { prisma } from "../bot";
+import { getOrCreateUser } from "./db";
 import { logConversion, logError } from "./logger";
 
 async function getId(url: string, regex: RegExp) {
@@ -56,61 +57,55 @@ export async function getIdFromText(url: string) {
 }
 
 export default async function (tiktok, user: User, guild: Guild) {
-  await prisma.user
-    .upsert({
+  const mongoUser = await getOrCreateUser(user);
+  if (mongoUser.lastConvertedAt) {
+    prisma.user.update({
       where: { id: user.id },
+      data: {
+        lastConvertedAt: new Date(Date.now()),
+      },
+    });
+  } else {
+    user
+      .send({
+        embeds: [
+          new MessageEmbed()
+            .setTitle("Thank you for using ClickTok!")
+            .setDescription(
+              "You have converted for the first time 🥳!\nAs a sign of our gratitude, we are hosting a nitro giveaway for the first 1000 users that sign up 🤯.\nTo get your chance at winning nitro for **FREE**, join our support server https://discord.gg/tg2QTMEc9g and follow the directions inside of the giveaway channel 🤗. Hope to see you there!"
+            )
+            .setAuthor({
+              name: "ClickTok",
+              iconURL: "https://clicktok.xyz/logo.png",
+            })
+            .setThumbnail("https://clicktok.xyz/logo.png")
+            .setColor("#00ff00")
+            .setFooter({
+              text: "ClickTok",
+              iconURL: "https://clicktok.xyz/logo.png",
+            })
+            .setTimestamp(),
+        ],
+      })
+      .catch(() => {
+        console.error("Failed to send welcome message");
+      });
+  }
+
+  prisma.guild
+    .upsert({
+      where: { id: guild.id },
       update: {
         lastConvertedAt: new Date(Date.now()),
       },
       create: {
-        id: user.id,
+        id: guild.id,
+        settings: {},
         lastConvertedAt: null,
-        lastVotedAt: null,
       },
     })
-    .then((mongoUser) => {
-      prisma.guild
-        .upsert({
-          where: { id: guild.id },
-          update: {
-            lastConvertedAt: new Date(Date.now()),
-          },
-          create: {
-            id: guild.id,
-            settings: {},
-            lastConvertedAt: null,
-          },
-        })
-        .catch(async (e) => await logError(e, guild).catch(console.error));
-      if (!mongoUser.lastConvertedAt?.getTime()) {
-        user
-          .send({
-            embeds: [
-              new MessageEmbed()
-                .setTitle("Thank you for using ClickTok!")
-                .setDescription(
-                  "You have converted for the first time 🥳!\nAs a sign of our gratitude, we are hosting a nitro giveaway for the first 1000 users that sign up 🤯.\nTo get your chance at winning nitro for **FREE**, join our support server https://discord.gg/tg2QTMEc9g and follow the directions inside of the giveaway channel 🤗. Hope to see you there!"
-                )
-                .setAuthor({
-                  name: "ClickTok",
-                  iconURL: "https://clicktok.xyz/logo.png",
-                })
-                .setThumbnail("https://clicktok.xyz/logo.png")
-                .setColor("#00ff00")
-                .setFooter({
-                  text: "ClickTok",
-                  iconURL: "https://clicktok.xyz/logo.png",
-                })
-                .setTimestamp(),
-            ],
-          })
-          .catch(() => {
-            console.error("Failed to send welcome message");
-          });
-      }
-    })
-
     .catch(async (e) => await logError(e, guild).catch(console.error));
+
   const id = tiktok.aweme_detail.aweme_id;
   const conversion = await prisma.conversion
     .create({
