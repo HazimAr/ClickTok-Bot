@@ -13,13 +13,27 @@ import {
   MessageEmbed,
   User,
 } from "discord.js";
+import { AutoPoster } from "topgg-autoposter";
 import { readdirSync } from "fs";
+import { Webhook } from "@top-gg/sdk";
+import express from "express";
 import axios from "axios";
 import getTikTokResponse, { getIdFromText } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
 import { logError, logGuild } from "./utils/logger";
+
+const app = express();
+const topggWebhook = new Webhook(process.env.TOPGG_TOKEN);
+app.post(
+  "/dblwebhook",
+  topggWebhook.listener((vote) => {
+    console.log(vote);
+  })
+);
+app.get("/", (_, res) => res.send("Hello, World!"));
+app.listen(8080);
 
 export const client = new Client({
   intents: [
@@ -28,14 +42,18 @@ export const client = new Client({
     Intents.FLAGS.GUILDS,
   ],
 });
+const ap = AutoPoster(process.env.TOPGG_TOKEN, client);
+ap.on("posted", (stats) => console.log(stats));
+
 export const jr = process.env.JR || false;
 export const prisma = new PrismaClient();
-// prisma
-//   .$connect()
-//   .then(() => {
-//     console.log("Connected to Prisma");
-//   })
-//   .catch(console.error);
+
+prisma
+  .$connect()
+  .then(() => {
+    console.log("Connected to Prisma");
+  })
+  .catch(console.error);
 
 let commands: {
   data: ApplicationCommandDataResolvable;

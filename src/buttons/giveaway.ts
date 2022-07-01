@@ -1,6 +1,5 @@
 import {
   ButtonInteraction,
-  Message,
   MessageActionRow,
   MessageButton,
   MessageEmbed,

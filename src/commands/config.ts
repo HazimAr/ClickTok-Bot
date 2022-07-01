@@ -9,8 +9,6 @@ import {
 } from "discord.js";
 import { getOrCreateGuild } from "../utils/db";
 
-
-
 export default {
   data: new SlashCommandBuilder()
     .setName("config")
