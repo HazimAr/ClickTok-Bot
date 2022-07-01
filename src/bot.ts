@@ -67,16 +67,20 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
+  // await (
+  //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
+  // ).send("fr")
+
   const giveawayMessage = await (
     client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
-  ).messages.fetch("992304881643831297");
+  ).messages.fetch(jr ? "992339040403734528" : "992304881643831297");
 
   giveawayMessage.edit({
     embeds: [
       new MessageEmbed()
-        .setTitle("🥳 **Free Nitro Classic** 🥳")
+        .setTitle("🥳 **Free Nitro** 🥳")
         .setDescription(
-          "To enter into the giveaway click the button below, you can enter the giveaway every time you vote resulting in higher chance of receiving the reward. You are able to vote every 12 hours. [Vote Here](https://top.gg/bot/990688037853872159/vote)"
+          "To enter into the giveaway click the button below, you can enter the giveaway every time you vote resulting in a higher chance of receiving the reward. You are able to vote every 12 hours. [Vote Here](https://top.gg/bot/990688037853872159/vote)"
         )
         .setColor("#00ff00"),
     ],
