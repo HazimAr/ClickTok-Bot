@@ -185,7 +185,7 @@ async function handleMessage(message: Message) {
         .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
         .then(async (response) => {
           const messageResponse = await getTikTokResponse(
-            false,
+            "Message",
             (response as any).data,
             message.author,
             message.guild

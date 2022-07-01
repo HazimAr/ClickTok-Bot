@@ -108,12 +108,15 @@ export default async function (interaction: ButtonInteraction) {
     ephemeral: true,
   });
 
-  await logConversion({
-    user: interaction.user,
-    guild: interaction.guild,
-    tiktok:
-      interaction.message.content.split("/")[
-        interaction.message.content.split("/").length - 1
-      ],
-  }).catch(console.error);
+  await logConversion(
+    {
+      user: interaction.user,
+      guild: interaction.guild,
+      tiktok:
+        interaction.message.content.split("/")[
+          interaction.message.content.split("/").length - 1
+        ],
+    },
+    "Info"
+  ).catch(console.error);
 }

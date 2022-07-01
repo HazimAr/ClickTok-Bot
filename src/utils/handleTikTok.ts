@@ -56,7 +56,7 @@ export async function getIdFromText(url: string) {
   return null;
 }
 
-export default async function (isCommand, tiktok, user: User, guild: Guild) {
+export default async function (type: string, tiktok, user: User, guild: Guild) {
   const mongoUser = await getOrCreateUser(user);
   if (!mongoUser.lastConvertedAt) {
     user
@@ -112,7 +112,7 @@ export default async function (isCommand, tiktok, user: User, guild: Guild) {
       user: user.id,
     },
   });
-  logConversion(conversion, isCommand).catch(console.error);
+  logConversion(conversion, type).catch(console.error);
 
   if (tiktok.aweme_detail?.image_post_info) {
     return {
