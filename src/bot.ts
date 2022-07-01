@@ -23,7 +23,7 @@ import getTikTokResponse, { getIdFromText } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
-import { logError, logGuild } from "./utils/logger";
+import { logError, logGuild, logVote } from "./utils/logger";
 
 export const client = new Client({
   intents: [
@@ -52,15 +52,18 @@ app.post(
   topggWebhook.listener(async (vote) => {
     console.log(vote);
     if (vote.type === "upvote") {
-      await prisma.user.update({
-        where: { id: vote.user },
-        data: {
-          votes: {
-            increment: 1,
+      await Promise.all([
+        logVote(vote),
+        prisma.user.update({
+          where: { id: vote.user },
+          data: {
+            votes: {
+              increment: 1,
+            },
+            lastVotedAt: new Date(Date.now()),
           },
-          lastVotedAt: new Date(Date.now()),
-        },
-      });
+        }),
+      ]);
     }
   })
 );

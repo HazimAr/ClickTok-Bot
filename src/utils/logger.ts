@@ -1,4 +1,5 @@
 import { Conversion } from "@prisma/client";
+import { WebhookPayload } from "@top-gg/sdk";
 import {
   Guild,
   GuildChannel,
@@ -25,6 +26,10 @@ const errorWebhook = new WebhookClient({
 
 const infoWebhook = new WebhookClient({
   url: "https://discord.com/api/webhooks/991534525811265596/9YLJx5sAnE0-wplz2TF3kWXjBpzC6OD5y_W_for_E0FuiRpYNgKGjaV2pG40mVDvHMjo",
+});
+
+const voteWebhook = new WebhookClient({
+  url: "https://discord.com/api/webhooks/992451919559790702/IIKQaZKbN1qnT_HJM8uqtbZmOTKFcVRz-3llFJJpN4rVVGtIENIZ8a15mxu4Lm1nqKxc",
 });
 
 const username = "ClickTok" + (jr ? " Jr." : " Sr.");
@@ -189,5 +194,20 @@ export async function logError(
     username,
     avatarURL,
     embeds: [errorEmbed],
+  });
+}
+
+export async function logVote(vote: WebhookPayload) {
+  const user = await client.users.fetch(vote.user);
+  voteWebhook.send({
+    username,
+    avatarURL,
+    embeds: [
+      new MessageEmbed()
+        .setTitle("New vote")
+        .setDescription(`${user.username}#${user.discriminator}-${user.id}`)
+        .setColor("#00ff00")
+        .setTimestamp(),
+    ],
   });
 }
