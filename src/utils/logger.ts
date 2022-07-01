@@ -27,7 +27,8 @@ const infoWebhook = new WebhookClient({
   url: "https://discord.com/api/webhooks/991534525811265596/9YLJx5sAnE0-wplz2TF3kWXjBpzC6OD5y_W_for_E0FuiRpYNgKGjaV2pG40mVDvHMjo",
 });
 
-const username = "ClickTok" + (jr ? " Jr." : " Sr.")
+const username = "ClickTok" + (jr ? " Jr." : " Sr.");
+const avatarURL = "https://clicktok.xyz/logo.png";
 
 export async function logConversion(
   conversion: Conversion | { user: User; guild: Guild; tiktok: string }
@@ -47,7 +48,7 @@ export async function logConversion(
   // @ts-ignore
   (conversion.id ? conversionWebhook : infoWebhook).send({
     username,
-    avatarURL: "https://clicktok.xyz/logo.png",
+    avatarURL,
     embeds: [
       new MessageEmbed()
         .setAuthor({
@@ -106,7 +107,7 @@ export async function logConversion(
 export async function logGuild(guild: Guild, joined = true) {
   guildWebhook.send({
     username,
-    avatarURL: "https://clicktok.xyz/logo.png",
+    avatarURL,
     embeds: [
       new MessageEmbed()
         .setTitle(guild.name)
@@ -186,7 +187,7 @@ export async function logError(
   }
   errorWebhook.send({
     username,
-    avatarURL: "https://clicktok.xyz/logo.png",
+    avatarURL,
     embeds: [errorEmbed],
   });
 }
