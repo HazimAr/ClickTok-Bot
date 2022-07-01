@@ -28,6 +28,7 @@ export async function getOrCreateUser(user: User) {
     where: { id: user.id },
     include: {
       conversions: true,
+      giveawayEntries: true,
     },
   });
 
@@ -36,6 +37,7 @@ export async function getOrCreateUser(user: User) {
       data: { id: user.id },
       include: {
         conversions: true,
+        giveawayEntries: true,
       },
     });
   }

@@ -5,8 +5,12 @@ import {
   Client,
   CommandInteraction,
   Guild,
+  GuildTextBasedChannel,
   Intents,
   Message,
+  MessageActionRow,
+  MessageButton,
+  MessageEmbed,
 } from "discord.js";
 import { readdirSync } from "fs";
 import axios from "axios";
@@ -23,14 +27,14 @@ export const client = new Client({
     Intents.FLAGS.GUILDS,
   ],
 });
-export const jr = false;
+export const jr = process.env.JR || false;
 export const prisma = new PrismaClient();
-prisma
-  .$connect()
-  .then(() => {
-    console.log("Connected to Prisma");
-  })
-  .catch(console.error);
+// prisma
+//   .$connect()
+//   .then(() => {
+//     console.log("Connected to Prisma");
+//   })
+//   .catch(console.error);
 
 let commands: {
   data: ApplicationCommandDataResolvable;
@@ -63,6 +67,34 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
+  const giveawayMessage = await (
+    client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
+  ).messages.fetch("992304881643831297");
+
+  giveawayMessage.edit({
+    embeds: [
+      new MessageEmbed()
+        .setTitle("🥳 **Free Nitro Classic** 🥳")
+        .setDescription(
+          "To enter into the giveaway click the button below, you can enter the giveaway every time you vote resulting in higher chance of receiving the reward. You are able to vote every 12 hours. [Vote Here](https://top.gg/bot/990688037853872159/vote)"
+        )
+        .setColor("#00ff00"),
+    ],
+    components: [
+      new MessageActionRow().addComponents(
+        new MessageButton()
+          .setCustomId("giveaway")
+          .setLabel("Enter Giveaway")
+          .setEmoji("🎉")
+          .setStyle("SUCCESS"),
+        new MessageButton()
+          .setURL("https://top.gg/bot/990688037853872159/vote")
+          .setLabel("Vote Here")
+          .setStyle("LINK")
+          .setEmoji("🎁")
+      ),
+    ],
+  });
 });
 
 client.on("guildCreate", async (guild: Guild) => {

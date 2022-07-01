@@ -17,33 +17,46 @@ type Settings {
 }
 
 model Guild {
-  id          String       @id @map("_id") @db.ObjectId
-  conversions Conversion[]
+  id String @id @map("_id")
 
   settings        Settings
   lastConvertedAt DateTime @default(now())
   createdAt       DateTime @default(now())
+
+  conversions Conversion[]
 }
 
 model User {
-  id          String       @id @map("_id") @db.ObjectId
-  conversions Conversion[]
+  id String @id @map("_id")
 
   votes           Int      @default(0)
   lastVotedAt     DateTime @default(now())
   lastConvertedAt DateTime @default(now())
   createdAt       DateTime @default(now())
+
+  giveawayEntries GiveawayEntries[]
+  conversions     Conversion[]
 }
 
 model Conversion {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   tiktok String
 
-  User  User  @relation(fields: [user], references: [id])
-  Guild Guild @relation(fields: [guild], references: [id])
-
   user  String
   guild String
 
   createdAt DateTime @default(now())
+
+  User  User  @relation(fields: [user], references: [id])
+  Guild Guild @relation(fields: [guild], references: [id])
+}
+
+model GiveawayEntries {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  user      String
+  createdAt DateTime @default(now())
+
+  userRefrence User @relation(fields: [user], references: [id])
+
 }

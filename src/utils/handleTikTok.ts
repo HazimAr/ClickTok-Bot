@@ -58,7 +58,7 @@ export async function getIdFromText(url: string) {
 }
 
 export default async function (tiktok, user: User, guild: Guild) {
-  prisma.user
+  await prisma.user
     .upsert({
       where: { id: user.id },
       update: {
@@ -84,26 +84,30 @@ export default async function (tiktok, user: User, guild: Guild) {
       if (
         mongoUser.lastConvertedAt.getTime() == mongoUser.createdAt.getTime()
       ) {
-        user.send({
-          embeds: [
-            new MessageEmbed()
-              .setTitle("Thank you for using ClickTok!")
-              .setDescription(
-                "You have converted for the first time 🥳!\nAs a sign of our gratitude, we are hosting a nitro giveaway for the first 1000 users that sign up 🤯.\nTo get your chance at winning nitro for **FREE**, join our support server https://discord.gg/tg2QTMEc9g and follow the directions inside of the giveaway channel 🤗. Hope to see you there!"
-              )
-              .setAuthor({
-                name: "ClickTok",
-                iconURL: "https://clicktok.xyz/logo.png",
-              })
-              .setThumbnail("https://clicktok.xyz/logo.png")
-              .setColor("#00ff00")
-              .setFooter({
-                text: "ClickTok",
-                iconURL: "https://clicktok.xyz/logo.png",
-              })
-              .setTimestamp(),
-          ],
-        });
+        user
+          .send({
+            embeds: [
+              new MessageEmbed()
+                .setTitle("Thank you for using ClickTok!")
+                .setDescription(
+                  "You have converted for the first time 🥳!\nAs a sign of our gratitude, we are hosting a nitro giveaway for the first 1000 users that sign up 🤯.\nTo get your chance at winning nitro for **FREE**, join our support server https://discord.gg/tg2QTMEc9g and follow the directions inside of the giveaway channel 🤗. Hope to see you there!"
+                )
+                .setAuthor({
+                  name: "ClickTok",
+                  iconURL: "https://clicktok.xyz/logo.png",
+                })
+                .setThumbnail("https://clicktok.xyz/logo.png")
+                .setColor("#00ff00")
+                .setFooter({
+                  text: "ClickTok",
+                  iconURL: "https://clicktok.xyz/logo.png",
+                })
+                .setTimestamp(),
+            ],
+          })
+          .catch(() => {
+            console.error("Failed to send welcome message");
+          });
       }
     })
 
