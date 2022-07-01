@@ -57,6 +57,5 @@ model GiveawayEntries {
   user      String
   createdAt DateTime @default(now())
 
-  userRefrence User @relation(fields: [user], references: [id])
-
+  User User @relation(fields: [user], references: [id])
 }
