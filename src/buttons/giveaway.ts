@@ -10,6 +10,35 @@ import { getOrCreateUser } from "../utils/db";
 export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
 
+  const userEntries = mongoUser.giveawayEntries.sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+  );
+
+  if (
+    userEntries.length &&
+    userEntries[0].createdAt.getTime() + 1000 * 60 * 60 * 12 < Date.now()
+  ) {
+    return await interaction.reply({
+      embeds: [
+        new MessageEmbed()
+          .setTitle(`Hey, ${interaction.user.username}`)
+          .setDescription(
+            "Woah there, it looks like you have already entered in the last 12 hours. Come back in 12 hours to enter again."
+          )
+          .setColor("#ff0000"),
+      ],
+      components: [
+        new MessageActionRow().addComponents(
+          new MessageButton()
+            .setLabel("Vote")
+            .setURL("https://top.gg/bot/990688037853872159/vote")
+            .setStyle("LINK")
+        ),
+      ],
+      ephemeral: true,
+    });
+  }
+
   if (mongoUser.lastVotedAt.getTime() < Date.now() - 1000 * 60 * 60 * 12) {
     return await interaction.reply({
       embeds: [
