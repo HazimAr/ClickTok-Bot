@@ -11,7 +11,7 @@ import { logConversion } from "../utils/logger";
 export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
 
-  if (!(mongoUser.lastVotedAt.getTime() > Date.now() - 86400000))
+  if (mongoUser.lastVotedAt.getTime() + 1000 * 60 * 60 * 12 < Date.now())
     return await interaction.reply({
       embeds: [
         new MessageEmbed()
