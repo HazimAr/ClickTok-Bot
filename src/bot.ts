@@ -11,12 +11,13 @@ import {
   MessageActionRow,
   MessageButton,
   MessageEmbed,
+  User,
 } from "discord.js";
 import { readdirSync } from "fs";
 import axios from "axios";
 import getTikTokResponse, { getIdFromText } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
-import { getOrCreateGuild } from "./utils/db";
+import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
 import { logError, logGuild } from "./utils/logger";
 
@@ -70,6 +71,10 @@ client.once("ready", async () => {
   // await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
   // ).send("fr")
+
+  for (const user of client.users.cache.values()) {
+    await getOrCreateUser(user);
+  }
 
   const giveawayMessage = await (
     client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
@@ -162,8 +167,7 @@ async function handleMessage(message: Message) {
           if (guild.settings.deleteOrigin) {
             if (message.deletable) await message.delete();
           } else if (guild.settings.suppressEmbed) {
-            if (message.embeds.length)
-              await message.suppressEmbeds(true)
+            if (message.embeds.length) await message.suppressEmbeds(true);
           }
         });
     }
