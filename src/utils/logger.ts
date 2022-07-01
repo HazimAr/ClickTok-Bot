@@ -211,9 +211,11 @@ export async function logVote(vote: WebhookPayload) {
         })
         .setTitle("New vote")
         .setDescription(`${user.username}#${user.discriminator}-${user.id}`)
+        .setThumbnail(user.avatarURL())
         .setColor("#00ff00")
         .setFooter({
           text: user.id,
+          iconURL: user.avatarURL(),
         })
         .setTimestamp(),
     ],
