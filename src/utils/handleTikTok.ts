@@ -56,16 +56,9 @@ export async function getIdFromText(url: string) {
   return null;
 }
 
-export default async function (tiktok, user: User, guild: Guild) {
+export default async function (type: string, tiktok, user: User, guild: Guild) {
   const mongoUser = await getOrCreateUser(user);
-  if (mongoUser.lastConvertedAt) {
-    prisma.user.update({
-      where: { id: user.id },
-      data: {
-        lastConvertedAt: new Date(Date.now()),
-      },
-    });
-  } else {
+  if (!mongoUser.lastConvertedAt) {
     user
       .send({
         embeds: [
@@ -91,34 +84,35 @@ export default async function (tiktok, user: User, guild: Guild) {
         console.error("Failed to send welcome message");
       });
   }
+  const lastConvertedAt = new Date(Date.now());
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      lastConvertedAt,
+    },
+  });
 
-  prisma.guild
-    .upsert({
-      where: { id: guild.id },
-      update: {
-        lastConvertedAt: new Date(Date.now()),
-      },
-      create: {
-        id: guild.id,
-        settings: {},
-        lastConvertedAt: null,
-      },
-    })
-    .catch(async (e) => await logError(e, guild).catch(console.error));
+  await prisma.guild.upsert({
+    where: { id: guild.id },
+    update: {
+      lastConvertedAt,
+    },
+    create: {
+      id: guild.id,
+      settings: {},
+      lastConvertedAt: null,
+    },
+  });
 
   const id = tiktok.aweme_detail.aweme_id;
-  const conversion = await prisma.conversion
-    .create({
-      data: {
-        tiktok: id,
-        guild: guild.id,
-        user: user.id,
-      },
-    })
-    .then(async (conversion) => {
-      logConversion(conversion).catch(console.error);
-      return conversion;
-    });
+  const conversion = await prisma.conversion.create({
+    data: {
+      tiktok: id,
+      guild: guild.id,
+      user: user.id,
+    },
+  });
+  logConversion(conversion, type).catch(console.error);
 
   if (tiktok.aweme_detail?.image_post_info) {
     return {

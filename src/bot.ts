@@ -54,13 +54,18 @@ app.post(
     if (vote.type === "upvote") {
       await Promise.all([
         logVote(vote),
-        prisma.user.update({
+        prisma.user.upsert({
           where: { id: vote.user },
-          data: {
+          update: {
             votes: {
               increment: 1,
             },
             lastVotedAt: new Date(Date.now()),
+          },
+          create: {
+            id: vote.user,
+            lastConvertedAt: null,
+            lastVotedAt: null,
           },
         }),
       ]);
@@ -111,10 +116,6 @@ client.once("ready", async () => {
   // await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
   // ).send("fr")
-
-  for (const user of client.users.cache.values()) {
-    await getOrCreateUser(user);
-  }
 
   const giveawayMessage = await (
     client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
@@ -189,6 +190,7 @@ async function handleMessage(message: Message) {
         .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
         .then(async (response) => {
           const messageResponse = await getTikTokResponse(
+            "Message",
             (response as any).data,
             message.author,
             message.guild
@@ -218,9 +220,6 @@ async function handleMessage(message: Message) {
 
 client.on("messageCreate", handleMessage);
 client.on("messageUpdate", async (oldMessage, newMessage) => {
-  // oldMessage.content is == to newMessage.content return fr
-  (await getIdFromText(oldMessage.content)) ==
-    (await getIdFromText(newMessage.content));
   if (
     (await getIdFromText(oldMessage.content)) ==
     (await getIdFromText(newMessage.content))

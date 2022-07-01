@@ -32,6 +32,7 @@ export default {
       .then(async (response) => {
         await interaction.reply(
           await getTikTokResponse(
+            "Command",
             (response as any).data,
             interaction.user,
             interaction.guild

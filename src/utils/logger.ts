@@ -36,7 +36,8 @@ const username = "ClickTok" + (jr ? " Jr." : " Sr.");
 const avatarURL = "https://clicktok.xyz/logo.png";
 
 export async function logConversion(
-  conversion: Conversion | { user: User; guild: Guild; tiktok: string }
+  conversion: Conversion | { user: User; guild: Guild; tiktok: string },
+  type: string
 ) {
   const author =
     conversion.user instanceof User
@@ -99,7 +100,7 @@ export async function logConversion(
           `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
           true
         )
-        .addField("Tiktok", conversion.tiktok, true)
+        .addField("Type", type, true)
         .setFooter({
           text: `${guild.name}-${guild.id}`,
           iconURL: guild.iconURL(),
@@ -204,9 +205,18 @@ export async function logVote(vote: WebhookPayload) {
     avatarURL,
     embeds: [
       new MessageEmbed()
+        .setAuthor({
+          name: user.username + "#" + user.discriminator,
+          iconURL: user.avatarURL(),
+        })
         .setTitle("New vote")
         .setDescription(`${user.username}#${user.discriminator}-${user.id}`)
+        .setThumbnail(user.avatarURL())
         .setColor("#00ff00")
+        .setFooter({
+          text: user.id,
+          iconURL: user.avatarURL(),
+        })
         .setTimestamp(),
     ],
   });
