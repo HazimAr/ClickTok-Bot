@@ -205,6 +205,10 @@ export async function logVote(vote: WebhookPayload) {
     avatarURL,
     embeds: [
       new MessageEmbed()
+        .setAuthor({
+          name: user.username,
+          iconURL: user.avatarURL(),
+        })
         .setTitle("New vote")
         .setDescription(`${user.username}#${user.discriminator}-${user.id}`)
         .setColor("#00ff00")

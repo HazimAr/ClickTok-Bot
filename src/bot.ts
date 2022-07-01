@@ -54,13 +54,18 @@ app.post(
     if (vote.type === "upvote") {
       await Promise.all([
         logVote(vote),
-        prisma.user.update({
+        prisma.user.upsert({
           where: { id: vote.user },
-          data: {
+          update: {
             votes: {
               increment: 1,
             },
             lastVotedAt: new Date(Date.now()),
+          },
+          create: {
+            id: vote.user,
+            lastConvertedAt: null,
+            lastVotedAt: null,
           },
         }),
       ]);
