@@ -84,26 +84,25 @@ export default async function (tiktok, user: User, guild: Guild) {
         console.error("Failed to send welcome message");
       });
   }
-
+  const lastConvertedAt = new Date(Date.now());
   await prisma.user.update({
     where: { id: user.id },
     data: {
-      lastConvertedAt: new Date(Date.now()),
+      lastConvertedAt,
     },
   });
 
-  await prisma.guild
-    .upsert({
-      where: { id: guild.id },
-      update: {
-        lastConvertedAt: new Date(Date.now()),
-      },
-      create: {
-        id: guild.id,
-        settings: {},
-        lastConvertedAt: null,
-      },
-    })
+  prisma.guild.upsert({
+    where: { id: guild.id },
+    update: {
+      lastConvertedAt,
+    },
+    create: {
+      id: guild.id,
+      settings: {},
+      lastConvertedAt: null,
+    },
+  });
 
   const id = tiktok.aweme_detail.aweme_id;
   const conversion = await prisma.conversion
