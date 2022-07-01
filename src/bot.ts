@@ -155,7 +155,7 @@ async function handleMessage(message: Message) {
             messageResponse.content = `${message.author} ${messageResponse.content}`;
             await message.channel.send(messageResponse).catch((e) => {
               // channel doesn't exist anymore (prolly got kicked as message was sent lol)
-              logError(e, message);
+              logError(e, message).catch(console.error);
             });
           }
 
@@ -163,7 +163,7 @@ async function handleMessage(message: Message) {
             if (message.deletable) await message.delete();
           } else if (guild.settings.suppressEmbed) {
             if (message.embeds.length)
-              await message.suppressEmbeds(true).then(console.error);
+              await message.suppressEmbeds(true)
           }
         });
     }
