@@ -8,7 +8,7 @@ export default {
 
   run: async function run(interaction: CommandInteraction) {
     await interaction.reply({
-      content: "https://discordbots.org/bot/564990989842791424/vote",
+      content: "https://discordbots.org/bot/990688037853872159/vote",
       ephemeral: true,
     });
   },
