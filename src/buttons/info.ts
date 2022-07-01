@@ -36,6 +36,7 @@ export default async function (interaction: ButtonInteraction) {
             .setEmoji("🖥️")
         ),
       ],
+      ephemeral: true,
     });
   const { data: tiktok } = await axios.get(
     `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${
