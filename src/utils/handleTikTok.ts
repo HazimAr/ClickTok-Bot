@@ -151,9 +151,9 @@ export default async function (tiktok, user: User, guild: Guild) {
           .setStyle("PRIMARY")
           .setEmoji("🖥️"),
         new MessageButton()
+          .setURL(`https://clicktok.xyz/v/${id}`)
           .setLabel("Download")
           .setStyle("LINK")
-          .setURL(`https://clicktok.xyz/v/${id}`)
           .setEmoji("💾"),
         new MessageButton()
           .setCustomId("delete")
