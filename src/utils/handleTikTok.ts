@@ -85,14 +85,14 @@ export default async function (tiktok, user: User, guild: Guild) {
       });
   }
 
-  prisma.user.update({
+  await prisma.user.update({
     where: { id: user.id },
     data: {
       lastConvertedAt: new Date(Date.now()),
     },
   });
 
-  prisma.guild
+  await prisma.guild
     .upsert({
       where: { id: guild.id },
       update: {
@@ -104,7 +104,6 @@ export default async function (tiktok, user: User, guild: Guild) {
         lastConvertedAt: null,
       },
     })
-    .catch(async (e) => await logError(e, guild).catch(console.error));
 
   const id = tiktok.aweme_detail.aweme_id;
   const conversion = await prisma.conversion
