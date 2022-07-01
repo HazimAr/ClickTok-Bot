@@ -92,7 +92,7 @@ export default async function (isCommand, tiktok, user: User, guild: Guild) {
     },
   });
 
-  prisma.guild.upsert({
+  await prisma.guild.upsert({
     where: { id: guild.id },
     update: {
       lastConvertedAt,
@@ -105,18 +105,14 @@ export default async function (isCommand, tiktok, user: User, guild: Guild) {
   });
 
   const id = tiktok.aweme_detail.aweme_id;
-  const conversion = await prisma.conversion
-    .create({
-      data: {
-        tiktok: id,
-        guild: guild.id,
-        user: user.id,
-      },
-    })
-    .then(async (conversion) => {
-      logConversion(conversion, isCommand).catch(console.error);
-      return conversion;
-    });
+  const conversion = await prisma.conversion.create({
+    data: {
+      tiktok: id,
+      guild: guild.id,
+      user: user.id,
+    },
+  });
+  logConversion(conversion, isCommand).catch(console.error);
 
   if (tiktok.aweme_detail?.image_post_info) {
     return {
