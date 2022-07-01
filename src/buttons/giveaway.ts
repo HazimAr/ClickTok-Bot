@@ -11,12 +11,14 @@ export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
 
   const userEntries = mongoUser.giveawayEntries.sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
   );
 
   if (
     userEntries.length &&
-    userEntries[0].createdAt.getTime() + 1000 * 60 * 60 * 12 < Date.now()
+    userEntries[userEntries.length - 1].createdAt.getTime() +
+      1000 * 60 * 60 * 12 >
+      Date.now()
   ) {
     return await interaction.reply({
       embeds: [
