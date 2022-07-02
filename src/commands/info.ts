@@ -33,7 +33,7 @@ export default {
                     conversion.createdAt.getTime() >=
                     Date.now() - 1000 * 60 * 60 * 24
                 )
-                .toLocaleString(),
+                .length.toLocaleString(),
               inline: true,
             },
             {
