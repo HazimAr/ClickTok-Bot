@@ -38,8 +38,9 @@ export default {
             },
             {
               name: "Servers ⚙️",
-              value:
-                interaction.client.guilds.cache.values.length.toLocaleString(),
+              value: (
+                await interaction.client.guilds.fetch()
+              ).values.length.toLocaleString(),
               inline: true,
             },
             {
