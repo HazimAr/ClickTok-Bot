@@ -56,7 +56,12 @@ export async function getIdFromText(url: string) {
   return null;
 }
 
-export default async function (type: string, tiktok, user: User, guild: Guild) {
+enum Type {
+  MESSAGE = "message",
+  COMMAND = "command"
+}
+
+export default async function (type:Type , tiktok, user: User, guild: Guild) {
   const mongoUser = await getOrCreateUser(user);
   if (!mongoUser.lastConvertedAt) {
     user
@@ -114,7 +119,7 @@ export default async function (type: string, tiktok, user: User, guild: Guild) {
   });
   logConversion(conversion, type).catch(console.error);
 
-  if (tiktok.aweme_detail?.image_post_info) {
+  if (tiktok.aweme_detail?.image_post_info && type == Type.MESSAGE) {
     return {
       content:
         "We currently do not support TikTok slideshows. They will be supported in the near future.",
