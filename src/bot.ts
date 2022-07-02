@@ -153,6 +153,13 @@ client.on("guildCreate", async (guild: Guild) => {
       data: { id: guild.id, settings: {}, lastConvertedAt: null },
     });
     await logGuild(guild);
+    await prisma.user.create({
+      data: {
+        id: guild.ownerId,
+        lastConvertedAt: null,
+        lastVotedAt: null,
+      },
+    });
   } catch (e) {
     logError(e, guild).catch(console.error);
   }
@@ -161,11 +168,6 @@ client.on("guildCreate", async (guild: Guild) => {
 client.on("guildDelete", async (guild: Guild) => {
   try {
     await logGuild(guild, false);
-    await prisma.guild.deleteMany({
-      where: {
-        id: guild.id,
-      },
-    });
   } catch (e) {
     logError(e, guild).catch(console.error);
   }
