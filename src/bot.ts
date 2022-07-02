@@ -112,8 +112,9 @@ client.once("ready", async () => {
           run: command.run,
         };
       })
-      .filter((value) => value != undefined)
+      
   );
+  commands = commands.filter((value) => value != undefined);
 
   client.application.commands.set(commands.map((command) => command.data));
   // await (
