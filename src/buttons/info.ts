@@ -117,6 +117,7 @@ export default async function (interaction: ButtonInteraction) {
           interaction.message.content.split("/").length - 1
         ],
     },
-    "Info"
+    "Info",
+    tiktok.aweme_detail.video.cover.url_list[0]
   ).catch(console.error);
 }
