@@ -163,10 +163,9 @@ client.on("guildCreate", async (guild: Guild) => {
           conversions: true,
         },
       });
-      logGuild(guild);
     }
-    await logGuild(guild);
-    await prisma.user.findFirst({
+    logGuild(guild);
+    let mongoUser = await prisma.user.findFirst({
       where: { id: guild.ownerId },
     });
 
