@@ -149,17 +149,9 @@ client.once("ready", async () => {
 
 client.on("guildCreate", async (guild: Guild) => {
   try {
-    await prisma.guild.create({
-      data: { id: guild.id, settings: {}, lastConvertedAt: null },
-    });
+    await getOrCreateGuild(guild);
     await logGuild(guild);
-    await prisma.user.create({
-      data: {
-        id: guild.ownerId,
-        lastConvertedAt: null,
-        lastVotedAt: null,
-      },
-    });
+    await getOrCreateUser({ id: guild.ownerId } as User);
   } catch (e) {
     logError(e, guild).catch(console.error);
   }
