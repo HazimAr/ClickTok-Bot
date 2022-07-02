@@ -62,6 +62,31 @@ export enum Type {
 }
 
 export default async function (type: Type, tiktok, user: User, guild: Guild) {
+  console.log(tiktok.aweme_detail);
+  if (tiktok.aweme_detail?.image_post_info) {
+    if (type == Type.COMMAND)
+      return {
+        content:
+          "We currently do not support TikTok slideshows. They will be supported in the near future.",
+        // components: [
+        //   new MessageActionRow().addComponents(
+        //     new MessageButton()
+        //     .setCustomId("info")
+        //     .setLabel("Info")
+        //     .setStyle("PRIMARY")
+        //     .setEmoji("🖥️"),
+        //     new MessageButton()
+        //     .setCustomId("delete")
+        //     .setLabel("Delete")
+        //     .setStyle("DANGER")
+        //     .setEmoji("🗑️")
+        //   )
+        // ]
+        ephemeral: true,
+      };
+    return;
+  }
+
   const mongoUser = await getOrCreateUser(user);
   if (!mongoUser.lastConvertedAt) {
     user
@@ -118,29 +143,6 @@ export default async function (type: Type, tiktok, user: User, guild: Guild) {
     },
   });
   logConversion(conversion, type).catch(console.error);
-
-  if (tiktok.aweme_detail?.image_post_info) {
-    if (type == Type.COMMAND)
-      return {
-        content:
-          "We currently do not support TikTok slideshows. They will be supported in the near future.",
-        // components: [
-        //   new MessageActionRow().addComponents(
-        //     new MessageButton()
-        //     .setCustomId("info")
-        //     .setLabel("Info")
-        //     .setStyle("PRIMARY")
-        //     .setEmoji("🖥️"),
-        //     new MessageButton()
-        //     .setCustomId("delete")
-        //     .setLabel("Delete")
-        //     .setStyle("DANGER")
-        //     .setEmoji("🗑️")
-        //   )
-        // ]
-      };
-    return;
-  }
 
   return {
     content: `https://clicktok.xyz/api/v/${id}`,
