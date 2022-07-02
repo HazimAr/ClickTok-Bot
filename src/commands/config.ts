@@ -81,9 +81,13 @@ export default {
       embeds: [
         new MessageEmbed()
           .setTitle("Current Settings!")
-          .addField("auto_embed", settings.autoEmbed ? "✅": "❌", true)
-          .addField("delete_origin", settings.deleteOrigin ? "✅": "❌", true)
-          .addField("suppress_embed", settings.suppressEmbed ? "✅": "❌", true),
+          .addField("auto_embed", settings.autoEmbed ? "✅" : "❌", true)
+          .addField("delete_origin", settings.deleteOrigin ? "✅" : "❌", true)
+          .addField(
+            "suppress_embed",
+            settings.suppressEmbed ? "✅" : "❌",
+            true
+          ),
       ],
       ephemeral: true,
     });
