@@ -36,6 +36,15 @@ export default {
               inline: true,
             },
             {
+              name: "Converted This Server 🏎️",
+              value: conversions
+                .filter(
+                  (conversion) => conversion.guild == interaction.guild.id
+                )
+                .length.toLocaleString(),
+              inline: true,
+            },
+            {
               name: "Servers ⚙️",
               value: interaction.client.guilds.cache.size.toLocaleString(),
               inline: true,
