@@ -139,17 +139,19 @@ export async function logGuild(guild: Guild, joined = true) {
           `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
           true
         )
+        .addField("Guild ID", guild.id, true)
         .addField(
           "Owner",
           `${guildOwner.user.username}#${guildOwner.user.discriminator}`,
           true
         )
         .addField("Owner ID", guildOwner.user.id, true)
+
         .setTimestamp()
         .setColor(joined ? "#00ff00" : "#ff0000")
         .setFooter({
           iconURL: guild.iconURL(),
-          text: `${guild.name}-${guild.id}`,
+          text: `${guild.name}`,
         }),
     ],
   });
