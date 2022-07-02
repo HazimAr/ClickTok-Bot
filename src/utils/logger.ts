@@ -111,13 +111,18 @@ export async function logConversion(
 }
 
 export async function logGuild(guild: Guild, joined = true) {
+  const guildOwner = await guild.fetchOwner();
   guildWebhook.send({
     username,
     avatarURL,
     embeds: [
       new MessageEmbed()
+        .setAuthor({
+          name: `${guildOwner.user.username}#${guildOwner.user.discriminator}-${guildOwner.user.id}`,
+          iconURL: guildOwner.user.avatarURL(),
+        })
         .setTitle(guild.name)
-        .setDescription(guild.id)
+
         .setThumbnail(guild.iconURL())
         .addField("Members", guild.memberCount.toLocaleString(), true)
         .addField(
@@ -134,8 +139,18 @@ export async function logGuild(guild: Guild, joined = true) {
           `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
           true
         )
+        .addField(
+          "Owner",
+          `${guildOwner.user.username}#${guildOwner.user.discriminator}`,
+          true
+        )
+        .addField("Owner ID", guildOwner.user.id, true)
         .setTimestamp()
-        .setColor(joined ? "#00ff00" : "#ff0000"),
+        .setColor(joined ? "#00ff00" : "#ff0000")
+        .setFooter({
+          iconURL: guild.iconURL(),
+          text: `${guild.name}-${guild.id}`,
+        }),
     ],
   });
 }
