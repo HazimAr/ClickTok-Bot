@@ -37,7 +37,8 @@ const avatarURL = "https://clicktok.xyz/logo.png";
 
 export async function logConversion(
   conversion: Conversion | { user: User; guild: Guild; tiktok: string },
-  type: string
+  type: string,
+  thumbnail: string
 ) {
   const author =
     conversion.user instanceof User
@@ -62,7 +63,7 @@ export async function logConversion(
           iconURL: author.avatarURL(),
         })
         .setDescription(`https://clicktok.xyz/v/${conversion.tiktok}`)
-        .setThumbnail(guild.iconURL())
+        .setThumbnail(thumbnail)
         .addField(
           "Conversions (User)",
           mongoUser.conversions.length.toLocaleString(),
@@ -172,9 +173,7 @@ export async function logError(
 ) {
   const errorEmbed = new MessageEmbed()
     .setTitle("New error stupid")
-    .setDescription(
-      `${error.message}\n${error.stack}\n${args.join(", ")}`
-    )
+    .setDescription(`${error.message}\n${error.stack}\n${args.join(", ")}`)
     .setColor("#ff0000")
     .setTimestamp();
 

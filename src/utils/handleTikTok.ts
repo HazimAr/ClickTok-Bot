@@ -141,7 +141,11 @@ export default async function (type: Type, tiktok, user: User, guild: Guild) {
       user: user.id,
     },
   });
-  logConversion(conversion, type).catch(console.error);
+  logConversion(
+    conversion,
+    type,
+    tiktok.aweme_detail.video.origin_cover.url_list[0]
+  ).catch(console.error);
 
   return {
     content: `https://clicktok.xyz/api/v/${id}`,
