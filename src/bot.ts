@@ -166,7 +166,19 @@ client.on("guildCreate", async (guild: Guild) => {
       logGuild(guild);
     }
     await logGuild(guild);
-    await getOrCreateUser({ id: guild.ownerId } as User);
+    await prisma.user.findFirst({
+      where: { id: guild.ownerId },
+    });
+
+    if (!mongoUser) {
+      await prisma.user.create({
+        data: {
+          id: guild.ownerId,
+          lastConvertedAt: null,
+          lastVotedAt: null,
+        },
+      });
+    }
   } catch (e) {
     logError(e, guild).catch(console.error);
   }
