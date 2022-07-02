@@ -146,7 +146,6 @@ export async function logGuild(guild: Guild, joined = true) {
           true
         )
         .addField("Owner ID", guildOwner.user.id, true)
-
         .setTimestamp()
         .setColor(joined ? "#00ff00" : "#ff0000")
         .setFooter({
