@@ -10,8 +10,6 @@ export default {
   run: async function run(interaction: CommandInteraction) {
     const conversions = await prisma.conversion.findMany({});
     const users = await prisma.user.findMany({});
-    const guilds = await interaction.client.guilds.fetch();
-
     await interaction.reply({
       embeds: [
         new MessageEmbed()
@@ -39,7 +37,7 @@ export default {
             },
             {
               name: "Servers ⚙️",
-              value: guilds.values.length.toLocaleString(),
+              value: interaction.client.guilds.cache.size.toLocaleString(),
               inline: true,
             },
             {
