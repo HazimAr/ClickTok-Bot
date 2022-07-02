@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import axios from "axios";
-import getTikTokResponse, { getIdFromText } from "../utils/handleTikTok";
+import getTikTokResponse, { getIdFromText, Type } from "../utils/handleTikTok";
 import validTikTokUrl from "../utils/validTikTokUrl";
 export default {
   data: new SlashCommandBuilder()
@@ -32,7 +32,7 @@ export default {
       .then(async (response) => {
         await interaction.reply(
           await getTikTokResponse(
-            "Command",
+            Type.COMMAND,
             (response as any).data,
             interaction.user,
             interaction.guild

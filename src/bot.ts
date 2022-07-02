@@ -19,7 +19,7 @@ import { Webhook } from "@top-gg/sdk";
 import express, { json } from "express";
 import cors from "cors";
 import axios from "axios";
-import getTikTokResponse, { getIdFromText } from "./utils/handleTikTok";
+import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
@@ -190,11 +190,12 @@ async function handleMessage(message: Message) {
         .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
         .then(async (response) => {
           const messageResponse = await getTikTokResponse(
-            "Message",
+            Type.MESSAGE,
             (response as any).data,
             message.author,
             message.guild
           );
+          if (!messageResponse) return;
           if (message.deletable) {
             await message.reply(messageResponse);
           } else {
