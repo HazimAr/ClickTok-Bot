@@ -11,33 +11,33 @@ import { logConversion } from "../utils/logger";
 export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
 
-  if (
-    !mongoUser.lastVotedAt ||
-    mongoUser.lastVotedAt.getTime() + 1000 * 60 * 60 * 12 < Date.now()
-  )
-    return await interaction.reply({
-      embeds: [
-        new MessageEmbed()
-          .setTitle(`Hey, ${interaction.user.username}`)
-          .setDescription(
-            "It looks like you haven't voted in the last 24 hours. To help keep this bot free votes are needed. Once you have voted you can view your info."
-          ),
-      ],
-      components: [
-        new MessageActionRow().addComponents(
-          new MessageButton()
-            .setLabel("Vote")
-            .setURL("https://top.gg/bot/990688037853872159/vote")
-            .setStyle("LINK"),
-          new MessageButton()
-            .setCustomId("info")
-            .setLabel("I voted (give me my info)")
-            .setStyle("PRIMARY")
-            .setEmoji("🖥️")
-        ),
-      ],
-      ephemeral: true,
-    });
+  // if (
+  //   !mongoUser.lastVotedAt ||
+  //   mongoUser.lastVotedAt.getTime() + 1000 * 60 * 60 * 12 < Date.now()
+  // )
+  //   return await interaction.reply({
+  //     embeds: [
+  //       new MessageEmbed()
+  //         .setTitle(`Hey, ${interaction.user.username}`)
+  //         .setDescription(
+  //           "It looks like you haven't voted in the last 24 hours. To help keep this bot free votes are needed. Once you have voted you can view your info."
+  //         ),
+  //     ],
+  //     components: [
+  //       new MessageActionRow().addComponents(
+  //         new MessageButton()
+  //           .setLabel("Vote")
+  //           .setURL("https://top.gg/bot/990688037853872159/vote")
+  //           .setStyle("LINK"),
+  //         new MessageButton()
+  //           .setCustomId("info")
+  //           .setLabel("I voted (give me my info)")
+  //           .setStyle("PRIMARY")
+  //           .setEmoji("🖥️")
+  //       ),
+  //     ],
+  //     ephemeral: true,
+  //   });
   const { data: tiktok } = await axios.get(
     `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${
       interaction.message.content.split("/")[
