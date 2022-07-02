@@ -5,7 +5,7 @@ import { prisma } from "../bot";
 export default {
   data: new SlashCommandBuilder()
     .setName("leaderboards")
-    .setDescription("Sends the link to the vote page for the bot."),
+    .setDescription("View the leaderboards for the server."),
 
   run: async function run(interaction: CommandInteraction) {
     const usersWithConversions: Collection<string, number> = new Collection();
@@ -46,9 +46,12 @@ export default {
           .setTitle("Leaderboards")
           .setDescription(
             "**Top 10**\n " +
-              sortedUsers.first(10).map((user, index) => {
-                return `${index + 1}. ${user[0]} - ${user[1]} conversions`;
-              })
+              sortedUsers
+                .first(10)
+                .map((user, index) => {
+                  return `${index + 1}. ${user[0]} - ${user[1]} conversions`;
+                })
+                .join("\n")
           )
           .setThumbnail(interaction.guild.iconURL())
           .setAuthor({
