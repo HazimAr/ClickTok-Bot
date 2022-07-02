@@ -62,7 +62,6 @@ export enum Type {
 }
 
 export default async function (type: Type, tiktok, user: User, guild: Guild) {
-  console.log(tiktok.aweme_detail);
   if (tiktok.aweme_detail?.image_post_info) {
     if (type == Type.COMMAND)
       return {
