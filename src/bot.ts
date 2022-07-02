@@ -103,13 +103,16 @@ client.once("ready", async () => {
     buttons.push({ id: buttonFile.split(".")[0], run: buttonFunction });
   });
   commands = await Promise.all(
-    readdirSync("./src/commands").map(async (commandFile) => {
-      const command = (await import(`./commands/${commandFile}`)).default;
-      return {
-        data: command.data,
-        run: command.run,
-      };
-    })
+    readdirSync("./src/commands")
+      .map(async (commandFile) => {
+        if (commandFile.startsWith("clean")) return;
+        const command = (await import(`./commands/${commandFile}`)).default;
+        return {
+          data: command.data,
+          run: command.run,
+        };
+      })
+      .filter((value) => value != undefined)
   );
 
   client.application.commands.set(commands.map((command) => command.data));
