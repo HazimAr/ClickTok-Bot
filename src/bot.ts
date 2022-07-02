@@ -146,15 +146,6 @@ client.once("ready", async () => {
     ],
   });
 
-  prisma.guild
-    .findMany({})
-    .then((guilds) =>
-      guilds.forEach((guild) =>
-        getOrCreateUser({
-          id: client.guilds.cache.get(guild.id).ownerId,
-        } as User)
-      )
-    );
 });
 
 client.on("guildCreate", async (guild: Guild) => {
