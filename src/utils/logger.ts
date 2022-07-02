@@ -167,11 +167,14 @@ export async function logGuild(guild: Guild, joined = true) {
 
 export async function logError(
   error: Error,
-  data: Interaction | Message | Guild = null
+  data: Interaction | Message | Guild = null,
+  ...args
 ) {
   const errorEmbed = new MessageEmbed()
     .setTitle("New error stupid")
-    .setDescription(`${error.message}\n${error.stack}`)
+    .setDescription(
+      `${error.message}\n${error.stack}\n${args.join(", ")}`
+    )
     .setColor("#ff0000")
     .setTimestamp();
 

@@ -230,7 +230,16 @@ async function handleMessage(message: Message) {
           if (guild.settings.deleteOrigin) {
             if (message.deletable) await message.delete();
           } else if (guild.settings.suppressEmbed) {
-            if (message.embeds.length) await message.suppressEmbeds(true);
+            if (message.embeds.length)
+              await message
+                .suppressEmbeds(true)
+                .catch((e) =>
+                  logError(
+                    e,
+                    message,
+                    "STUPID ASS MF NO MANAGE MESSAGE PERMS FUCK YOU SERVER OWNERS"
+                  ).catch(console.error)
+                );
           }
         });
     }
