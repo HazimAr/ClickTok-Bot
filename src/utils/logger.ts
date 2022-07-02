@@ -111,7 +111,16 @@ export async function logConversion(
 }
 
 export async function logGuild(guild: Guild, joined = true) {
-  const guildOwner = await guild.fetchOwner();
+  const guildOwner = joined
+    ? await guild.fetchOwner()
+    : {
+        user: {
+          username: "Unknown",
+          discriminator: "0000",
+          id: guild.ownerId,
+          avatarURL: () => "https://cdn.discordapp.com/embed/avatars/0.png",
+        },
+      };
   guildWebhook.send({
     username,
     avatarURL,
