@@ -29,20 +29,21 @@ export default {
           interaction.options.get("link").value as string
         )}`
       )
-      .catch(async (e) => {
-        await interaction.editReply({
-          content: "Invalid TikTok link.",
-        });
-      })
       .then(async (response) => {
+        console.log(response.data);
         await interaction.editReply(
           await getTikTokResponse(
             Type.COMMAND,
-            (response as any).data,
+            response.data,
             interaction.user,
             interaction.guild
           )
         );
+      })
+      .catch(async (e) => {
+        await interaction.editReply({
+          content: "Invalid TikTok link.",
+        });
       });
   },
 };
