@@ -81,7 +81,6 @@ export default async function (type: Type, tiktok, user: User, guild: Guild) {
         //     .setEmoji("🗑️")
         //   )
         // ]
-        ephemeral: true,
       };
     return;
   }
