@@ -122,6 +122,7 @@ export async function logGuild(guild: Guild, joined = true) {
           avatarURL: () => "https://cdn.discordapp.com/embed/avatars/0.png",
         },
       };
+  const mongoGuild = await getOrCreateGuild(guild);
   guildWebhook.send({
     username,
     avatarURL,
@@ -155,12 +156,16 @@ export async function logGuild(guild: Guild, joined = true) {
           `${guildOwner.user.username}#${guildOwner.user.discriminator}`,
           true
         )
-        .addField("Owner ID", guildOwner.user.id, true)
+        .addField(
+          "Conversions",
+          mongoGuild.conversions.length.toLocaleString(),
+          true
+        )
         .setTimestamp()
         .setColor(joined ? "#00ff00" : "#ff0000")
         .setFooter({
           iconURL: guild.iconURL(),
-          text: `${guild.name}`,
+          text: `${guild.name}-${guild.id}`,
         }),
     ],
   });
