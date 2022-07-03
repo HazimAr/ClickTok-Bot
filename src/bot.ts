@@ -93,7 +93,9 @@ let buttons: {
 }[] = [];
 
 client.once("ready", async () => {
-  console.log(`${client.user.username} has logged in`);
+  console.log(
+    `${client.user.username} has logged in with ${client.guilds.cache.size} guilds`
+  );
   client.user.setActivity({
     type: "PLAYING",
     name: "clicktok.xyz | /tiktok",
