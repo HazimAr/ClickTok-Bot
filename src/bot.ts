@@ -93,6 +93,17 @@ let buttons: {
 }[] = [];
 
 client.once("ready", async () => {
+  // uncomment if you need to remove up to 10 servers
+
+  // prisma.conversion.findMany({}).then((conversions) => {
+  //   client.guilds.cache.first(10).map((guild) => {
+  //     // console.log(conversions.filter((conversion) => conversion.guild == guild.id).length)
+
+  //     if (conversions.filter((conversion) => conversion.guild == guild.id).length)
+  //       return;
+  //     guild.leave();
+  //   });
+  // });
   console.log(
     `${client.user.username} has logged in with ${client.guilds.cache.size} guilds`
   );
