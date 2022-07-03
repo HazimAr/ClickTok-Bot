@@ -21,7 +21,7 @@ export default {
       });
       return;
     }
-
+    interaction.deferReply();
     await axios
       .get(
         `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${await getIdFromText(
@@ -29,12 +29,12 @@ export default {
         )}`
       )
       .catch(async (e) => {
-        await interaction.reply({
+        await interaction.editReply({
           content: "Invalid TikTok link.",
         });
       })
       .then(async (response) => {
-        await interaction.reply(
+        await interaction.editReply(
           await getTikTokResponse(
             Type.COMMAND,
             (response as any).data,
