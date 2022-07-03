@@ -106,7 +106,6 @@ client.once("ready", async () => {
   });
   commands = await Promise.all(
     readdirSync("./src/commands").map(async (commandFile) => {
-      if (commandFile.startsWith("clean")) return;
       const command = (await import(`./commands/${commandFile}`)).default;
       return {
         data: command.data,
@@ -114,7 +113,6 @@ client.once("ready", async () => {
       };
     })
   );
-  commands = commands.filter((value) => value != undefined);
 
   client.application.commands.set(commands.map((command) => command.data));
   // await (
