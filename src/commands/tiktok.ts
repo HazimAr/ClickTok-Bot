@@ -28,7 +28,11 @@ export default {
           interaction.options.get("link").value as string
         )}`
       )
-
+      .catch(async (e) => {
+        await interaction.reply({
+          content: "Invalid TikTok link.",
+        });
+      })
       .then(async (response) => {
         await interaction.reply(
           await getTikTokResponse(

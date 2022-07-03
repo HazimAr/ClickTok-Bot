@@ -210,6 +210,22 @@ async function handleMessage(message: Message) {
       if (!id) return;
       await axios
         .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
+        .catch(async (e) => {
+          const messageResponse = {
+            content: "Invalid TikTok link.",
+          };
+          await message.reply(messageResponse);
+          if (message.deletable) {
+            await message.reply(messageResponse);
+          } else {
+            // message doesn't exist anymore
+            messageResponse.content = `${message.author} ${messageResponse.content}`;
+            await message.channel.send(messageResponse).catch((e) => {
+              // channel doesn't exist anymore (prolly got kicked as message was sent lol)
+              logError(e, message).catch(console.error);
+            });
+          }
+        })
         .then(async (response) => {
           const messageResponse = await getTikTokResponse(
             Type.MESSAGE,
