@@ -265,9 +265,9 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
   if (
     (await getIdFromText(oldMessage.content)) ==
     (await getIdFromText(newMessage.content))
-  ) {
+  )
     return;
-  }
+
   await handleMessage(newMessage as Message);
 });
 
