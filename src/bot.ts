@@ -103,16 +103,14 @@ client.once("ready", async () => {
     buttons.push({ id: buttonFile.split(".")[0], run: buttonFunction });
   });
   commands = await Promise.all(
-    readdirSync("./src/commands")
-      .map(async (commandFile) => {
-        if (commandFile.startsWith("clean")) return;
-        const command = (await import(`./commands/${commandFile}`)).default;
-        return {
-          data: command.data,
-          run: command.run,
-        };
-      })
-      
+    readdirSync("./src/commands").map(async (commandFile) => {
+      if (commandFile.startsWith("clean")) return;
+      const command = (await import(`./commands/${commandFile}`)).default;
+      return {
+        data: command.data,
+        run: command.run,
+      };
+    })
   );
   commands = commands.filter((value) => value != undefined);
 
@@ -235,15 +233,9 @@ async function handleMessage(message: Message) {
             if (message.deletable) await message.delete();
           } else if (guild.settings.suppressEmbed) {
             if (message.embeds.length)
-              await message
-                .suppressEmbeds(true)
-                .catch((e) =>
-                  logError(
-                    e,
-                    message,
-                    "STUPID ASS MF NO MANAGE MESSAGE PERMS FUCK YOU SERVER OWNERS"
-                  ).catch(console.error)
-                );
+              await message.suppressEmbeds(true).catch((e) => {
+                // STUPID ASS MF NO MANAGE MESSAGE PERMS FUCK YOU SERVER OWNERS
+              });
           }
         });
     }
