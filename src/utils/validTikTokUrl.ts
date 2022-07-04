@@ -1,5 +1,4 @@
 export default function validTikTokUrl(url: string) {
-  url = encodeURIComponent(url)
   let regex =
     /(http:|https:\/\/)?(www\.)?tiktok\.com\/(@.{1,24})\/video\/(\d{15,30})/;
   let match = url.match(regex);
