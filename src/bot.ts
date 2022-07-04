@@ -11,6 +11,7 @@ import {
   MessageActionRow,
   MessageButton,
   MessageEmbed,
+  TextChannel,
   User,
 } from "discord.js";
 import { AutoPoster } from "topgg-autoposter";
@@ -107,7 +108,19 @@ client.once("ready", async () => {
   //       guild.leave();
   //   });
   // });
+
+  // log top 10 users
   
+  // prisma.user.findMany({ include: { conversions: true } }).then((users) =>
+  //   (client.channels.cache.get("991517307249631252") as TextChannel).send(
+  //     users
+  //       .sort((a, b) => b.conversions.length - a.conversions.length)
+  //       .slice(0, 10)
+  //       .map(user=>user.id)
+  //       .join(`\n`)
+  //   )
+  // );
+
   console.log(
     `${client.user.username} has logged in with ${client.guilds.cache.size} guilds`
   );
