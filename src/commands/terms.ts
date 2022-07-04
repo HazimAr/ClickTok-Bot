@@ -4,7 +4,7 @@ import { CommandInteraction } from "discord.js";
 export default {
   data: new SlashCommandBuilder()
     .setName("terms")
-    .setDescription("Sends the link to the Terms of Use page on the website."),
+    .setDescription("Sends the link to the Terms of Use page on our website."),
 
   run: async function run(interaction: CommandInteraction) {
     await interaction.reply({
