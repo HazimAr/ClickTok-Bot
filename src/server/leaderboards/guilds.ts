@@ -18,6 +18,7 @@ router.get("/", async (_, res) => {
     const discordGuild = client.guilds.cache.get(mongoGuild.id);
     if (!discordGuild) continue;
     guildsLeaderboards.push({
+      id: discordGuild.id,
       name: discordGuild.name,
       icon: discordGuild.iconURL(),
       conversions: mongoGuild.conversions.length,
