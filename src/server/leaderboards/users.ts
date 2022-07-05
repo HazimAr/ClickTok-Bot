@@ -31,6 +31,6 @@ router.get("/", async (_, res) => {
   );
 
   // send guilds to client
-  res.json(client.users.cache);
+  res.json(usersLeaderboards);
 });
 export default router;
