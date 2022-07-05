@@ -9,7 +9,6 @@ const topggWebhook = new Webhook(process.env.TOPGG_PASSWORD);
 router.post(
   "/",
   topggWebhook.listener(async (vote) => {
-    console.log(vote);
     if (vote.type === "upvote") {
       await Promise.all([
         logVote(vote),
