@@ -178,7 +178,11 @@ export async function logError(
 ) {
   const errorEmbed = new MessageEmbed()
     .setTitle("New error stupid")
-    .setDescription(`${error.message}\n${error.stack}\n${args.join(", ")}`)
+    .setDescription(
+      `${error.message}\n${error.stack}\n${args
+        .map((arg) => arg?.toLocaleString() || arg)
+        .join(", ")}`
+    )
     .setColor("#ff0000")
     .setTimestamp();
 

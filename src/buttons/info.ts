@@ -45,7 +45,7 @@ export default async function (interaction: ButtonInteraction) {
       ]
     }`
   );
-  const author = tiktok.aweme_detail.author;
+  const author = tiktok.aweme_detail?.author;
   const statistics = tiktok.aweme_detail.statistics;
   let description = tiktok.aweme_detail.desc;
   let tags: String[] = (tiktok.aweme_detail.desc as string).match(/#[\w]+/g);
@@ -54,8 +54,8 @@ export default async function (interaction: ButtonInteraction) {
     embeds: [
       new MessageEmbed()
         .setAuthor({
-          name: author.nickname,
-          iconURL: author.avatar_thumb.url_list[0],
+          name: author?.nickname || "N/A",
+          iconURL: author?.avatar_thumb?.url_list?.[0],
         })
         .setTitle(description)
         .setThumbnail(tiktok.aweme_detail.video.cover.url_list[0])
