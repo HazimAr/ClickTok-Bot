@@ -3,19 +3,24 @@ import { PrismaClient } from "@prisma/client";
 import { client } from "../../bot";
 const prisma = new PrismaClient();
 const router = Router();
-router.get("/", async (_, res) => {
+router.get("/", async (req, res) => {
   // get all guilds from db
-  const mongoUsers = await prisma.guild.findMany({
+  let mongoUsers = await prisma.guild.findMany({
     include: {
       conversions: true,
     },
   });
 
+  // sort guilds by conversion count
+  mongoUsers = mongoUsers
+    .sort((a, b) => b.conversions.length - a.conversions.length)
+    .slice(0, 100);
+
   let usersLeaderboards = [];
 
   for (const mongoUser of mongoUsers) {
     if (mongoUser.conversions.length == 0) continue;
-    const discordUser = await client.users.fetch(mongoUser.id).catch(()=>{});
+    const discordUser = await client.users.fetch(mongoUser.id).catch(() => {});
     if (!discordUser) continue;
     usersLeaderboards.push({
       username: discordUser.username,
@@ -24,11 +29,6 @@ router.get("/", async (_, res) => {
       createdAt: mongoUser.createdAt,
     });
   }
-
-  // sort guilds by conversion count
-  usersLeaderboards = usersLeaderboards.sort(
-    (a, b) => b.conversions - a.conversions
-  );
 
   // send guilds to client
   res.json(usersLeaderboards);
