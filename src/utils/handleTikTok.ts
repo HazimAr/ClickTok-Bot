@@ -36,12 +36,12 @@ export async function getIdFromText(url: string) {
   if (id) return id;
 
   regex = /(http:|https:\/\/)?((?!ww)\w{2})\.tiktok.com\/(\w{5,15})/;
-  id = await getId(url, regex);
+  id = await getId(encodeURI(url), regex);
   // get real id from tiktok
   if (id) return id;
 
   regex = /(http:|https:\/\/)?(www\.)?tiktok.com\/t\/(\w{5,15})/;
-  id = await getId(url, regex);
+  id = await getId(encodeURI(url), regex);
   // get real id from tiktok
   if (id) return id;
 
