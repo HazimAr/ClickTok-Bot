@@ -15,7 +15,7 @@ router.get("/", async (_, res) => {
 
   for (const mongoUser of mongoUsers) {
     if (mongoUser.conversions.length == 0) continue;
-    const discordUser = client.users.cache.get(mongoUser.id);
+    const discordUser = await client.users.fetch(mongoUser.id);
     if (!discordUser) continue;
     usersLeaderboards.push({
       username: discordUser.username,
