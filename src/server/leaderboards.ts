@@ -23,14 +23,14 @@ router.get("/guilds/:id", async (req, res) => {
     conversions: number;
     createdAt: Date;
   };
-  const userGuildLeaderboards = new Collection<string, LeaderboardUser>();
+  const userGuildLeaderboardsMap = new Collection<string, LeaderboardUser>();
 
   for (const conversion of conversions) {
-    const userObject = userGuildLeaderboards.get(conversion.user);
+    const userObject = userGuildLeaderboardsMap.get(conversion.user);
     if (!userObject) {
       const discordUser = await client.users.fetch(conversion.user);
       if (!discordUser) continue;
-      userGuildLeaderboards.set(conversion.user, {
+      userGuildLeaderboardsMap.set(conversion.user, {
         username: discordUser.username,
         avatarURL: discordUser.avatarURL(),
         conversions: 1,
@@ -40,6 +40,10 @@ router.get("/guilds/:id", async (req, res) => {
     }
     userObject.conversions++;
   }
+
+  const userGuildLeaderboards = userGuildLeaderboardsMap.sort(
+    (a, b) => b.conversions - a.conversions
+  );
 
   res.json(userGuildLeaderboards);
 });
