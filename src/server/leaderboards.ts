@@ -28,7 +28,8 @@ router.get("/guilds/:id", async (req, res) => {
   for (const conversion of conversions) {
     const userObject = userGuildLeaderboards.get(conversion.user);
     if (!userObject) {
-      const discordUser = client.users.cache.get(conversion.user);
+      const discordUser = await client.users.fetch(conversion.user);
+      if (!discordUser) continue;
       userGuildLeaderboards.set(conversion.user, {
         username: discordUser.username,
         avatarURL: discordUser.avatarURL(),
@@ -40,7 +41,7 @@ router.get("/guilds/:id", async (req, res) => {
     userObject.conversions++;
   }
 
-  res.json(conversions);
+  res.json(userGuildLeaderboards);
 });
 
 export default router;
