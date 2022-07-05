@@ -105,6 +105,20 @@ export default async function (interaction: ButtonInteraction) {
           },
         ]),
     ],
+    components: [
+      new MessageActionRow().addComponents(
+        new MessageButton()
+          .setURL(`https://clicktok.xyz/a/${tiktok.aweme_detail.aweme_id}`)
+          .setLabel("Download (Audio)")
+          .setStyle("LINK")
+          .setEmoji("🎵"),
+        new MessageButton()
+          .setURL(`https://clicktok.xyz/v/${tiktok.aweme_detail.aweme_id}`)
+          .setLabel("Download (Video)")
+          .setStyle("LINK")
+          .setEmoji("🎥")
+      ),
+    ],
     ephemeral: true,
   });
 

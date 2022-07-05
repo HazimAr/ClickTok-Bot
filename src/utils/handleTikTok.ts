@@ -155,11 +155,7 @@ export default async function (type: Type, tiktok, user: User, guild: Guild) {
           .setLabel("Info")
           .setStyle("PRIMARY")
           .setEmoji("🖥️"),
-        new MessageButton()
-          .setURL(`https://clicktok.xyz/v/${id}`)
-          .setLabel("Download")
-          .setStyle("LINK")
-          .setEmoji("💾"),
+
         new MessageButton()
           .setCustomId("delete")
           .setLabel("Delete")
