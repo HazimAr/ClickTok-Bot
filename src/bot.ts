@@ -16,15 +16,16 @@ import {
 } from "discord.js";
 import { AutoPoster } from "topgg-autoposter";
 import { readdirSync } from "fs";
-import { Webhook } from "@top-gg/sdk";
-import express, { json } from "express";
-import cors from "cors";
 import axios from "axios";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
 import { logError, logGuild, logVote } from "./utils/logger";
+import server from "./server";
+server.listen(8080, () => {
+  console.log("Server listening on port 8080");
+});
 
 export const client = new Client({
   intents: [
@@ -42,41 +43,6 @@ prisma
     console.log("Connected to Prisma");
   })
   .catch(console.error);
-
-const app = express();
-const topggWebhook = new Webhook(process.env.TOPGG_PASSWORD);
-
-app.use(cors());
-app.use(json());
-app.post(
-  "/",
-  topggWebhook.listener(async (vote) => {
-    console.log(vote);
-    if (vote.type === "upvote") {
-      await Promise.all([
-        logVote(vote),
-        prisma.user.upsert({
-          where: { id: vote.user },
-          update: {
-            votes: {
-              increment: 1,
-            },
-            lastVotedAt: new Date(Date.now()),
-          },
-          create: {
-            id: vote.user,
-            lastConvertedAt: null,
-            lastVotedAt: null,
-          },
-        }),
-      ]);
-    }
-  })
-);
-app.get("/", (_, res) => res.send("Hello, World!"));
-app.listen(8080, () => {
-  console.log("Webhook listening on port 8080");
-});
 
 const ap = AutoPoster(process.env.TOPGG_TOKEN, client);
 ap.on("posted", (stats) => console.log(stats));
@@ -110,7 +76,7 @@ client.once("ready", async () => {
   // });
 
   // log top 10 users
-  
+
   // prisma.user.findMany({ include: { conversions: true } }).then((users) =>
   //   (client.channels.cache.get("991517307249631252") as TextChannel).send(
   //     users
