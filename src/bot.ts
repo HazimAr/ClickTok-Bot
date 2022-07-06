@@ -109,6 +109,7 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
+
   // await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
   // ).send("fr")
@@ -275,7 +276,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (interaction.isButton()) {
       await buttons
-        .find((button) => button.id == interaction.customId)
+        .find((button) => interaction.customId.startsWith(button.id))
         .run(interaction);
       return;
     }

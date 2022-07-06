@@ -157,7 +157,7 @@ export default async function (type: Type, tiktok, user: User, guild: Guild) {
           .setEmoji("🖥️"),
 
         new MessageButton()
-          .setCustomId("delete")
+          .setCustomId(`delete-${user.id}`)
           .setLabel("Delete")
           .setStyle("DANGER")
           .setEmoji("🗑️")
