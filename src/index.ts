@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { ShardingManager } from "discord.js";
 
-const manager = new ShardingManager("./src/bot.ts", {
+const manager = new ShardingManager("bot", {
   token: process.env.TOKEN,
   totalShards: 1,
 });

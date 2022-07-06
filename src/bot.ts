@@ -5,24 +5,19 @@ import {
   Client,
   CommandInteraction,
   Guild,
-  GuildTextBasedChannel,
   Intents,
   Message,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
-  TextChannel,
-  User,
 } from "discord.js";
 import { AutoPoster } from "topgg-autoposter";
 import { readdirSync } from "fs";
 import axios from "axios";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
 import { PrismaClient } from "@prisma/client";
-import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
+import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
-import { logError, logGuild, logVote } from "./utils/logger";
+import { logError, logGuild } from "./utils/logger";
 import server from "./server";
+
 server.listen(8080, () => {
   console.log("Server listening on port 8080");
 });
@@ -217,7 +212,7 @@ async function handleMessage(message: Message) {
             // message doesn't exist anymore
             messageResponse.content = `${message.author} ${messageResponse.content}`;
             await message.channel.send(messageResponse).catch((e) => {
-              // channel doesn't exist anymore (prolly got kicked as message was sent lol)
+              // channel doesn't exist anymore (probably got kicked as message was sent lol)
               logError(e, message).catch(console.error);
             });
           }
@@ -236,7 +231,7 @@ async function handleMessage(message: Message) {
             // message doesn't exist anymore
             messageResponse.content = `${message.author} ${messageResponse.content}`;
             await message.channel.send(messageResponse).catch((e) => {
-              // channel doesn't exist anymore (prolly got kicked as message was sent lol)
+              // channel doesn't exist anymore (probably got kicked as message was sent lol)
               logError(e, message).catch(console.error);
             });
           }
