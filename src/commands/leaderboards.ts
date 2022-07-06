@@ -8,7 +8,7 @@ export default {
 
   run: async function run(interaction: CommandInteraction) {
     await interaction.reply({
-      content: "<https://clicktok.xyz/leaderboards>",
+      content: `<https://clicktok.xyz/leaderboards/${interaction.guild.id}>`,
       ephemeral: true,
     });
   },
