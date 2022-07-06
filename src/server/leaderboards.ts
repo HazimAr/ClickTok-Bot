@@ -6,7 +6,39 @@ import { client } from "../bot";
 const router = Router();
 const prisma = new PrismaClient();
 
-router.get("/guilds/:id", async (req, res) => {
+router.get("/", async (_, res) => {
+  // get all guilds from db
+  const mongoGuilds = await prisma.guild.findMany({
+    include: {
+      conversions: true,
+    },
+  });
+
+  let guildsLeaderboards = [];
+
+  for (const mongoGuild of mongoGuilds) {
+    if (mongoGuild.conversions.length == 0) continue;
+    const discordGuild = client.guilds.cache.get(mongoGuild.id);
+    if (!discordGuild) continue;
+    guildsLeaderboards.push({
+      id: discordGuild.id,
+      name: discordGuild.name,
+      icon: discordGuild.iconURL(),
+      conversions: mongoGuild.conversions.length,
+      createdAt: mongoGuild.createdAt,
+    });
+  }
+
+  // sort guilds by conversion count
+  guildsLeaderboards = guildsLeaderboards.sort(
+    (a, b) => b.conversions - a.conversions
+  );
+
+  // send guilds to client
+  res.json(guildsLeaderboards);
+});
+
+router.get("/:id", async (req, res) => {
   const conversions = await prisma.conversion.findMany({
     where: { guild: req.params.id },
   });
