@@ -8,11 +8,14 @@ const prisma = new PrismaClient();
 
 router.get("/", async (_, res) => {
   // get all guilds from db
-  const mongoGuilds = await prisma.guild.findMany({
-    include: {
-      conversions: true,
-    },
-  });
+  const mongoGuilds = await prisma.guild
+    .findMany({
+      include: {
+        conversions: true,
+      },
+    })
+    .catch((e) => {});
+  if (!mongoGuilds) return res.status(500).send("Error");
 
   let guildsLeaderboards = [];
 
