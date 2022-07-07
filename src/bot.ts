@@ -57,19 +57,19 @@ let buttons: {
 client.once("ready", async () => {
   // uncomment if you need to remove up to 10 servers
 
-  // prisma.conversion.findMany({}).then((conversions) => {
-  //   client.guilds.cache.map((guild) => {
-  //     // console.log(conversions.filter((conversion) => conversion.guild == guild.id).length)
+  prisma.conversion.findMany({}).then((conversions) => {
+    client.guilds.cache.map((guild) => {
+      // console.log(conversions.filter((conversion) => conversion.guild == guild.id).length)
 
-  //     if (
-  //       !conversions.filter((conversion) => conversion.guild == guild.id)
-  //         .length &&
-  //        guild.id != "992183531134529546" &&
-  //       guild.memberCount < 200
-  //     )
-  //       guild.leave();
-  //   });
-  // });
+      if (
+        !conversions.filter((conversion) => conversion.guild == guild.id)
+          .length &&
+         guild.id != "992183531134529546" &&
+        guild.memberCount < 200
+      )
+        guild.leave();
+    });
+  });
 
   // log top 10 users
 
