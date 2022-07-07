@@ -65,7 +65,7 @@ client.once("ready", async () => {
   //       !conversions.filter((conversion) => conversion.guild == guild.id)
   //         .length &&
   //        guild.id != "992183531134529546" &&
-  //       guild.memberCount < 300
+  //       guild.memberCount < 200
   //     )
   //       guild.leave();
   //   });
