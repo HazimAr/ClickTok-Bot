@@ -30,7 +30,6 @@ export default {
         )}`
       )
       .then(async (response) => {
-        console.log(response.data);
         await interaction.editReply(
           await getTikTokResponse(
             Type.COMMAND,
