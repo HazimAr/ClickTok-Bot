@@ -23,7 +23,7 @@ router.use(async (req, res, next) => {
   next();
 });
 
-router.get("/guilds", async (req, res) => {
+router.get("/", async (req, res) => {
   // get all guilds user from discord
 
   const user = await client.users.fetch(res.locals.user.id);
