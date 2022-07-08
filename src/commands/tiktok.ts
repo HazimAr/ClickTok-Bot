@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction } from "discord.js";
+import { CommandInteraction, TextChannel } from "discord.js";
 import axios from "axios";
 import getTikTokResponse, { getIdFromText, Type } from "../utils/handleTikTok";
 import validTikTokUrl from "../utils/validTikTokUrl";
@@ -35,7 +35,8 @@ export default {
             Type.COMMAND,
             response.data,
             interaction.user,
-            interaction.guild
+            interaction.guild,
+            interaction.channel as TextChannel
           )
         );
       })

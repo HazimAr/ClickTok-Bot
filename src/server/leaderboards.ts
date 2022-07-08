@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Collection } from "discord.js";
 import { Router } from "express";
-import { readdirSync } from "fs";
 import { client } from "../bot";
 const router = Router();
 const prisma = new PrismaClient();
