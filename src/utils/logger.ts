@@ -6,6 +6,7 @@ import {
   Interaction,
   Message,
   MessageEmbed,
+  TextChannel,
   User,
   WebhookClient,
 } from "discord.js";
@@ -38,7 +39,8 @@ const avatarURL = "https://clicktok.xyz/logo.png";
 export async function logConversion(
   conversion: Conversion | { user: User; guild: Guild; tiktok: string },
   type: string,
-  thumbnail: string
+  thumbnail: string,
+  channel: TextChannel
 ) {
   const author =
     conversion.user instanceof User
@@ -96,11 +98,7 @@ export async function logConversion(
           `<t:${Math.floor(author.createdAt?.getTime() / 1000)}>`,
           true
         )
-        .addField(
-          "Created (Guild)",
-          `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
-          true
-        )
+        .addField("Channel", channel.name, true)
         .addField("Type", type, true)
         .setFooter({
           text: `${guild.name}-${guild.id}`,
@@ -217,6 +215,8 @@ export async function logError(
     }
     errorEmbed.addField("Channel Name", channel.name, true);
     errorEmbed.addField("Channel Id", channel.id, true);
+    // @ts-ignore
+    errorEmbed.addField("Message", data?.message.content)
   } else {
     errorEmbed.setAuthor({
       name: data.name,

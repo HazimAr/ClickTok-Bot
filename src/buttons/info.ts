@@ -4,6 +4,7 @@ import {
   MessageActionRow,
   MessageButton,
   MessageEmbed,
+  TextChannel,
 } from "discord.js";
 import { getOrCreateUser } from "../utils/db";
 import { logConversion } from "../utils/logger";
@@ -132,6 +133,7 @@ export default async function (interaction: ButtonInteraction) {
         ],
     },
     "Info",
-    tiktok.aweme_detail.video.cover.url_list[0]
+    tiktok.aweme_detail.video.cover.url_list[0],
+    interaction.channel as TextChannel
   ).catch(console.error);
 }

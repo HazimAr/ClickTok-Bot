@@ -1,9 +1,11 @@
 import axios from "axios";
 import {
   Guild,
+  GuildChannel,
   MessageActionRow,
   MessageButton,
   MessageEmbed,
+  TextChannel,
   User,
 } from "discord.js";
 import { prisma } from "../bot";
@@ -61,7 +63,7 @@ export enum Type {
   COMMAND = "command",
 }
 
-export default async function (type: Type, tiktok, user: User, guild: Guild) {
+export default async function (type: Type, tiktok, user: User, guild: Guild, channel: GuildChannel) {
   if (tiktok.aweme_detail?.image_post_info) {
     if (type == Type.COMMAND)
       return {
@@ -143,8 +145,9 @@ export default async function (type: Type, tiktok, user: User, guild: Guild) {
   logConversion(
     conversion,
     type,
-    tiktok.aweme_detail.video.origin_cover.url_list[0]
-  ).catch(console.error);
+    tiktok.aweme_detail.video.origin_cover.url_list[0],
+    channel as TextChannel
+  ).catch(console.error);channel
 
   return {
     content: `https://clicktok.xyz/api/v/${id}`,

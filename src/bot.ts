@@ -7,6 +7,7 @@ import {
   Guild,
   Intents,
   Message,
+  TextChannel,
 } from "discord.js";
 import { AutoPoster } from "topgg-autoposter";
 import { readdirSync } from "fs";
@@ -222,7 +223,8 @@ async function handleMessage(message: Message) {
             Type.MESSAGE,
             (response as any).data,
             message.author,
-            message.guild
+            message.guild,
+            message.channel as TextChannel
           );
           if (!messageResponse) return;
           if (message.deletable) {
