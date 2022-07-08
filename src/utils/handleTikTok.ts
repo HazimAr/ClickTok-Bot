@@ -109,7 +109,7 @@ export default async function (type: Type, tiktok, user: User, guild: Guild) {
         ],
       })
       .catch(() => {
-        console.error("Failed to send welcome message");
+        console.error(`Failed to send welcome message to ${user.tag}`);
       });
   }
   const lastConvertedAt = new Date(Date.now());
