@@ -112,10 +112,12 @@ export async function logConversion(
 export async function logGuild(guild: Guild, joined = true) {
   const guildOwner = joined
     ? await guild.fetchOwner().catch((e) => ({
-        username: "Unknown",
-        discriminator: "0000",
-        id: guild.ownerId,
-        avatarURL: () => "https://cdn.discordapp.com/embed/avatars/0.png",
+        user: {
+          username: "Unknown",
+          discriminator: "0000",
+          id: guild.ownerId,
+          avatarURL: () => "https://cdn.discordapp.com/embed/avatars/0.png",
+        },
       }))
     : {
         user: {
