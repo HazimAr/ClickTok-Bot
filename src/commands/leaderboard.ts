@@ -3,12 +3,12 @@ import { CommandInteraction } from "discord.js";
 
 export default {
   data: new SlashCommandBuilder()
-    .setName("leaderboards")
+    .setName("leaderboard")
     .setDescription("Sends the link to the leaderboard page on the website."),
 
   run: async function run(interaction: CommandInteraction) {
     await interaction.reply({
-      content: `<https://clicktok.xyz/leaderboards/${interaction.guild.id}>`,
+      content: `<https://clicktok.xyz/leaderboard/${interaction.guild.id}>`,
       ephemeral: true,
     });
   },
