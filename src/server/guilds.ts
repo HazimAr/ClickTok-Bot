@@ -57,6 +57,29 @@ router.get("/", async (req, res) => {
   });
 });
 
+router.get("/:id", async (req, res) => {
+  const discordGuild = await client.guilds
+    .fetch(req.params.id)
+    .catch(console.error);
+  if (!discordGuild)
+    return res.status(404).json({
+      message: "Bot not in specified guild.",
+    });
+  const user = res.locals.user;
+  const member = await discordGuild.members.fetch(user.id).catch(console.error);
+  if (!member)
+    return res.status(404).json({
+      message: "Bot unable to fetch user.",
+    });
+
+  if (!member.permissions.has("ADMINISTRATOR"))
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+
+  
+});
+
 router.get("/:id/settings", async (req, res) => {
   const guild = await prisma.guild
     .findFirst({
