@@ -45,8 +45,6 @@ prisma
 const ap = AutoPoster(process.env.TOPGG_TOKEN, client);
 ap.on("posted", (stats) => console.log(stats));
 
-export const jr = process.env.JR || false;
-
 let commands: {
   data: ApplicationCommandDataResolvable;
   run: (interaction: CommandInteraction) => Promise<void>;
@@ -115,7 +113,7 @@ client.once("ready", async () => {
 
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
-  // ).messages.fetch(jr ? "992339040403734528" : "992304881643831297");
+  // ).messages.fetch("992304881643831297");
 
   // giveawayMessage.edit({
   //   embeds: [
@@ -188,11 +186,6 @@ client.on("guildDelete", async (guild: Guild) => {
 });
 
 async function handleMessage(message: Message) {
-  if (jr) {
-    if (message.channel.id != "991183722957254657") return;
-  } else {
-    if (message.channel.id == "991183722957254657") return;
-  }
   if (message.author.bot) return;
   if (!validTikTokUrl(message.content)) return;
 
@@ -285,4 +278,4 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-client.login(jr ? process.env.TOKEN_JR : process.env.TOKEN);
+client.login(process.env.JR ? process.env.TOKEN_JR : process.env.TOKEN);

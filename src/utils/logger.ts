@@ -10,7 +10,7 @@ import {
   User,
   WebhookClient,
 } from "discord.js";
-import { client, jr } from "../bot";
+import { client } from "../bot";
 import { getOrCreateGuild, getOrCreateUser } from "./db";
 
 const conversionWebhook = new WebhookClient({
@@ -33,7 +33,7 @@ const voteWebhook = new WebhookClient({
   url: "https://discord.com/api/webhooks/992451919559790702/IIKQaZKbN1qnT_HJM8uqtbZmOTKFcVRz-3llFJJpN4rVVGtIENIZ8a15mxu4Lm1nqKxc",
 });
 
-const username = "ClickTok" + (jr ? " Jr." : " Sr.");
+const username = "ClickTok" + (process.env.JR ? " Jr." : " Sr.");
 const avatarURL = "https://clicktok.xyz/logo.png";
 
 export async function logConversion(
