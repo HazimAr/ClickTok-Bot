@@ -59,10 +59,13 @@ router.get("/", async (req, res) => {
 
 router.post("/:id/settings", async (req, res) => {
   if (!req.body) return res.status(400).send();
-  await prisma.guild.update({
-    where: { id: req.params["id"] },
-    data: { settings: req.body },
-  });
+  const guild = await prisma.guild
+    .update({
+      where: { id: req.params["id"] },
+      data: { settings: req.body },
+    })
+    .catch(console.error);
+  if (!guild) return res.status(404).send();
   res.status(204).send();
 });
 
