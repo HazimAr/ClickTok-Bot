@@ -4,6 +4,7 @@ import { readdirSync } from "fs";
 import { Router } from "express";
 
 import { client, prisma } from "../bot";
+import { getOrCreateGuild } from "../utils/db";
 const router = Router();
 
 router.use(async (req, res, next) => {
@@ -77,7 +78,9 @@ router.get("/:id", async (req, res) => {
       message: "Unauthorized",
     });
 
-  
+  const mongoGuild = await getOrCreateGuild(discordGuild);
+
+  res.json(mongoGuild);
 });
 
 router.get("/:id/settings", async (req, res) => {
