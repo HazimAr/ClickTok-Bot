@@ -57,6 +57,16 @@ router.get("/", async (req, res) => {
   });
 });
 
+router.get("/:id/settings", async (req, res) => {
+  const guild = await prisma.guild
+    .findFirst({
+      where: { id: req.params["id"] },
+    })
+    .catch(console.error);
+  if (!guild) return res.status(404).send();
+  res.send(guild.settings);
+});
+
 router.post("/:id/settings", async (req, res) => {
   if (!req.body) return res.status(400).send();
   const guild = await prisma.guild

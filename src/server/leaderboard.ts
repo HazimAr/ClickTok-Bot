@@ -39,13 +39,20 @@ router.get("/", async (_, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const conversions = await prisma.conversion.findMany({
-    where: { guild: req.params.id },
+  // get guild from db
+  const mongoGuild = await prisma.guild.findFirst({
+    where: {
+      id: req.params.id,
+    },
+    include: {
+      conversions: true,
+    },
   });
 
-  if (!conversions.length) {
-    if (!(await prisma.guild.findFirst({ where: { id: req.params.id } })))
-      return res.status(404).send("Guild not found");
+  if (!mongoGuild?.settings?.public)
+    return res.status(404).send();
+
+  if (!mongoGuild.conversions.length) {
     return res.status(204).send();
   }
 
@@ -57,7 +64,7 @@ router.get("/:id", async (req, res) => {
   };
   const userGuildLeaderboardsMap = new Collection<string, LeaderboardUser>();
 
-  for (const conversion of conversions) {
+  for (const conversion of mongoGuild.conversions) {
     const userObject = userGuildLeaderboardsMap.get(conversion.user);
     if (!userObject) {
       const discordUser = await client.users.fetch(conversion.user);
