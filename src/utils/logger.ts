@@ -111,7 +111,12 @@ export async function logConversion(
 
 export async function logGuild(guild: Guild, joined = true) {
   const guildOwner = joined
-    ? await guild.fetchOwner()
+    ? await guild.fetchOwner().catch((e) => ({
+        username: "Unknown",
+        discriminator: "0000",
+        id: guild.ownerId,
+        avatarURL: () => "https://cdn.discordapp.com/embed/avatars/0.png",
+      }))
     : {
         user: {
           username: "Unknown",
@@ -216,7 +221,7 @@ export async function logError(
     errorEmbed.addField("Channel Name", channel.name, true);
     errorEmbed.addField("Channel Id", channel.id, true);
     // @ts-ignore
-    errorEmbed.addField("Message", data?.message.content)
+    errorEmbed.addField("Message", data?.message.content);
   } else {
     errorEmbed.setAuthor({
       name: data.name,
