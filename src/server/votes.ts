@@ -1,9 +1,8 @@
 import { Webhook } from "@top-gg/sdk";
 import { logVote } from "../utils/logger";
-import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
+import { prisma } from "../bot";
 const router = Router();
-const prisma = new PrismaClient();
 const topggWebhook = new Webhook(process.env.TOPGG_PASSWORD);
 
 router.post(

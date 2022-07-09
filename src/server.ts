@@ -7,18 +7,13 @@ app.use(json());
 
 for (const route of readdirSync("./src/server")) {
   if (route.includes(".")) {
-    import(`./server/${route}`).then(({ default: router }) => {
-      app.use(`/${route.split(".")[0]}`, router);
-    });
-    continue;
-  }
-  // import directory
-  for (const routeInside of readdirSync(`./src/server/${route}`)) {
-    import(`./server/${route}/${routeInside}`)
+    import(`./server/${route}`)
       .then(({ default: router }) => {
-        app.use(`/${route}/${routeInside.split(".")[0]}`, router);
+        app.use(`/${route.split(".")[0]}`, router);
       })
       .catch(console.error);
+
+    continue;
   }
 }
 app.get("/", (_, res) => res.send("Hello, World!"));

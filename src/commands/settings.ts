@@ -11,7 +11,7 @@ import { getOrCreateGuild } from "../utils/db";
 
 export default {
   data: new SlashCommandBuilder()
-    .setName("config")
+    .setName("settings")
     .setDescription("Configure the bot for your server.")
     .addBooleanOption((option) =>
       option

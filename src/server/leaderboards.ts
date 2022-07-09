@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
 import { Collection } from "discord.js";
 import { Router } from "express";
-import { client } from "../bot";
+import { client, prisma } from "../bot";
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get("/", async (_, res) => {
   // get all guilds from db

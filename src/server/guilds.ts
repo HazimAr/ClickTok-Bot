@@ -1,13 +1,13 @@
-import { PrismaClient } from "@prisma/client";
 import axios from "axios";
+import { readdirSync } from "fs";
 
 import { Router } from "express";
 
-import { client } from "../bot";
+import { client, prisma } from "../bot";
 const router = Router();
 
 router.use(async (req, res, next) => {
-  if (!req.headers.authorization) return res.status(403).send();
+  if (!req.headers.authorization) return res.status(400).send();
 
   const response = await axios
     .get(`https://discordapp.com/api/users/@me`, {
@@ -19,7 +19,6 @@ router.use(async (req, res, next) => {
   if (!response?.data?.id) return res.status(401).send();
 
   res.locals.user = response.data;
-
   next();
 });
 
@@ -56,6 +55,15 @@ router.get("/", async (req, res) => {
     botGuilds: botGuilds.sort((a, b) => a.name.localeCompare(b.name)),
     normalGuilds: normalGuilds.sort((a, b) => a.name.localeCompare(b.name)),
   });
+});
+
+router.post("/:id/settings", async (req, res) => {
+  if (!req.body) return res.status(400).send();
+  await prisma.guild.update({
+    where: { id: req.params["id"] },
+    data: { settings: req.body },
+  });
+  res.status(204).send();
 });
 
 export default router;

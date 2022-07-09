@@ -14,14 +14,16 @@ type Settings {
   autoEmbed     Boolean @default(true)
   deleteOrigin  Boolean @default(false)
   suppressEmbed Boolean @default(true)
+  public        Boolean @default(true)
 }
 
 model Guild {
   id String @id @map("_id")
 
-  settings        Settings
+  settings Settings
+
   lastConvertedAt DateTime?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime  @default(now())
 
   conversions Conversion[]
 }
@@ -29,10 +31,10 @@ model Guild {
 model User {
   id String @id @map("_id")
 
-  votes           Int      @default(0)
+  votes           Int       @default(0)
   lastVotedAt     DateTime?
   lastConvertedAt DateTime?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime  @default(now())
 
   giveawayEntries GiveawayEntries[]
   conversions     Conversion[]

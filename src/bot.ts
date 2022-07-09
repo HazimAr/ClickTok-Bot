@@ -31,7 +31,9 @@ export const client = new Client({
   ],
 });
 
-export const prisma = new PrismaClient();
+export const prisma = new PrismaClient({
+  errorFormat: "pretty",
+});
 
 prisma
   .$connect()
