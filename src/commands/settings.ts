@@ -17,7 +17,7 @@ export default {
       option
         .setName("auto_embed")
         .setDescription(
-          "Auto embed any TikTok found in any message sent to the server. (Default: true)"
+          "Automatically embed TikToks in the message if they are found. (Default: true)"
         )
     )
     .addBooleanOption((option) =>
