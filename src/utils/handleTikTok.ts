@@ -147,7 +147,7 @@ export default async function (type: Type, tiktok, user: User, guild: Guild, cha
     type,
     tiktok.aweme_detail.video.origin_cover.url_list[0],
     channel as TextChannel
-  ).catch(console.error);channel
+  ).catch(console.error);
 
   return {
     content: `https://clicktok.xyz/api/v/${id}`,
