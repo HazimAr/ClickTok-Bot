@@ -33,6 +33,13 @@ export default {
         .setDescription(
           "Remove the original embed discord gives when a TikTok link is found in a message. (Default: true)"
         )
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName("public")
+        .setDescription(
+          "Allow your server leaderboard to be seen by anyone who has the link. (Default: true)"
+        )
     ),
   run: async function run(interaction: CommandInteraction) {
     const member = interaction.member as GuildMember;
@@ -67,7 +74,12 @@ export default {
       if (suppress_embed == true) settings.suppressEmbed = true;
       else settings.suppressEmbed = false;
     }
+    const _public = interaction.options.get("public")?.value;
 
+    if (_public != undefined) {
+      if (_public == true) settings.autoEmbed = true;
+      else settings.public = false;
+    }
     await prisma.guild.update({
       where: { id: interaction.guild.id },
       data: {
@@ -87,7 +99,8 @@ export default {
             "suppress_embed",
             settings.suppressEmbed ? "✅" : "❌",
             true
-          ),
+          )
+          .addField("public", settings.public ? "✅" : "❌", true),
       ],
       ephemeral: true,
     });
