@@ -223,7 +223,7 @@ export async function logError(
     errorEmbed.addField("Channel Name", channel.name, true);
     errorEmbed.addField("Channel Id", channel.id, true);
     // @ts-ignore
-    errorEmbed.addField("Message", data?.message.content);
+    errorEmbed.addField("Message", data?.message?.content || "N/A", true);
   } else {
     errorEmbed.setAuthor({
       name: data.name,
