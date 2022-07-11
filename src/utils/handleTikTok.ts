@@ -19,7 +19,7 @@ async function getId(url: string, regex: RegExp) {
 
   if (isNaN(parseInt(id)) && url.length > 5) {
     id = await axios
-      .get(url)
+      .get(match[0])
       .then(async (response) => {
         return await getIdFromText(response.request.res.responseUrl);
       })
@@ -63,7 +63,13 @@ export enum Type {
   COMMAND = "command",
 }
 
-export default async function (type: Type, tiktok, user: User, guild: Guild, channel: GuildChannel) {
+export default async function (
+  type: Type,
+  tiktok,
+  user: User,
+  guild: Guild,
+  channel: GuildChannel
+) {
   if (tiktok.aweme_detail?.image_post_info) {
     if (type == Type.COMMAND)
       return {
