@@ -25,7 +25,19 @@ model Guild {
   lastConvertedAt DateTime?
   createdAt       DateTime  @default(now())
 
-  conversions Conversion[]
+  conversions   Conversion[]
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  Guild   Guild  @relation(fields: [guild], references: [id])
+  guild   String
+  channel String
+  creator String // tiktok creator id
+
+  createdAt DateTime @default(now())
 }
 
 model User {
