@@ -78,11 +78,7 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
-
-  // await (
-  //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
-  // ).send("fr")
-
+  
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
   // ).messages.fetch("992304881643831297");
