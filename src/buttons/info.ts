@@ -11,7 +11,10 @@ import { logConversion } from "../utils/logger";
 
 export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
-
+  const id =
+    interaction.message.content.split("/")[
+      interaction.message.content.split("/").length - 1
+    ] || interaction.message.embeds[0].footer.text;
   if (
     !mongoUser.lastVotedAt ||
     mongoUser.lastVotedAt.getTime() + 1000 * 60 * 60 * 12 < Date.now()
@@ -22,7 +25,8 @@ export default async function (interaction: ButtonInteraction) {
           .setTitle(`Hey, ${interaction.user.username}`)
           .setDescription(
             "It looks like you haven't voted in the last 24 hours. To help keep this bot free votes are needed. Once you have voted you can view your info."
-          ),
+          )
+          .setFooter({ text: id }),
       ],
       components: [
         new MessageActionRow().addComponents(
@@ -31,7 +35,7 @@ export default async function (interaction: ButtonInteraction) {
             .setURL("https://top.gg/bot/990688037853872159/vote")
             .setStyle("LINK"),
           new MessageButton()
-            .setCustomId("info")
+            .setCustomId(`info`)
             .setLabel("I voted (give me my info)")
             .setStyle("PRIMARY")
             .setEmoji("🖥️")
@@ -39,12 +43,9 @@ export default async function (interaction: ButtonInteraction) {
       ],
       ephemeral: true,
     });
+
   const { data: tiktok } = await axios.get(
-    `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${
-      interaction.message.content.split("/")[
-        interaction.message.content.split("/").length - 1
-      ]
-    }`
+    `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`
   );
   const author = tiktok.aweme_detail?.author;
   const statistics = tiktok.aweme_detail.statistics;
