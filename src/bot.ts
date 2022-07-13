@@ -78,7 +78,15 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
-  
+
+  setInterval(async () => {
+    const notifications = await prisma.notification.findMany({});
+
+    notifications.forEach((notification) => {
+      // notification
+    });
+  }, 1000 * 60 * 5);
+
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
   // ).messages.fetch("992304881643831297");
