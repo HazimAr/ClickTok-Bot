@@ -133,7 +133,7 @@ router.post("/:id/notifications", async (req, res) => {
   )
     return res.status(400).send({ message: "Unable to fetch channel." });
 
-  const subscription = await prisma.subscription
+  const subscription = await prisma.notification
     .create({
       data: {
         guild: req.params["id"],
@@ -145,7 +145,7 @@ router.post("/:id/notifications", async (req, res) => {
   res.status(204).send(subscription);
 });
 router.delete("/:id/notifications/:notificationId", async (req, res) => {
-  const subscription = await prisma.subscription
+  const subscription = await prisma.notification
     .delete({
       where: {
         id: req.params.notificationId,
