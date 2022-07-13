@@ -26,10 +26,10 @@ model Guild {
   createdAt       DateTime  @default(now())
 
   conversions   Conversion[]
-  subscriptions Subscription[]
+  notifications Notifications[]
 }
 
-model Subscription {
+model Notifications {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   Guild   Guild  @relation(fields: [guild], references: [id])

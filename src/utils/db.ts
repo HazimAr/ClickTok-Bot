@@ -7,7 +7,7 @@ export async function getOrCreateGuild(guild: Guild) {
     where: { id: guild.id },
     include: {
       conversions: true,
-      subscriptions: true,
+      notifications: true,
     },
   });
 
@@ -16,7 +16,7 @@ export async function getOrCreateGuild(guild: Guild) {
       data: { id: guild.id, settings: {}, lastConvertedAt: null },
       include: {
         conversions: true,
-        subscriptions: true,
+        notifications: true,
       },
     });
     logGuild(guild);

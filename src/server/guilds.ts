@@ -120,11 +120,11 @@ router.post("/:id/settings", async (req, res) => {
   res.status(204).send();
 });
 
-router.get("/:id/subscriptions", async (req, res) => {
+router.get("/:id/notifications", async (req, res) => {
   const guild = await getOrCreateGuild(res.locals.discordGuild);
-  res.json(guild.subscriptions);
+  res.json(guild.notification);
 });
-router.post("/:id/subscriptions", async (req, res) => {
+router.post("/:id/notifications", async (req, res) => {
   if (!req.body) return res.status(400).send();
   if (
     !(await (res.locals.discordGuild as Guild).channels
@@ -144,11 +144,11 @@ router.post("/:id/subscriptions", async (req, res) => {
     .catch(console.error);
   res.status(204).send(subscription);
 });
-router.delete("/:id/subscriptions/:subscriptionId", async (req, res) => {
+router.delete("/:id/notifications/:notificationId", async (req, res) => {
   const subscription = await prisma.subscription
     .delete({
       where: {
-        id: req.params.subscriptionId,
+        id: req.params.notificationId,
 
         // this is a security issue if not added
         // guild: req.params.id,
