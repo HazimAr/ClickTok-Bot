@@ -32,11 +32,11 @@ model Guild {
 model Notification {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  Guild    Guild   @relation(fields: [guild], references: [id])
-  guild    String
-  channel  String
-  creator  String // tiktok creator id
-  role     String?
+  Guild   Guild   @relation(fields: [guild], references: [id])
+  guild   String
+  channel String
+  creator String // the creator's tiktok username
+  role    String?
   preview Boolean @default(true)
 
   createdAt DateTime @default(now())
