@@ -120,6 +120,24 @@ router.post("/:id/settings", async (req, res) => {
   res.status(204).send();
 });
 
+router.get("/:id/channels", async (req, res) => {
+  const discordGuild = res.locals.discordGuild as Guild;
+
+  const channels = (await discordGuild.channels.fetch())
+    .filter((channel) => channel.type === "GUILD_TEXT")
+
+  res.json(channels);
+});
+
+router.get("/:id/roles", async (req, res) => {
+  const discordGuild = res.locals.discordGuild as Guild;
+
+  const roles = (await discordGuild.roles.fetch())
+    .filter((role) => !role.managed)
+
+  res.json(roles);
+});
+
 router.get("/:id/notifications", async (req, res) => {
   const guild = await getOrCreateGuild(res.locals.discordGuild);
   res.json(guild.notifications);
@@ -133,13 +151,16 @@ router.post("/:id/notifications", async (req, res) => {
   )
     return res.status(400).send({ message: "Unable to fetch channel." });
 
+  const data = {
+    guild: req.params.id,
+    channel: req.body.channel,
+    creator: req.body.creator,
+  } as any;
+  if (data.role) data.role = req.body.role;
+
   const notification = await prisma.notification
     .create({
-      data: {
-        guild: req.params["id"],
-        channel: req.body.channel,
-        creator: req.body.creator,
-      },
+      data,
     })
     .catch(console.error);
   res.status(204).send(notification);
@@ -158,21 +179,6 @@ router.delete("/:id/notifications/:notificationId", async (req, res) => {
       res.status(500).send(e);
     });
   res.status(204).send(notification);
-});
-
-router.get("/:id/channels", async (req, res) => {
-  const discordGuild = res.locals.discordGuild as Guild;
-
-  const channels = (await discordGuild.channels.fetch())
-    .filter((channel) => channel.type === "GUILD_TEXT")
-    .map((channel) => {
-      return {
-        id: channel.id,
-        name: channel.name,
-      };
-    });
-
-  res.json(channels);
 });
 
 export default router;
