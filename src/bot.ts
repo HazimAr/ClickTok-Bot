@@ -3,6 +3,7 @@ import {
   ApplicationCommandDataResolvable,
   ButtonInteraction,
   Client,
+  Collection,
   CommandInteraction,
   Guild,
   Intents,
@@ -17,6 +18,7 @@ import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
 import { logError, logGuild } from "./utils/logger";
+import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
 import server from "./server";
 
 server.listen(8080, () => {
@@ -78,14 +80,18 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
+  const userVideos = new Collection<string, IVideo[]>();
 
-  setInterval(async () => {
-    const notifications = await prisma.notification.findMany({});
+  const notifications = await prisma.notification.findMany({});
+  notifications.forEach(async (notification) => {
+    const videos = await fetchAllVideosFromUser("charlidamelio");
 
-    notifications.forEach((notification) => {
-      // notification
-    });
-  }, 1000 * 60 * 5);
+    console.log(videos);
+  });
+
+  // setInterval(async () => {
+  //   checkNewVideos("khaby.lame");
+  // }, 1000 * 60 * 5);
 
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
