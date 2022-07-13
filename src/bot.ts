@@ -18,7 +18,7 @@ import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
 import { logError, logGuild } from "./utils/logger";
-import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
+// import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
 import server from "./server";
 
 server.listen(8080, () => {
@@ -80,14 +80,14 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
-  const userVideos = new Collection<string, IVideo[]>();
+  // const userVideos = new Collection<string, IVideo[]>();
 
-  const notifications = await prisma.notification.findMany({});
-  notifications.forEach(async (notification) => {
-    const videos = await fetchAllVideosFromUser("charlidamelio");
+  // const notifications = await prisma.notification.findMany({});
+  // notifications.forEach(async (notification) => {
+  //   const videos = await fetchAllVideosFromUser("charlidamelio");
 
-    console.log(videos);
-  });
+  //   console.log(videos);
+  // });
 
   // setInterval(async () => {
   //   checkNewVideos("khaby.lame");

@@ -1,3 +1,4 @@
+import { Notification } from "@prisma/client";
 import axios from "axios";
 import { Guild } from "discord.js";
 import { ChannelTypes } from "discord.js/typings/enums";
@@ -123,8 +124,9 @@ router.post("/:id/settings", async (req, res) => {
 router.get("/:id/channels", async (req, res) => {
   const discordGuild = res.locals.discordGuild as Guild;
 
-  const channels = (await discordGuild.channels.fetch())
-    .filter((channel) => channel.type === "GUILD_TEXT")
+  const channels = (await discordGuild.channels.fetch()).filter(
+    (channel) => channel.type === "GUILD_TEXT"
+  );
 
   res.json(channels);
 });
@@ -132,8 +134,9 @@ router.get("/:id/channels", async (req, res) => {
 router.get("/:id/roles", async (req, res) => {
   const discordGuild = res.locals.discordGuild as Guild;
 
-  const roles = (await discordGuild.roles.fetch())
-    .filter((role) => !role.managed)
+  const roles = (await discordGuild.roles.fetch()).filter(
+    (role) => !role.managed
+  );
 
   res.json(roles);
 });
@@ -156,13 +159,25 @@ router.post("/:id/notifications", async (req, res) => {
     channel: req.body.channel,
     creator: req.body.creator,
   } as any;
-  if (data.role) data.role = req.body.role;
+  if (req.body.role) data.role = req.body.role;
+  if (req.body.preview) data.preview = req.body.preview;
+  let notification: void | Notification;
+  if (req.body.id) {
+    notification = await prisma.notification
+      .upsert({
+        where: { id: req.body.id },
+        update: data,
+        create: data,
+      })
+      .catch(console.error);
+  } else {
+    notification = await prisma.notification
+      .create({
+        data,
+      })
+      .catch(console.error);
+  }
 
-  const notification = await prisma.notification
-    .create({
-      data,
-    })
-    .catch(console.error);
   res.status(204).send(notification);
 });
 router.delete("/:id/notifications/:notificationId", async (req, res) => {
@@ -178,6 +193,7 @@ router.delete("/:id/notifications/:notificationId", async (req, res) => {
     .catch((e) => {
       res.status(500).send(e);
     });
+  if (!notification) return;
   res.status(204).send(notification);
 });
 

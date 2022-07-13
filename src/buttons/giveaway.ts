@@ -43,7 +43,10 @@ export default async function (interaction: ButtonInteraction) {
     });
   }
 
-  if (mongoUser.lastVotedAt?.getTime() < Date.now() - 1000 * 60 * 60 * 12) {
+  if (
+    (mongoUser.lastVotedAt?.getTime() || 0) <
+    Date.now() - 1000 * 60 * 60 * 12
+  ) {
     return await interaction.reply({
       embeds: [
         new MessageEmbed()
