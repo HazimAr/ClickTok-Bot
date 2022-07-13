@@ -122,7 +122,7 @@ router.post("/:id/settings", async (req, res) => {
 
 router.get("/:id/notifications", async (req, res) => {
   const guild = await getOrCreateGuild(res.locals.discordGuild);
-  res.json(guild.notification);
+  res.json(guild.notifications);
 });
 router.post("/:id/notifications", async (req, res) => {
   if (!req.body) return res.status(400).send();
