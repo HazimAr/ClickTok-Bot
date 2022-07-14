@@ -168,7 +168,7 @@ router.post("/:id/notifications", async (req, res) => {
     notification = await prisma.notification
       .upsert({
         where: { id: req.body.id },
-        update: { ...data, role: req.body.role },
+        update: { ...data, role: data.role ? data.role : { unset: true } },
         create: data,
       })
       .catch(console.error);
