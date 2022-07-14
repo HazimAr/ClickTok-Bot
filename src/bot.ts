@@ -113,7 +113,7 @@ client.once("ready", async () => {
         .catch(console.error)) as Creator;
 
       if (!mongoCreator) {
-        mongoCreator = (await prisma.creator
+        return (await prisma.creator
           .create({
             data: {
               id: sigi.UserPage.uniqueId,
@@ -121,14 +121,6 @@ client.once("ready", async () => {
             },
           })
           .catch(console.error)) as Creator;
-
-        if (!mongoCreator)
-          return console.error(
-            `Failed to create ${
-              sigi.UserModule.users[Object.keys(sigi.UserModule.users)[0]]
-                .uniqueId
-            }`
-          );
       }
       const newItems: ItemModule[] = [];
 
