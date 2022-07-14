@@ -159,8 +159,10 @@ router.post("/:id/notifications", async (req, res) => {
     channel: req.body.channel,
     creator: req.body.creator,
   } as any;
+
   if (req.body.role) data.role = req.body.role;
   if (req.body.preview) data.preview = req.body.preview;
+
   let notification: void | Notification;
   if (req.body.id) {
     notification = await prisma.notification
@@ -171,6 +173,17 @@ router.post("/:id/notifications", async (req, res) => {
       })
       .catch(console.error);
   } else {
+    notification = await prisma.notification.findFirst({
+      where: {
+        guild: req.params.id,
+        creator: req.body.creator,
+      },
+    });
+    if (notification) {
+      return res
+        .status(409)
+        .send({ message: "Notification for that creator already exists." });
+    }
     notification = await prisma.notification
       .create({
         data,

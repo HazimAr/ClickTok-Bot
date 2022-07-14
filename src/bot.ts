@@ -98,7 +98,7 @@ client.once("ready", async () => {
       const element = await page
         .waitForSelector("#SIGI_STATE")
         .catch(console.error);
-        
+
       if (!element) return;
       const sigi: Sigi = JSON.parse(
         await element.evaluate((e) => e.textContent)
@@ -199,7 +199,7 @@ client.once("ready", async () => {
       }
       await page.close();
     });
-  }, 1000 * 30);
+  }, 1000 * 60);
 
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
