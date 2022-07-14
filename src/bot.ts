@@ -123,6 +123,7 @@ client.once("ready", async () => {
           .catch(console.error)) as Creator;
       }
       const newItems: ItemModule[] = [];
+      const videos: string[] = [];
 
       Object.keys(sigi.ItemModule).map((key) => {
         const item = sigi.ItemModule[key];
@@ -131,6 +132,7 @@ client.once("ready", async () => {
           newItems.push(item);
           return;
         }
+        videos.push(item.video.id);
       });
 
       mongoCreator = (await prisma.creator
@@ -139,10 +141,7 @@ client.once("ready", async () => {
             id: sigi.UserPage.uniqueId,
           },
           data: {
-            videos: [
-              ...mongoCreator.videos,
-              ...newItems.map((i) => i.video.id),
-            ],
+            videos,
           },
         })
         .catch(console.error)) as Creator;
