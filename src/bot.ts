@@ -11,6 +11,7 @@ import {
   Message,
   MessageEmbed,
   MessageOptions,
+  Role,
   TextChannel,
 } from "discord.js";
 import { AutoPoster } from "topgg-autoposter";
@@ -87,18 +88,20 @@ client.once("ready", async () => {
   client.application.commands.set(commands.map((command) => command.data));
   // const userVideos = new Collection<string, IVideo[]>();
 
-  const notifications = await prisma.notification.findMany({});
-
   const browser = await launch();
   setInterval(async () => {
+    const notifications = await prisma.notification.findMany({});
     notifications.forEach(async (notification) => {
       const page = await browser.newPage();
       await page.goto(`https://tiktok.com/@${notification.creator}`);
 
+      const element = await page
+        .waitForSelector("#SIGI_STATE")
+        .catch(console.error);
+        
+      if (!element) return;
       const sigi: Sigi = JSON.parse(
-        await (
-          await page.waitForSelector("#SIGI_STATE")
-        ).evaluate((e) => e.textContent)
+        await element.evaluate((e) => e.textContent)
       );
 
       let mongoCreator = (await prisma.creator
@@ -138,13 +141,26 @@ client.once("ready", async () => {
         }
       });
 
+      mongoCreator = await prisma.creator.update({
+        where: {
+          id: sigi.UserPage.uniqueId,
+        },
+        data: {
+          videos: [...mongoCreator.videos, ...newItems.map((i) => i.video.id)],
+        },
+      });
+
+      if (!mongoCreator)
+        return console.error(`Failed to update ${sigi.UserPage.uniqueId}`);
+
       if (newItems.length) {
         const guild = await client.guilds.fetch(notification.guild);
         const channel = (await guild.channels.fetch(
           notification.channel
         )) as GuildTextBasedChannel;
-        let role;
-        if (notification.role) role = await guild.roles.fetch(role);
+        let role: Role = null;
+        if (notification.role)
+          role = await guild.roles.fetch(notification.role);
         newItems.forEach(async (newItem) => {
           const message: MessageOptions = {
             embeds: [
@@ -162,16 +178,28 @@ client.once("ready", async () => {
                 // TODO: extra text info
                 .setFooter({ text: newItem.video.id })
                 .setThumbnail(newItem.video.cover)
-                .setTimestamp(),
+                .setTimestamp()
+                .setColor("#9b77e9"),
             ],
           };
-          if (notification.preview)
-            message.content = `https://clicktok.xyz/api/v/${newItem}`;
+
+          if (notification.preview || role)
+            await channel
+              .send({
+                content: `${role ? `${role} ` : ""}${
+                  notification.preview
+                    ? `https://clicktok.xyz/api/v/${newItem.video.id}`
+                    : ""
+                }`,
+              })
+              .catch(console.error);
+
           await channel.send(message).catch(console.error);
         });
       }
+      await page.close();
     });
-  }, 1000 * 60 * 5);
+  }, 1000 * 30);
 
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel

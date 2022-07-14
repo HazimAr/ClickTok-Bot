@@ -4,6 +4,7 @@
   "main": "dist",
   "scripts": {
     "start": "ts-node ./src/bot.ts",
+    "test": "ts-node ./src/test.ts",
     "dev": "ts-node-dev ./src/bot.ts",
     "prisma": "prisma generate && prisma db push"
   },
