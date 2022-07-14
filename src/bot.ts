@@ -133,14 +133,19 @@ client.once("ready", async () => {
         }
       });
 
-      mongoCreator = await prisma.creator.update({
-        where: {
-          id: sigi.UserPage.uniqueId,
-        },
-        data: {
-          videos: [...mongoCreator.videos, ...newItems.map((i) => i.video.id)],
-        },
-      });
+      mongoCreator = (await prisma.creator
+        .update({
+          where: {
+            id: sigi.UserPage.uniqueId,
+          },
+          data: {
+            videos: [
+              ...mongoCreator.videos,
+              ...newItems.map((i) => i.video.id),
+            ],
+          },
+        })
+        .catch(console.error)) as Creator;
 
       if (!mongoCreator)
         return console.error(`Failed to update ${sigi.UserPage.uniqueId}`);
