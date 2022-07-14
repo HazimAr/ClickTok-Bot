@@ -86,9 +86,25 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
-  // const userVideos = new Collection<string, IVideo[]>();
 
   const browser = await launch();
+  const notifications = await prisma.notification.findMany({});
+  const userVideos = new Collection<string, string[]>();
+  notifications.forEach(async (notification) => {
+    const page = await browser.newPage();
+    await page.goto(`https://tiktok.com/@${notification.creator}`);
+
+    const element = await page
+      .waitForSelector("#SIGI_STATE")
+      .catch(console.error);
+
+    if (!element) return;
+    const sigi: Sigi = JSON.parse(await element.evaluate((e) => e.textContent));
+
+    userVideos.set(sigi.UserPage.uniqueId, Object.keys(sigi.ItemModule));
+    await page.close();
+  });
+
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
     notifications.forEach(async (notification) => {
@@ -104,47 +120,29 @@ client.once("ready", async () => {
         await element.evaluate((e) => e.textContent)
       );
 
-      let mongoCreator = (await prisma.creator
-        .findFirst({
-          where: {
-            id: sigi.UserPage.uniqueId,
-          },
-        })
-        .catch(console.error)) as Creator;
+      let oldCreatorVideos = userVideos.get(sigi.UserPage.uniqueId);
 
-      if (!mongoCreator) {
-        return (await prisma.creator
-          .create({
-            data: {
-              id: sigi.UserPage.uniqueId,
-              videos: Object.keys(sigi.ItemModule),
-            },
-          })
-          .catch(console.error)) as Creator;
+      if (!oldCreatorVideos) {
+        return userVideos.set(
+          sigi.UserPage.uniqueId,
+          Object.keys(sigi.ItemModule)
+        );
       }
       const newItems: ItemModule[] = [];
 
       Object.keys(sigi.ItemModule).map((key) => {
         const item = sigi.ItemModule[key];
 
-        if (!mongoCreator.videos.find((v) => v == item.video.id)) {
+        if (!oldCreatorVideos.find((v) => v == item.video.id)) {
           newItems.push(item);
           return;
         }
       });
 
-      mongoCreator = (await prisma.creator
-        .update({
-          where: {
-            id: sigi.UserPage.uniqueId,
-          },
-          data: {
-            videos: Object.keys(sigi.ItemModule),
-          },
-        })
-        .catch(console.error)) as Creator;
+      userVideos.set(sigi.UserPage.uniqueId, Object.keys(sigi.ItemModule));
+      oldCreatorVideos = userVideos.get(sigi.UserPage.uniqueId);
 
-      if (!mongoCreator)
+      if (!oldCreatorVideos)
         return console.error(`Failed to update ${sigi.UserPage.uniqueId}`);
 
       if (newItems.length) {

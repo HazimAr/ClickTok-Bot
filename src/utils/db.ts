@@ -1,15 +1,17 @@
 import { prisma } from "../bot";
 import { Guild, User } from "discord.js";
-import { logGuild } from "./logger";
+import { logError, logGuild } from "./logger";
 
 export async function getOrCreateGuild(guild: Guild) {
-  let mongoGuild = await prisma.guild.findFirst({
-    where: { id: guild.id },
-    include: {
-      conversions: true,
-      notifications: true,
-    },
-  });
+  let mongoGuild = await prisma.guild
+    .findFirst({
+      where: { id: guild.id },
+      include: {
+        conversions: true,
+        notifications: true,
+      },
+    })
+    .catch((e) => logError(e, guild).catch(console.error));
 
   if (!mongoGuild) {
     mongoGuild = await prisma.guild.create({
