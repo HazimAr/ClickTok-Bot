@@ -267,6 +267,9 @@ client.on("guildCreate", async (guild: Guild) => {
 client.on("guildDelete", async (guild: Guild) => {
   try {
     await logGuild(guild, false);
+    await prisma.notification.deleteMany({
+      where: { guild: guild.id },
+    });
   } catch (e) {
     logError(e, guild).catch(console.error);
   }
