@@ -6,20 +6,25 @@ import {
   Collection,
   CommandInteraction,
   Guild,
+  GuildTextBasedChannel,
   Intents,
   Message,
+  MessageEmbed,
+  MessageOptions,
   TextChannel,
 } from "discord.js";
 import { AutoPoster } from "topgg-autoposter";
 import { readdirSync } from "fs";
 import axios from "axios";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
-import { PrismaClient } from "@prisma/client";
+import { Creator, PrismaClient } from "@prisma/client";
 import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
 import { logError, logGuild } from "./utils/logger";
 // import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
 import server from "./server";
+import { launch } from "puppeteer";
+import { ItemModule, Sigi, Video } from "./types";
 
 server.listen(8080, () => {
   console.log("Server listening on port 8080");
@@ -82,16 +87,91 @@ client.once("ready", async () => {
   client.application.commands.set(commands.map((command) => command.data));
   // const userVideos = new Collection<string, IVideo[]>();
 
-  // const notifications = await prisma.notification.findMany({});
-  // notifications.forEach(async (notification) => {
-  //   const videos = await fetchAllVideosFromUser("charlidamelio");
+  const notifications = await prisma.notification.findMany({});
 
-  //   console.log(videos);
-  // });
+  const browser = await launch();
+  setInterval(async () => {
+    notifications.forEach(async (notification) => {
+      const page = await browser.newPage();
+      await page.goto(`https://tiktok.com/@${notification.creator}`);
 
-  // setInterval(async () => {
-  //   checkNewVideos("khaby.lame");
-  // }, 1000 * 60 * 5);
+      const sigi: Sigi = JSON.parse(
+        await (
+          await page.waitForSelector("#SIGI_STATE")
+        ).evaluate((e) => e.textContent)
+      );
+
+      let mongoCreator = (await prisma.creator
+        .findFirst({
+          where: {
+            id: sigi.UserPage.uniqueId,
+          },
+        })
+        .catch(console.error)) as Creator;
+
+      if (!mongoCreator) {
+        mongoCreator = (await prisma.creator
+          .create({
+            data: {
+              id: sigi.UserPage.uniqueId,
+              videos: Object.keys(sigi.ItemModule),
+            },
+          })
+          .catch(console.error)) as Creator;
+
+        if (!mongoCreator)
+          return console.error(
+            `Failed to create ${
+              sigi.UserModule.users[Object.keys(sigi.UserModule.users)[0]]
+                .uniqueId
+            }`
+          );
+      }
+      const newItems: ItemModule[] = [];
+
+      Object.keys(sigi.ItemModule).map((key) => {
+        const item = sigi.ItemModule[key];
+
+        if (!mongoCreator.videos.find((v) => v == item.video.id)) {
+          newItems.push(item);
+          return;
+        }
+      });
+
+      if (newItems.length) {
+        const guild = await client.guilds.fetch(notification.guild);
+        const channel = (await guild.channels.fetch(
+          notification.channel
+        )) as GuildTextBasedChannel;
+        let role;
+        if (notification.role) role = await guild.roles.fetch(role);
+        newItems.forEach(async (newItem) => {
+          const message: MessageOptions = {
+            embeds: [
+              new MessageEmbed()
+                .setAuthor({
+                  name: newItem.nickname,
+                  iconURL: newItem.avatarThumb,
+                  url: `https://tiktok.com/@${newItem.author}`,
+                })
+                .setTitle("New TikTok")
+                .setURL(
+                  `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
+                )
+                .setDescription(newItem.desc)
+                // TODO: extra text info
+                .setFooter({ text: newItem.video.id })
+                .setThumbnail(newItem.video.cover)
+                .setTimestamp(),
+            ],
+          };
+          if (notification.preview)
+            message.content = `https://clicktok.xyz/api/v/${newItem}`;
+          await channel.send(message).catch(console.error);
+        });
+      }
+    });
+  }, 1000 * 60 * 5);
 
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
