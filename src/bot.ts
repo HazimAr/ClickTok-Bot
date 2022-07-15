@@ -101,7 +101,7 @@ client.once("ready", async () => {
     if (!element) return;
     const sigi: Sigi = JSON.parse(await element.evaluate((e) => e.textContent));
 
-    userVideos.set(sigi.UserPage.uniqueId, Object.keys(sigi.ItemModule));
+    userVideos.set(sigi.UserPage.uniqueId, Object.keys(sigi.ItemModule || {}));
     await page.close();
   });
 
@@ -121,16 +121,15 @@ client.once("ready", async () => {
       );
 
       let oldCreatorVideos = userVideos.get(sigi.UserPage.uniqueId);
+      let keys = Object.keys(sigi.ItemModule);
+      if (!keys.length) return console.error("No keys found in ItemModule");
 
       if (!oldCreatorVideos) {
-        return userVideos.set(
-          sigi.UserPage.uniqueId,
-          Object.keys(sigi.ItemModule)
-        );
+        return userVideos.set(sigi.UserPage.uniqueId, keys);
       }
       const newItems: ItemModule[] = [];
 
-      const keys = Object.keys(sigi.ItemModule);
+      keys = Object.keys(sigi.ItemModule);
       if (!keys.length) return console.error("No keys found in ItemModule");
       keys.map((key) => {
         const item = sigi.ItemModule[key];
@@ -140,8 +139,9 @@ client.once("ready", async () => {
           return;
         }
       });
-
-      userVideos.set(sigi.UserPage.uniqueId, Object.keys(sigi.ItemModule));
+      keys = Object.keys(sigi.ItemModule);
+      if (!keys.length) return console.error("No keys found in ItemModule");
+      userVideos.set(sigi.UserPage.uniqueId, keys);
       oldCreatorVideos = userVideos.get(sigi.UserPage.uniqueId);
 
       if (!oldCreatorVideos)
