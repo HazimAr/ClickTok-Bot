@@ -130,7 +130,9 @@ client.once("ready", async () => {
       }
       const newItems: ItemModule[] = [];
 
-      Object.keys(sigi.ItemModule).map((key) => {
+      const keys = Object.keys(sigi.ItemModule);
+      if (!keys.length) return console.error("No keys found in ItemModule");
+      keys.map((key) => {
         const item = sigi.ItemModule[key];
 
         if (!oldCreatorVideos.find((v) => v == item.video.id)) {

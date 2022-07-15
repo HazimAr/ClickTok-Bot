@@ -142,7 +142,9 @@ router.get("/:id/roles", async (req, res) => {
 });
 
 router.get("/:id/notifications", async (req, res) => {
-  const guild = await getOrCreateGuild(res.locals.discordGuild);
+  const guild = await getOrCreateGuild(res.locals.discordGuild).catch((e) => e);
+  if (guild instanceof Error)
+    return res.status(500).json({ error: guild.message });
   res.json(guild.notifications);
 });
 router.post("/:id/notifications", async (req, res) => {
@@ -158,10 +160,10 @@ router.post("/:id/notifications", async (req, res) => {
     guild: req.params.id,
     channel: req.body.channel,
     creator: req.body.creator,
+    preview: req.body.preview,
   } as any;
 
   if (req.body.role) data.role = req.body.role;
-  if (req.body.preview) data.preview = req.body.preview;
 
   let notification: void | Notification;
   if (req.body.id) {
