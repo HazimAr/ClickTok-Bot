@@ -9,9 +9,8 @@ router.post(
   "/",
   topggWebhook.listener(async (vote) => {
     if (vote.type === "upvote") {
-      await Promise.all([
-        logVote(vote),
-        prisma.user.upsert({
+      try {
+        await prisma.user.upsert({
           where: { id: vote.user },
           update: {
             votes: {
@@ -24,8 +23,9 @@ router.post(
             lastConvertedAt: null,
             lastVotedAt: null,
           },
-        }),
-      ]);
+        });
+        logVote(vote);
+      } catch {}
     }
   })
 );

@@ -33,12 +33,7 @@ export default async function (interaction: ButtonInteraction) {
           new MessageButton()
             .setLabel("Vote")
             .setURL("https://top.gg/bot/990688037853872159/vote")
-            .setStyle("LINK"),
-          new MessageButton()
-            .setCustomId(`info`)
-            .setLabel("I voted (give me my info)")
-            .setStyle("PRIMARY")
-            .setEmoji("🖥️")
+            .setStyle("LINK")
         ),
       ],
       ephemeral: true,

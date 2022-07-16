@@ -71,6 +71,20 @@ client.once("ready", async () => {
     type: "PLAYING",
     name: "clicktok.xyz | /tiktok",
   });
+
+  // client.guilds.cache.first(20).forEach(async (guild) => {
+  //   const conversions = await prisma.conversion.findMany({
+  //     where: {
+  //       guild: guild.id,
+  //     },
+  //   });
+
+  //   if (!conversions.length) {
+  //     // @ts-ignore
+  //     guild.leave();
+  //   }
+  // });
+
   readdirSync("./src/buttons").forEach(async (buttonFile) => {
     const buttonFunction = (await import(`./buttons/${buttonFile}`)).default;
     buttons.push({ id: buttonFile.split(".")[0], run: buttonFunction });
