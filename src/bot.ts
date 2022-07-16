@@ -87,113 +87,106 @@ client.once("ready", async () => {
 
   client.application.commands.set(commands.map((command) => command.data));
 
-  const browser = await launch();
-  const notifications = await prisma.notification.findMany({});
-  const userVideos = new Collection<string, string[]>();
-  notifications.forEach(async (notification) => {
-    const page = await browser.newPage();
-    await page.goto(`https://tiktok.com/@${notification.creator}`);
-
-    const element = await page
-      .waitForSelector("#SIGI_STATE")
-      .catch(console.error);
-
-    if (!element) return;
-    const sigi: Sigi = JSON.parse(await element.evaluate((e) => e.textContent));
-
-    userVideos.set(sigi.UserPage.uniqueId, Object.keys(sigi.ItemModule || {}));
-    await page.close();
+  const browser = await launch({
+    timeout: 60000,
   });
 
-  setInterval(async () => {
-    const notifications = await prisma.notification.findMany({});
-    notifications.forEach(async (notification) => {
-      const page = await browser.newPage();
-      await page.goto(`https://tiktok.com/@${notification.creator}`);
+  // setInterval(async () => {
+  //   const notifications = await prisma.notification.findMany({});
+  //   const page = await browser.newPage();
+  //   for (const notification of notifications) {
+  //     try {
+  //       await page.goto(`https://tiktok.com/@${notification.creator}`, {
+  //         timeout: 0,
+  //         referer: "https://tiktok.com",
+  //       });
+  //       await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+  //       const element = await page.waitForSelector("#SIGI_STATE");
+  //       if (!element) return;
 
-      const element = await page
-        .waitForSelector("#SIGI_STATE")
-        .catch(console.error);
+  //       const sigi: Sigi = JSON.parse(
+  //         await element.evaluate((e) => e.textContent)
+  //       );
 
-      if (!element) return;
-      const sigi: Sigi = JSON.parse(
-        await element.evaluate((e) => e.textContent)
-      );
+  //       let mongoCreator = await prisma.creator.findFirst({
+  //         where: { id: sigi.UserPage.uniqueId },
+  //       });
 
-      let oldCreatorVideos = userVideos.get(sigi.UserPage.uniqueId);
-      let keys = Object.keys(sigi.ItemModule);
-      if (!keys.length) return console.error("No keys found in ItemModule");
+  //       const keys = Object.keys(sigi.ItemModule);
 
-      if (!oldCreatorVideos) {
-        return userVideos.set(sigi.UserPage.uniqueId, keys);
-      }
-      const newItems: ItemModule[] = [];
+  //       if (!mongoCreator) {
+  //         return await prisma.creator.create({
+  //           data: { id: sigi.UserPage.uniqueId, videos: keys },
+  //         });
+  //       }
+  //       const newItems: ItemModule[] = [];
 
-      keys = Object.keys(sigi.ItemModule);
-      if (!keys.length) return console.error("No keys found in ItemModule");
-      keys.map((key) => {
-        const item = sigi.ItemModule[key];
+  //       keys.map((key) => {
+  //         const item = sigi.ItemModule[key];
 
-        if (!oldCreatorVideos.find((v) => v == item.video.id)) {
-          newItems.push(item);
-          return;
-        }
-      });
-      keys = Object.keys(sigi.ItemModule);
-      if (!keys.length) return console.error("No keys found in ItemModule");
-      userVideos.set(sigi.UserPage.uniqueId, keys);
-      oldCreatorVideos = userVideos.get(sigi.UserPage.uniqueId);
+  //         if (!mongoCreator.videos.find((v) => v == item.video.id)) {
+  //           newItems.push(item);
+  //           return;
+  //         }
+  //       });
 
-      if (!oldCreatorVideos)
-        return console.error(`Failed to update ${sigi.UserPage.uniqueId}`);
+  //       mongoCreator = await prisma.creator.update({
+  //         where: { id: sigi.UserPage.uniqueId },
+  //         data: { videos: keys },
+  //       });
+  //       console.log(sigi.UserPage.uniqueId, newItems);
+  //       if (newItems.length) {
+  //         const guild = await client.guilds.fetch(notification.guild);
+  //         const channel = (await guild.channels.fetch(
+  //           notification.channel
+  //         )) as GuildTextBasedChannel;
+  //         let role: Role = null;
+  //         if (notification.role)
+  //           role = await guild.roles.fetch(notification.role);
+  //         newItems.forEach(async (newItem) => {
+  //           const message: MessageOptions = {
+  //             embeds: [
+  //               new MessageEmbed()
+  //                 .setAuthor({
+  //                   name: newItem.nickname,
+  //                   iconURL: newItem.avatarThumb,
+  //                   url: `https://tiktok.com/@${newItem.author}`,
+  //                 })
+  //                 .setTitle("New TikTok")
+  //                 .setURL(
+  //                   `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
+  //                 )
+  //                 .setDescription(newItem.desc)
+  //                 // TODO: extra text info
+  //                 .setFooter({ text: newItem.video.id })
+  //                 .setThumbnail(newItem.video.cover)
+  //                 .setTimestamp()
+  //                 .setColor("#9b77e9"),
+  //             ],
+  //           };
 
-      if (newItems.length) {
-        const guild = await client.guilds.fetch(notification.guild);
-        const channel = (await guild.channels.fetch(
-          notification.channel
-        )) as GuildTextBasedChannel;
-        let role: Role = null;
-        if (notification.role)
-          role = await guild.roles.fetch(notification.role);
-        newItems.forEach(async (newItem) => {
-          const message: MessageOptions = {
-            embeds: [
-              new MessageEmbed()
-                .setAuthor({
-                  name: newItem.nickname,
-                  iconURL: newItem.avatarThumb,
-                  url: `https://tiktok.com/@${newItem.author}`,
-                })
-                .setTitle("New TikTok")
-                .setURL(
-                  `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
-                )
-                .setDescription(newItem.desc)
-                // TODO: extra text info
-                .setFooter({ text: newItem.video.id })
-                .setThumbnail(newItem.video.cover)
-                .setTimestamp()
-                .setColor("#9b77e9"),
-            ],
-          };
+  //           if (notification.preview || role)
+  //             await channel
+  //               .send({
+  //                 content: `${role ? `${role} ` : ""}${
+  //                   notification.preview
+  //                     ? `https://clicktok.xyz/api/v/${newItem.video.id}`
+  //                     : ""
+  //                 }`,
+  //               })
+  //               .catch(console.error);
 
-          if (notification.preview || role)
-            await channel
-              .send({
-                content: `${role ? `${role} ` : ""}${
-                  notification.preview
-                    ? `https://clicktok.xyz/api/v/${newItem.video.id}`
-                    : ""
-                }`,
-              })
-              .catch(console.error);
+  //           await channel.send(message).catch(console.error);
+  //         });
+  //       }
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //   }
+  //   await page.close();
+  // }, 1000 * 10);
 
-          await channel.send(message).catch(console.error);
-        });
-      }
-      await page.close();
-    });
-  }, 1000 * 60);
+  /* */
 
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel

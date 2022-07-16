@@ -202,7 +202,7 @@ router.delete("/:id/notifications/:notificationId", async (req, res) => {
       where: {
         id: req.params.notificationId,
 
-        // this is a security issue if not added
+        // this is a security issue if not added granted if they actually had the id of another notification 💀
         // guild: req.params.id,
       },
     })

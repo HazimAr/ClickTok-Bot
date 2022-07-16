@@ -75,3 +75,8 @@ model GiveawayEntries {
 
   User User @relation(fields: [user], references: [id])
 }
+
+model Creator {
+  id     String   @id @map("_id")
+  videos String[] // ids of the videos
+}
