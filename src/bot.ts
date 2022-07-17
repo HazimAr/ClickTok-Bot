@@ -72,7 +72,7 @@ client.once("ready", async () => {
     name: "clicktok.xyz | /tiktok",
   });
 
-  client.guilds.cache.first().forEach(async (guild) => {
+  client.guilds.cache.forEach(async (guild) => {
     const conversions = await prisma.conversion.findMany({
       where: {
         guild: guild.id,
