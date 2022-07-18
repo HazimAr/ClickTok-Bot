@@ -166,10 +166,18 @@ client.once("ready", async () => {
         });
 
         const keys = Object.keys(sigi.ItemModule);
-
+        const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
         if (!mongoCreator) {
           return await prisma.creator.create({
-            data: { id: sigi.UserPage.uniqueId, videos: keys },
+            data: {
+              id: sigi.UserPage.uniqueId,
+              videos: keys,
+              statistics: {
+                followers: creatorStats.followerCount,
+                likes: creatorStats.heart,
+                videos: creatorStats.videoCount,
+              },
+            },
           });
         }
         const newItems: ItemModule[] = [];
@@ -185,8 +193,16 @@ client.once("ready", async () => {
 
         mongoCreator = await prisma.creator.update({
           where: { id: sigi.UserPage.uniqueId },
-          data: { videos: keys },
+          data: {
+            videos: keys,
+            statistics: {
+              followers: creatorStats.followerCount,
+              likes: creatorStats.heart,
+              videos: creatorStats.videoCount,
+            },
+          },
         });
+        
         if (newItems.length) {
           const guild = await client.guilds.fetch(notification.guild);
           const channel = (await guild.channels.fetch(
