@@ -1,10 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import {
-  CommandInteraction,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
-} from "discord.js";
+import { CommandInteraction, EmbedBuilder } from "discord.js";
 import { prisma } from "../bot";
 
 export default {
@@ -17,7 +12,7 @@ export default {
     const users = await prisma.user.findMany({});
     await interaction.reply({
       embeds: [
-        new MessageEmbed()
+        new EmbedBuilder()
           .setTitle("ClickTok Info")
           .setDescription(
             "Here are some general details and ClickTok statistics."

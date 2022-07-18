@@ -1,9 +1,10 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction, TextChannel } from "discord.js";
+import { CommandInteraction, TextChannel, WebhookEditMessageOptions } from "discord.js";
 import axios from "axios";
 import getTikTokResponse, { getIdFromText, Type } from "../utils/handleTikTok";
 import validTikTokUrl from "../utils/validTikTokUrl";
 import { logError } from "../utils/logger";
+
 export default {
   data: new SlashCommandBuilder()
     .setName("tiktok")
@@ -31,13 +32,13 @@ export default {
       )
       .then(async (response) => {
         await interaction.editReply(
-          await getTikTokResponse(
+          (await getTikTokResponse(
             Type.COMMAND,
             response.data,
             interaction.user,
             interaction.guild,
             interaction.channel as TextChannel
-          )
+          )) as WebhookEditMessageOptions
         );
       })
       .catch(async (e) => {

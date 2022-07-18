@@ -1,31 +1,30 @@
-import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
+import axios from "axios";
 import {
+  ActivityType,
   ApplicationCommandDataResolvable,
   ButtonInteraction,
   Client,
-  Collection,
   CommandInteraction,
+  EmbedBuilder,
+  GatewayIntentBits,
   Guild,
   GuildTextBasedChannel,
-  Intents,
   Message,
-  MessageEmbed,
   MessageOptions,
   Role,
   TextChannel,
 } from "discord.js";
-import { AutoPoster } from "topgg-autoposter";
+import "dotenv/config";
 import { readdirSync } from "fs";
-import axios from "axios";
-import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
-import { Creator, PrismaClient } from "@prisma/client";
-import { getOrCreateGuild } from "./utils/db";
-import validTikTokUrl from "./utils/validTikTokUrl";
-import { logError, logGuild } from "./utils/logger";
-// import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
-import server from "./server";
 import { launch } from "puppeteer";
-import { ItemModule, Sigi, Video } from "./types";
+import { AutoPoster } from "topgg-autoposter";
+import server from "./server";
+import { ItemModule, Sigi } from "./types";
+import { getOrCreateGuild } from "./utils/db";
+import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
+import { logError, logGuild } from "./utils/logger";
+import validTikTokUrl from "./utils/validTikTokUrl";
 
 server.listen(8080, () => {
   console.log("Server listening on port 8080");
@@ -33,9 +32,9 @@ server.listen(8080, () => {
 
 export const client = new Client({
   intents: [
-    Intents.FLAGS.GUILD_MEMBERS,
-    Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.GUILDS,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.Guilds,
   ],
 });
 
@@ -67,7 +66,7 @@ client.once("ready", async () => {
     `${client.user.username} has logged in with ${client.guilds.cache.size} guilds`
   );
   client.user.setActivity({
-    type: "PLAYING",
+    type: ActivityType.Playing,
     name: "clicktok.xyz | /tiktok",
   });
 
@@ -141,7 +140,6 @@ client.once("ready", async () => {
         where: { id: sigi.UserPage.uniqueId },
         data: { videos: keys },
       });
-
     } catch (e) {
       console.error(e);
     }
@@ -200,7 +198,7 @@ client.once("ready", async () => {
           newItems.forEach(async (newItem) => {
             const message: MessageOptions = {
               embeds: [
-                new MessageEmbed()
+                new EmbedBuilder()
                   .setAuthor({
                     name: newItem.nickname,
                     iconURL: newItem.avatarThumb,
@@ -246,7 +244,7 @@ client.once("ready", async () => {
 
   // giveawayMessage.edit({
   //   embeds: [
-  //     new MessageEmbed()
+  //     new EmbedBuilder()
   //       .setTitle("🥳 **Free Nitro** 🥳")
   //       .setDescription(
   //         "To enter into the giveaway click the button below, you can enter the giveaway every time you vote resulting in a higher chance of receiving the reward. You are able to vote every 12 hours. [Vote Here](https://top.gg/bot/990688037853872159/vote)"
@@ -254,13 +252,13 @@ client.once("ready", async () => {
   //       .setColor("#00ff00"),
   //   ],
   //   components: [
-  //     new MessageActionRow().addComponents(
-  //       new MessageButton()
+  //     new ActionRow().addComponents(
+  //       new Button()
   //         .setCustomId("giveaway")
   //         .setLabel("Enter Giveaway")
   //         .setEmoji("🎉")
   //         .setStyle("SUCCESS"),
-  //       new MessageButton()
+  //       new Button()
   //         .setURL("https://top.gg/bot/990688037853872159/vote")
   //         .setLabel("Vote Here")
   //         .setStyle("LINK")
@@ -346,13 +344,13 @@ async function handleMessage(message: Message) {
           }
         })
         .then(async (response) => {
-          const messageResponse = await getTikTokResponse(
+          const messageResponse = (await getTikTokResponse(
             Type.MESSAGE,
             (response as any).data,
             message.author,
             message.guild,
             message.channel as TextChannel
-          );
+          )) as MessageOptions;
           if (!messageResponse) return;
           if (message.deletable) {
             await message.reply(messageResponse);
@@ -393,13 +391,13 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
 
 client.on("interactionCreate", async (interaction) => {
   try {
-    if (interaction.isCommand()) {
+    if (interaction instanceof CommandInteraction) {
       await commands
-        .find((c) => c.data.name === interaction.commandName)
+        .find((c) => (c.data as any).name === interaction.commandName)
         .run(interaction);
       return;
     }
-    if (interaction.isButton()) {
+    if (interaction instanceof ButtonInteraction) {
       await buttons
         .find((button) => interaction.customId.startsWith(button.id))
         .run(interaction);

@@ -1,16 +1,20 @@
 import axios from "axios";
+import { MessageOptions } from "child_process";
 import {
+  ActionRow,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
   Guild,
   GuildChannel,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
+  MessagePayload,
   TextChannel,
   User,
 } from "discord.js";
 import { prisma } from "../bot";
 import { getOrCreateUser } from "./db";
-import { logConversion, logError } from "./logger";
+import { logConversion } from "./logger";
 
 async function getId(url: string, regex: RegExp) {
   let match = url.match(regex);
@@ -76,13 +80,13 @@ export default async function (
         content:
           "We currently do not support TikTok slideshows. They will be supported in the near future.",
         // components: [
-        //   new MessageActionRow().addComponents(
-        //     new MessageButton()
+        //   new ActionRow().addComponents(
+        //     new Button()
         //     .setCustomId("info")
         //     .setLabel("Info")
         //     .setStyle("PRIMARY")
         //     .setEmoji("🖥️"),
-        //     new MessageButton()
+        //     new Button()
         //     .setCustomId("delete")
         //     .setLabel("Delete")
         //     .setStyle("DANGER")
@@ -98,7 +102,7 @@ export default async function (
     user
       .send({
         embeds: [
-          new MessageEmbed()
+          new EmbedBuilder()
             .setTitle("Thank you for using ClickTok!")
             .setDescription(
               "You have converted for the first time 🥳!\nAs a sign of our gratitude, we are hosting a nitro giveaway for the first 1000 users that sign up 🤯.\nTo get your chance at winning nitro for **FREE**, join our support server https://discord.gg/tg2QTMEc9g and follow the directions inside of the giveaway channel 🤗. Hope to see you there!"
@@ -158,17 +162,17 @@ export default async function (
   return {
     content: `https://clicktok.xyz/api/v/${id}`,
     components: [
-      new MessageActionRow().addComponents(
-        new MessageButton()
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
           .setCustomId("info")
           .setLabel("Info")
-          .setStyle("PRIMARY")
+          .setStyle(ButtonStyle.Primary)
           .setEmoji("🖥️"),
 
-        new MessageButton()
+        new ButtonBuilder()
           .setCustomId(`delete-${user.id}`)
           .setLabel("Delete")
-          .setStyle("DANGER")
+          .setStyle(ButtonStyle.Danger)
           .setEmoji("🗑️")
       ),
     ],

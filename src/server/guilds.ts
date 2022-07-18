@@ -1,7 +1,6 @@
-import { Notification } from "@prisma/client";
+import { Notification, Statistic } from "@prisma/client";
 import axios from "axios";
-import { Guild } from "discord.js";
-import { ChannelTypes } from "discord.js/typings/enums";
+import { ChannelType, Guild } from "discord.js";
 
 import { Router } from "express";
 
@@ -125,7 +124,16 @@ router.get("/:id/channels", async (req, res) => {
   const discordGuild = res.locals.discordGuild as Guild;
 
   const channels = (await discordGuild.channels.fetch()).filter(
-    (channel) => channel.type === "GUILD_TEXT"
+    (channel) => channel.type === ChannelType.GuildText
+  );
+
+  res.json(channels);
+});
+router.get("/:id/channels/voice", async (req, res) => {
+  const discordGuild = res.locals.discordGuild as Guild;
+
+  const channels = (await discordGuild.channels.fetch()).filter(
+    (channel) => channel.type === ChannelType.GuildVoice
   );
 
   res.json(channels);
@@ -145,7 +153,7 @@ router.get("/:id/notifications", async (req, res) => {
   const guild = await getOrCreateGuild(res.locals.discordGuild).catch((e) => e);
   if (guild instanceof Error)
     return res.status(500).json({ error: guild.message });
-  res.json(guild.notifications);
+  res.json(guild.notifications || []);
 });
 router.post("/:id/notifications", async (req, res) => {
   if (!req.body) return res.status(400).send();
@@ -211,6 +219,76 @@ router.delete("/:id/notifications/:notificationId", async (req, res) => {
     });
   if (!notification) return;
   res.status(204).send(notification);
+});
+
+router.get("/:id/statistics", async (req, res) => {
+  const guild = await getOrCreateGuild(res.locals.discordGuild).catch((e) => e);
+  if (guild instanceof Error)
+    return res.status(500).json({ error: guild.message });
+  res.json(guild.statistics || []);
+});
+router.post("/:id/statistics", async (req, res) => {
+  if (!req.body) return res.status(400).send();
+
+  const data = {
+    guild: req.params.id,
+    creator: req.body.creator,
+    followers: req.body.followers,
+    likes: req.body.likes,
+    videos: req.body.videos,
+  } as any;
+
+  let statistic: void | Statistic;
+  if (req.body.id) {
+    statistic = await prisma.statistic
+      .upsert({
+        where: { id: req.body.id },
+        // if no role remove from db (saves data)
+        update: {
+          ...data,
+          followers: data.followers ? data.followers : { unset: true },
+          likes: data.likes ? data.likes : { unset: true },
+          videos: data.videos ? data.videos : { unset: true },
+        },
+        create: data,
+      })
+      .catch(console.error);
+  } else {
+    statistic = await prisma.statistic.findFirst({
+      where: {
+        guild: req.params.id,
+        creator: req.body.creator,
+      },
+    });
+    if (statistic) {
+      return res
+        .status(409)
+        .send({ message: "Statistic for that creator already exists." });
+    }
+    statistic = await prisma.statistic
+      .create({
+        data,
+      })
+      .catch(console.error);
+  }
+
+  res.status(204).send(statistic);
+});
+router.delete("/:id/statistics/:statisticsId", async (req, res) => {
+  const statistic = await prisma.statistic
+    .delete({
+      where: {
+        id: req.params.statisticsId,
+
+        // this is a security issue if not added granted if they actually had the id of another statistic 💀
+        // guild: req.params.id,
+      },
+    })
+    .catch((e) => {
+      res.status(500).send(e);
+    });
+  if (!statistic) return;
+  res.status(204).send(statistic);
 });
 
 export default router;

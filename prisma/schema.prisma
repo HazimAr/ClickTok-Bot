@@ -27,6 +27,7 @@ model Guild {
 
   conversions   Conversion[]
   notifications Notification[]
+  statistics    Statistic[]
 }
 
 model Notification {
@@ -38,6 +39,20 @@ model Notification {
   creator String // the creator's tiktok username
   role    String?
   preview Boolean @default(true)
+
+  createdAt DateTime @default(now())
+}
+
+model Statistic {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  Guild   Guild  @relation(fields: [guild], references: [id])
+  guild   String
+  creator String // the creator's tiktok username
+
+  followers String? // channel id for followers (voice)
+  likes     String? // channel id for likes (voice)
+  videos    String? // channel id for videos (voice)
 
   createdAt DateTime @default(now())
 }
@@ -79,4 +94,12 @@ model GiveawayEntries {
 model Creator {
   id     String   @id @map("_id")
   videos String[] // ids of the videos
+
+  statistics Statistics?
+}
+
+type Statistics {
+  followers Int @default(0)
+  likes     Int @default(0)
+  videos    Int @default(0)
 }
