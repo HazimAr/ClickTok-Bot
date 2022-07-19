@@ -1,30 +1,31 @@
-import { PrismaClient } from "@prisma/client";
-import axios from "axios";
+import "dotenv/config";
 import {
-  ActivityType,
   ApplicationCommandDataResolvable,
   ButtonInteraction,
   Client,
+  Collection,
   CommandInteraction,
-  EmbedBuilder,
-  GatewayIntentBits,
   Guild,
   GuildTextBasedChannel,
+  Intents,
   Message,
+  MessageEmbed,
   MessageOptions,
   Role,
   TextChannel,
 } from "discord.js";
-import "dotenv/config";
-import { readdirSync } from "fs";
-import { launch } from "puppeteer";
 import { AutoPoster } from "topgg-autoposter";
-import server from "./server";
-import { ItemModule, Sigi } from "./types";
-import { getOrCreateGuild } from "./utils/db";
+import { readdirSync } from "fs";
+import axios from "axios";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
-import { logError, logGuild } from "./utils/logger";
+import { Creator, PrismaClient } from "@prisma/client";
+import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
+import { logError, logGuild } from "./utils/logger";
+// import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
+import server from "./server";
+import { launch } from "puppeteer";
+import { ItemModule, Sigi, Video } from "./types";
 
 server.listen(8080, () => {
   console.log("Server listening on port 8080");
@@ -32,9 +33,9 @@ server.listen(8080, () => {
 
 export const client = new Client({
   intents: [
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.Guilds,
+    Intents.FLAGS.GUILD_MEMBERS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILDS,
   ],
 });
 
@@ -66,7 +67,7 @@ client.once("ready", async () => {
     `${client.user.username} has logged in with ${client.guilds.cache.size} guilds`
   );
   client.user.setActivity({
-    type: ActivityType.Playing,
+    type: "PLAYING",
     name: "clicktok.xyz | /tiktok",
   });
 
@@ -101,6 +102,51 @@ client.once("ready", async () => {
 
   /*
   const browser = await launch();
+  notifications.forEach(async (notification) => {
+    const page = await browser.newPage();
+    try {
+      await page.goto(`https://tiktok.com/@${notification.creator}`, {
+        referer: "https://tiktok.com",
+      });
+      const element = await page.waitForSelector("#SIGI_STATE");
+      if (!element) return;
+
+      const sigi: Sigi = JSON.parse(
+        await element.evaluate((e) => e.textContent)
+      );
+
+      let mongoCreator = await prisma.creator.findFirst({
+        where: { id: sigi.UserPage.uniqueId },
+      });
+
+      const keys = Object.keys(sigi.ItemModule);
+
+      if (!mongoCreator) {
+        return await prisma.creator.create({
+          data: { id: sigi.UserPage.uniqueId, videos: keys },
+        });
+      }
+      const newItems: ItemModule[] = [];
+
+      keys.map((key) => {
+        const item = sigi.ItemModule[key];
+
+        if (!mongoCreator.videos.find((v) => v == item.video.id)) {
+          newItems.push(item);
+          return;
+        }
+      });
+
+      mongoCreator = await prisma.creator.update({
+        where: { id: sigi.UserPage.uniqueId },
+        data: { videos: keys },
+      });
+
+    } catch (e) {
+      console.error(e);
+    }
+    page.close();
+  });
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
@@ -170,7 +216,7 @@ client.once("ready", async () => {
           newItems.forEach(async (newItem) => {
             const message: MessageOptions = {
               embeds: [
-                new EmbedBuilder()
+                new MessageEmbed()
                   .setAuthor({
                     name: newItem.nickname,
                     iconURL: newItem.avatarThumb,
@@ -215,7 +261,7 @@ client.once("ready", async () => {
 
   // giveawayMessage.edit({
   //   embeds: [
-  //     new EmbedBuilder()
+  //     new MessageEmbed()
   //       .setTitle("🥳 **Free Nitro** 🥳")
   //       .setDescription(
   //         "To enter into the giveaway click the button below, you can enter the giveaway every time you vote resulting in a higher chance of receiving the reward. You are able to vote every 12 hours. [Vote Here](https://top.gg/bot/990688037853872159/vote)"
@@ -223,13 +269,13 @@ client.once("ready", async () => {
   //       .setColor("#00ff00"),
   //   ],
   //   components: [
-  //     new ActionRow().addComponents(
-  //       new Button()
+  //     new MessageActionRow().addComponents(
+  //       new MessageButton()
   //         .setCustomId("giveaway")
   //         .setLabel("Enter Giveaway")
   //         .setEmoji("🎉")
   //         .setStyle("SUCCESS"),
-  //       new Button()
+  //       new MessageButton()
   //         .setURL("https://top.gg/bot/990688037853872159/vote")
   //         .setLabel("Vote Here")
   //         .setStyle("LINK")
@@ -315,13 +361,13 @@ async function handleMessage(message: Message) {
           }
         })
         .then(async (response) => {
-          const messageResponse = (await getTikTokResponse(
+          const messageResponse = await getTikTokResponse(
             Type.MESSAGE,
             (response as any).data,
             message.author,
             message.guild,
             message.channel as TextChannel
-          )) as MessageOptions;
+          );
           if (!messageResponse) return;
           if (message.deletable) {
             await message.reply(messageResponse);
@@ -362,13 +408,13 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
 
 client.on("interactionCreate", async (interaction) => {
   try {
-    if (interaction instanceof CommandInteraction) {
+    if (interaction.isCommand()) {
       await commands
-        .find((c) => (c.data as any).name === interaction.commandName)
+        .find((c) => c.data.name === interaction.commandName)
         .run(interaction);
       return;
     }
-    if (interaction instanceof ButtonInteraction) {
+    if (interaction.isButton()) {
       await buttons
         .find((button) => interaction.customId.startsWith(button.id))
         .run(interaction);

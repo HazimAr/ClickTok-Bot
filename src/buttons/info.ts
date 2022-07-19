@@ -1,11 +1,9 @@
 import axios from "axios";
 import {
-  ActionRow,
-  ActionRowBuilder,
-  ButtonBuilder,
   ButtonInteraction,
-  ButtonStyle,
-  EmbedBuilder,
+  MessageActionRow,
+  MessageButton,
+  MessageEmbed,
   TextChannel,
 } from "discord.js";
 import { getOrCreateUser } from "../utils/db";
@@ -23,7 +21,7 @@ export default async function (interaction: ButtonInteraction) {
   )
     return await interaction.reply({
       embeds: [
-        new EmbedBuilder()
+        new MessageEmbed()
           .setTitle(`Hey, ${interaction.user.username}`)
           .setDescription(
             "It looks like you haven't voted in the last 24 hours. To help keep this bot free votes are needed. Once you have voted you can view your info."
@@ -31,12 +29,11 @@ export default async function (interaction: ButtonInteraction) {
           .setFooter({ text: id }),
       ],
       components: [
-        // @ts-ignore
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
+        new MessageActionRow().addComponents(
+          new MessageButton()
             .setLabel("Vote")
             .setURL("https://top.gg/bot/990688037853872159/vote")
-            .setStyle(ButtonStyle.Link)
+            .setStyle("LINK")
         ),
       ],
       ephemeral: true,
@@ -52,7 +49,7 @@ export default async function (interaction: ButtonInteraction) {
 
   await interaction.reply({
     embeds: [
-      new EmbedBuilder()
+      new MessageEmbed()
         .setAuthor({
           name: author?.nickname || "N/A",
           iconURL: author?.avatar_thumb?.url_list?.[0],
@@ -106,17 +103,16 @@ export default async function (interaction: ButtonInteraction) {
         ]),
     ],
     components: [
-      // @ts-ignore
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
+      new MessageActionRow().addComponents(
+        new MessageButton()
           .setURL(`https://clicktok.xyz/v/${tiktok.aweme_detail.aweme_id}`)
           .setLabel("Download (Audio)")
-          .setStyle(ButtonStyle.Link)
+          .setStyle("LINK")
           .setEmoji("🎵"),
-        new ButtonBuilder()
+        new MessageButton()
           .setURL(`https://clicktok.xyz/v/${tiktok.aweme_detail.aweme_id}`)
           .setLabel("Download (Video)")
-          .setStyle(ButtonStyle.Link)
+          .setStyle("LINK")
           .setEmoji("🎥")
       ),
     ],

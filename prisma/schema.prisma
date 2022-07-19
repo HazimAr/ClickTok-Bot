@@ -27,7 +27,6 @@ model Guild {
 
   conversions   Conversion[]
   notifications Notification[]
-  statistics    Statistic[]
 }
 
 model Notification {
