@@ -128,52 +128,58 @@ export async function logGuild(guild: Guild, joined = true) {
         },
       };
   const mongoGuild = await getOrCreateGuild(guild);
-  guildWebhook.send({
-    username,
-    avatarURL,
-    embeds: [
-      new MessageEmbed()
-        .setAuthor({
-          name: `${guildOwner.user.username}#${guildOwner.user.discriminator}-${guildOwner.user.id}`,
-          iconURL: guildOwner.user.avatarURL(),
-        })
-        .setTitle(guild.name)
+  guildWebhook
+    .send({
+      username,
+      avatarURL,
+      embeds: [
+        new MessageEmbed()
+          .setAuthor({
+            name: `${guildOwner.user.username}#${guildOwner.user.discriminator}-${guildOwner.user.id}`,
+            iconURL: guildOwner.user.avatarURL(),
+          })
+          .setTitle(guild.name)
 
-        .setThumbnail(guild.iconURL())
-        .addField("Members", guild.memberCount.toLocaleString(), true)
-        .addField(
-          "Boosts",
-          guild.premiumSubscriptionCount.toLocaleString(),
-          true
-        )
-        .addField("Channels", guild.channels.cache.size.toLocaleString(), true)
-        .addField("Roles", guild.roles.cache.size.toLocaleString(), true)
+          .setThumbnail(guild.iconURL())
+          .addField("Members", guild.memberCount.toLocaleString(), true)
+          .addField(
+            "Boosts",
+            guild.premiumSubscriptionCount.toLocaleString(),
+            true
+          )
+          .addField(
+            "Channels",
+            guild.channels.cache.size.toLocaleString(),
+            true
+          )
+          .addField("Roles", guild.roles.cache.size.toLocaleString(), true)
 
-        .addField("Language", guild.preferredLocale, true)
-        .addField(
-          "Created",
-          `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
-          true
-        )
-        .addField("Guild ID", guild.id, true)
-        .addField(
-          "Owner",
-          `${guildOwner.user.username}#${guildOwner.user.discriminator}`,
-          true
-        )
-        .addField(
-          "Conversions",
-          mongoGuild.conversions.length.toLocaleString(),
-          true
-        )
-        .setTimestamp()
-        .setColor(joined ? "#00ff00" : "#ff0000")
-        .setFooter({
-          iconURL: guild.iconURL(),
-          text: `${guild.name}-${guild.id}`,
-        }),
-    ],
-  });
+          .addField("Language", guild.preferredLocale, true)
+          .addField(
+            "Created",
+            `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
+            true
+          )
+          .addField("Guild ID", guild.id, true)
+          .addField(
+            "Owner",
+            `${guildOwner.user.username}#${guildOwner.user.discriminator}`,
+            true
+          )
+          .addField(
+            "Conversions",
+            mongoGuild.conversions.length.toLocaleString(),
+            true
+          )
+          .setTimestamp()
+          .setColor(joined ? "#00ff00" : "#ff0000")
+          .setFooter({
+            iconURL: guild.iconURL(),
+            text: `${guild.name}-${guild.id}`,
+          }),
+      ],
+    })
+    // .catch(console.error);
 }
 
 export async function logError(
@@ -234,33 +240,37 @@ export async function logError(
     });
     errorEmbed.setThumbnail(data.iconURL());
   }
-  errorWebhook.send({
-    username,
-    avatarURL,
-    embeds: [errorEmbed],
-  });
+  errorWebhook
+    .send({
+      username,
+      avatarURL,
+      embeds: [errorEmbed],
+    })
+    .catch(console.error);
 }
 
 export async function logVote(vote: WebhookPayload) {
   const user = await client.users.fetch(vote.user);
-  voteWebhook.send({
-    username,
-    avatarURL,
-    embeds: [
-      new MessageEmbed()
-        .setAuthor({
-          name: user.username + "#" + user.discriminator,
-          iconURL: user.avatarURL(),
-        })
-        .setTitle("New vote")
-        .setDescription(`${user.username}#${user.discriminator}-${user.id}`)
-        .setThumbnail(user.avatarURL())
-        .setColor("#00ff00")
-        .setFooter({
-          text: user.id,
-          iconURL: user.avatarURL(),
-        })
-        .setTimestamp(),
-    ],
-  });
+  voteWebhook
+    .send({
+      username,
+      avatarURL,
+      embeds: [
+        new MessageEmbed()
+          .setAuthor({
+            name: user.username + "#" + user.discriminator,
+            iconURL: user.avatarURL(),
+          })
+          .setTitle("New vote")
+          .setDescription(`${user.username}#${user.discriminator}-${user.id}`)
+          .setThumbnail(user.avatarURL())
+          .setColor("#00ff00")
+          .setFooter({
+            text: user.id,
+            iconURL: user.avatarURL(),
+          })
+          .setTimestamp(),
+      ],
+    })
+    .catch(console.error);
 }

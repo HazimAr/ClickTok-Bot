@@ -3,23 +3,19 @@ import {
   ApplicationCommandDataResolvable,
   ButtonInteraction,
   Client,
-  Collection,
   CommandInteraction,
   Guild,
-  GuildTextBasedChannel,
   Intents,
   Message,
-  MessageEmbed,
-  MessageOptions,
-  Role,
   TextChannel,
   VoiceChannel,
 } from "discord.js";
 import { AutoPoster } from "topgg-autoposter";
 import { readdirSync } from "fs";
 import axios from "axios";
+import humanFormat from "human-format";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
-import { Creator, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { getOrCreateGuild } from "./utils/db";
 import validTikTokUrl from "./utils/validTikTokUrl";
 import { logError, logGuild } from "./utils/logger";
@@ -40,9 +36,7 @@ export const client = new Client({
   ],
 });
 
-export const prisma = new PrismaClient({
-  errorFormat: "pretty",
-});
+export const prisma = new PrismaClient();
 
 prisma
   .$connect()
@@ -228,9 +222,9 @@ client.once("ready", async () => {
           if (channel) {
             await channel
               .edit({
-                name: `${statistic.followersPrefix || "Followers: "}${
-                  creator.statistics.followers
-                }`,
+                name: `${
+                  statistic.followersPrefix || "Followers: "
+                }${humanFormat(creator.statistics.followers)}`,
               })
               .catch(() =>
                 console.error(
@@ -247,9 +241,9 @@ client.once("ready", async () => {
           if (channel) {
             await channel
               .edit({
-                name: `${statistic.likesPrefix || "Likes: "}${
+                name: `${statistic.likesPrefix || "Likes: "}${humanFormat(
                   creator.statistics.likes
-                }`,
+                )}`,
               })
               .catch(() =>
                 console.error(
@@ -266,9 +260,9 @@ client.once("ready", async () => {
           if (channel) {
             await channel
               .edit({
-                name: `${statistic.videosPrefix || "Videos: "}${
+                name: `${statistic.videosPrefix || "Videos: "}${humanFormat(
                   creator.statistics.videos
-                }`,
+                )}`,
               })
               .catch(() =>
                 console.error(
