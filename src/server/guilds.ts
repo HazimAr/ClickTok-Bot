@@ -110,7 +110,7 @@ router.post("/:id/settings", async (req, res) => {
   if (!req.body) return res.status(400).send();
   const guild = await prisma.guild
     .update({
-      where: { id: req.params["id"] },
+      where: { id: req.params.id },
       data: { settings: req.body },
     })
     .catch(console.error);
