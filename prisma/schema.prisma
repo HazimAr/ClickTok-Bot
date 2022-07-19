@@ -16,9 +16,9 @@ type List {
 }
 
 type Lists {
-  channels List?
-  roles    List?
-  users    List?
+  channels List
+  roles    List
+  users    List
 }
 
 type Settings {

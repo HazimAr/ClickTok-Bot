@@ -16,7 +16,26 @@ export async function getOrCreateGuild(guild: Guild) {
 
   if (!mongoGuild) {
     mongoGuild = await prisma.guild.create({
-      data: { id: guild.id, settings: {}, lastConvertedAt: null },
+      data: {
+        id: guild.id,
+        settings: {
+          lists: {
+            channels: {
+              values: [],
+              whitelist: false,
+            },
+            users: {
+              values: [],
+              whitelist: false,
+            },
+            roles: {
+              values: [],
+              whitelist: false,
+            },
+          },
+        },
+        lastConvertedAt: null,
+      },
       include: {
         conversions: true,
         notifications: true,

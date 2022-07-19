@@ -124,21 +124,36 @@ router.post("/:id/settings", async (req, res) => {
 router.post("/:id/settings/lists/:setting", async (req, res) => {
   if (!req.body) return res.status(400).send();
   const guild = await prisma.guild
-    .update({
-      where: { id: req.params.id },
-      data: {
-        settings: {
-          lists: {
-            [req.params.setting]: req.body,
-          },
-        },
-      },
-    })
+    .findFirst({ where: { id: req.params["id"] } })
     .catch(console.error);
   if (!guild)
     return res.status(404).json({
       message: "Guild not found in database.",
     });
+  const result = await prisma.guild
+    .update({
+      where: { id: req.params.id },
+      data: {
+        settings: {
+          set: {
+            lists: {
+              ...guild.settings.lists,
+              [req.params.setting]: {
+                ...guild.settings.lists[req.params.setting],
+                ...req.body,
+              },
+            },
+          },
+        },
+      },
+    })
+    .catch(console.error);
+
+  if (!result)
+    return res.status(500).json({
+      message: "Internal server error.",
+    });
+
   res.status(204).send();
 });
 
