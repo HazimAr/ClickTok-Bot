@@ -13,6 +13,7 @@ import {
   MessageOptions,
   Role,
   TextChannel,
+  VoiceChannel,
 } from "discord.js";
 import { AutoPoster } from "topgg-autoposter";
 import { readdirSync } from "fs";
@@ -100,54 +101,11 @@ client.once("ready", async () => {
 
   client.application.commands.set(commands.map((command) => command.data));
 
-  /*
-  const browser = await launch();
-  notifications.forEach(async (notification) => {
-    const page = await browser.newPage();
-    try {
-      await page.goto(`https://tiktok.com/@${notification.creator}`, {
-        referer: "https://tiktok.com",
-      });
-      const element = await page.waitForSelector("#SIGI_STATE");
-      if (!element) return;
-
-      const sigi: Sigi = JSON.parse(
-        await element.evaluate((e) => e.textContent)
-      );
-
-      let mongoCreator = await prisma.creator.findFirst({
-        where: { id: sigi.UserPage.uniqueId },
-      });
-
-      const keys = Object.keys(sigi.ItemModule);
-
-      if (!mongoCreator) {
-        return await prisma.creator.create({
-          data: { id: sigi.UserPage.uniqueId, videos: keys },
-        });
-      }
-      const newItems: ItemModule[] = [];
-
-      keys.map((key) => {
-        const item = sigi.ItemModule[key];
-
-        if (!mongoCreator.videos.find((v) => v == item.video.id)) {
-          newItems.push(item);
-          return;
-        }
-      });
-
-      mongoCreator = await prisma.creator.update({
-        where: { id: sigi.UserPage.uniqueId },
-        data: { videos: keys },
-      });
-
-    } catch (e) {
-      console.error(e);
-    }
-    page.close();
+  const browser = await launch({
+    headless: false,
   });
 
+  /*
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
     notifications.forEach(async (notification) => {
@@ -255,6 +213,75 @@ client.once("ready", async () => {
   }, 1000 * 60 * 5);
   */
 
+  setInterval(async () => {
+    const statistics = await prisma.statistic.findMany({});
+    statistics.forEach(async (statistic) => {
+      try {
+        const creator = await prisma.creator.findFirst({
+          where: { id: statistic.creator },
+        });
+        if (statistic.followers) {
+          const channel = (await client.channels
+            .fetch(statistic.followers)
+            .catch(() => null)) as VoiceChannel;
+
+          if (channel) {
+            await channel
+              .edit({
+                name: `${statistic.followersPrefix || "Followers: "}${
+                  creator.statistics.followers
+                }`,
+              })
+              .catch(() =>
+                console.error(
+                  `Unable to edit channel ${channel.name}-${statistic.followers}`
+                )
+              );
+          }
+        }
+        if (statistic.likes) {
+          const channel = (await client.channels
+            .fetch(statistic.likes)
+            .catch(() => null)) as VoiceChannel;
+
+          if (channel) {
+            await channel
+              .edit({
+                name: `${statistic.likesPrefix || "Likes: "}${
+                  creator.statistics.likes
+                }`,
+              })
+              .catch(() =>
+                console.error(
+                  `Unable to edit channel ${channel.name}-${statistic.likes}`
+                )
+              );
+          }
+        }
+        if (statistic.videos) {
+          const channel = (await client.channels
+            .fetch(statistic.videos)
+            .catch(() => null)) as VoiceChannel;
+
+          if (channel) {
+            await channel
+              .edit({
+                name: `${statistic.videosPrefix || "Videos: "}${
+                  creator.statistics.videos
+                }`,
+              })
+              .catch(() =>
+                console.error(
+                  `Unable to edit channel ${channel.name}-${statistic.videos}`
+                )
+              );
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  }, 1000 * 60 * 10);
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
   // ).messages.fetch("992304881643831297");
