@@ -128,10 +128,8 @@ router.post("/:id/settings/lists/:setting", async (req, res) => {
       where: { id: req.params.id },
       data: {
         settings: {
-          set: {
-            lists: {
-              [req.params.setting]: req.body,
-            },
+          lists: {
+            [req.params.setting]: req.body,
           },
         },
       },
