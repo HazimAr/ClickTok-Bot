@@ -88,11 +88,11 @@ export default async function (interaction: ButtonInteraction) {
           "If you have won the giveaway, you will be notified and have 24 hours to claim your prize. If you do not claim your prize in time, we will reroll the giveaway."
         )
         .setThumbnail(interaction.client.user.avatarURL())
-        .addField(
-          "Entries",
-          mongoUser.giveawayEntries.length.toLocaleString(),
-          true
-        )
+        .addFields({
+          name: "Entries",
+          value: mongoUser.giveawayEntries.length.toLocaleString(),
+          inline: true,
+        })
         .setColor("#00ff00")
         .setFooter({
           text: "ClickTok",
