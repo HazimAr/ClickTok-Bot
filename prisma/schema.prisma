@@ -10,11 +10,24 @@ datasource db {
   url      = env("DATABASE")
 }
 
+type List {
+  values    String[]
+  whitelist Boolean?
+}
+
+type Lists {
+  channels List?
+  roles    List?
+  users    List?
+}
+
 type Settings {
   autoEmbed     Boolean @default(true)
   deleteOrigin  Boolean @default(false)
   suppressEmbed Boolean @default(true)
   public        Boolean @default(true)
+
+  lists Lists
 }
 
 model Guild {
@@ -27,6 +40,7 @@ model Guild {
 
   conversions   Conversion[]
   notifications Notification[]
+  statistics    Statistic[]
 }
 
 model Notification {

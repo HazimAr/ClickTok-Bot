@@ -121,6 +121,29 @@ router.post("/:id/settings", async (req, res) => {
   res.status(204).send();
 });
 
+router.post("/:id/settings/lists/:setting", async (req, res) => {
+  if (!req.body) return res.status(400).send();
+  const guild = await prisma.guild
+    .update({
+      where: { id: req.params.id },
+      data: {
+        settings: {
+          set: {
+            lists: {
+              [req.params.setting]: req.body,
+            },
+          },
+        },
+      },
+    })
+    .catch(console.error);
+  if (!guild)
+    return res.status(404).json({
+      message: "Guild not found in database.",
+    });
+  res.status(204).send();
+});
+
 router.get("/:id/channels", async (req, res) => {
   const discordGuild = res.locals.discordGuild as Guild;
 
