@@ -179,7 +179,7 @@ export async function logGuild(guild: Guild, joined = true) {
           }),
       ],
     })
-    // .catch(console.error);
+    .catch(console.error);
 }
 
 export async function logError(
