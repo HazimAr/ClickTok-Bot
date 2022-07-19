@@ -1,6 +1,6 @@
 import { Notification, Statistic } from "@prisma/client";
 import axios from "axios";
-import { ChannelType, Guild } from "discord.js";
+import { ChannelType, Guild, GuildMember, PermissionFlagsBits } from "discord.js";
 
 import { Router } from "express";
 
@@ -70,13 +70,13 @@ router.use("/:id", async (req, res, next) => {
     return res.status(404).json({ message: "Bot not in specified guild." });
   const member = await discordGuild.members
     .fetch(res.locals.user.id)
-    .catch(console.error);
+    .catch(console.error) as GuildMember;
   if (!member)
     return res.status(404).json({
       message: "Bot unable to fetch user.",
     });
 
-  if (!member.permissions.has("ADMINISTRATOR"))
+  if (!member.permissions.has(PermissionFlagsBits.Administrator))
     return res.status(401).json({
       message: "Unauthorized",
     });

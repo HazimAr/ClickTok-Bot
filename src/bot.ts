@@ -70,18 +70,18 @@ client.once("ready", async () => {
     name: "clicktok.xyz | /tiktok",
   });
 
-  client.guilds.cache.forEach(async (guild) => {
-    const conversions = await prisma.conversion.findMany({
-      where: {
-        guild: guild.id,
-      },
-    });
+  // client.guilds.cache.forEach(async (guild) => {
+  //   const conversions = await prisma.conversion.findMany({
+  //     where: {
+  //       guild: guild.id,
+  //     },
+  //   });
 
-    if (!conversions.length) {
-      // @ts-ignore
-      guild.leave();
-    }
-  });
+  //   if (!conversions.length) {
+  //     // @ts-ignore
+  //     guild.leave();
+  //   }
+  // });
 
   readdirSync("./src/buttons").forEach(async (buttonFile) => {
     const buttonFunction = (await import(`./buttons/${buttonFile}`)).default;
@@ -99,68 +99,8 @@ client.once("ready", async () => {
 
   client.application.commands.set(commands.map((command) => command.data));
 
-  const notifications = await prisma.notification.findMany({});
+  /*
   const browser = await launch();
-  notifications.forEach(async (notification) => {
-    const page = await browser.newPage();
-    try {
-      await page.goto(`https://tiktok.com/@${notification.creator}`, {
-        referer: "https://tiktok.com",
-      });
-      const element = await page.waitForSelector("#SIGI_STATE");
-      if (!element) return;
-
-      const sigi: Sigi = JSON.parse(
-        await element.evaluate((e) => e.textContent)
-      );
-
-      let mongoCreator = await prisma.creator.findFirst({
-        where: { id: sigi.UserPage.uniqueId },
-      });
-
-      const keys = Object.keys(sigi.ItemModule);
-
-      const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
-      if (!mongoCreator) {
-        return await prisma.creator.create({
-          data: {
-            id: sigi.UserPage.uniqueId,
-            videos: keys,
-            statistics: {
-              followers: creatorStats.followerCount,
-              likes: creatorStats.heart,
-              videos: creatorStats.videoCount,
-            },
-          },
-        });
-      }
-      const newItems: ItemModule[] = [];
-
-      keys.map((key) => {
-        const item = sigi.ItemModule[key];
-
-        if (!mongoCreator.videos.find((v) => v == item.video.id)) {
-          newItems.push(item);
-          return;
-        }
-      });
-
-      mongoCreator = await prisma.creator.update({
-        where: { id: sigi.UserPage.uniqueId },
-        data: {
-          videos: keys,
-          statistics: {
-            followers: creatorStats.followerCount,
-            likes: creatorStats.heart,
-            videos: creatorStats.videoCount,
-          },
-        },
-      });
-    } catch (e) {
-      console.error(e);
-    }
-    page.close();
-  });
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
@@ -267,8 +207,7 @@ client.once("ready", async () => {
       await page.close();
     });
   }, 1000 * 60 * 5);
-
-  /* */
+  */
 
   // const giveawayMessage = await (
   //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
@@ -440,4 +379,4 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-client.login(process.env.JR ? process.env.TOKEN_JR : process.env.TOKEN);
+client.login(process.env.TOKEN_JR || process.env.TOKEN);
