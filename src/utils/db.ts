@@ -9,6 +9,7 @@ export async function getOrCreateGuild(guild: Guild) {
       include: {
         conversions: true,
         notifications: true,
+        statistics: true,
       },
     })
     .catch((e) => logError(e, guild).catch(console.error));
@@ -19,6 +20,7 @@ export async function getOrCreateGuild(guild: Guild) {
       include: {
         conversions: true,
         notifications: true,
+        statistics: true,
       },
     });
     logGuild(guild);
