@@ -135,7 +135,22 @@ export default async function (
     },
     create: {
       id: guild.id,
-      settings: {},
+      settings: {
+        lists: {
+          channels: {
+            values: [],
+            whitelist: false,
+          },
+          users: {
+            values: [],
+            whitelist: false,
+          },
+          roles: {
+            values: [],
+            whitelist: false,
+          },
+        },
+      },
       lastConvertedAt: null,
     },
   });
