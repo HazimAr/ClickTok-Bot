@@ -25,7 +25,6 @@ type Settings {
   autoEmbed     Boolean @default(true)
   deleteOrigin  Boolean @default(false)
   suppressEmbed Boolean @default(true)
-  public        Boolean @default(true)
 
   lists Lists
 }
