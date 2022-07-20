@@ -100,7 +100,7 @@ client.once("ready", async () => {
   );
 
   client.application.commands.set(commands.map((command) => command.data));
-/*
+  /*
   setInterval(async () => {
     const browser = await launch({
       headless: false,
@@ -328,7 +328,7 @@ client.on("guildCreate", async (guild: Guild) => {
         },
       });
     }
-    logGuild(guild);
+    await logGuild(guild);
     let mongoUser = await prisma.user.findFirst({
       where: { id: guild.ownerId },
     });
