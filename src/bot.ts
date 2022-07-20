@@ -178,7 +178,7 @@ client.once("ready", async () => {
                     iconURL: newItem.avatarThumb,
                     url: `https://tiktok.com/@${newItem.author}`,
                   })
-                  .setTitle("New TikTok")
+                  .setTitle(`${newItem.nickname} just posted a new TikTok`)
                   .setURL(
                     `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
                   )
