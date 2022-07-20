@@ -106,7 +106,7 @@ client.once("ready", async () => {
       headless: false,
     });
     const notifications = await prisma.notification.findMany({});
-    notifications.forEach(async (notification) => {
+    const promises = notifications.map(async (notification) => {
       const page = await browser.newPage();
       try {
         await page.goto(`https://tiktok.com/@${notification.creator}`, {
@@ -182,7 +182,7 @@ client.once("ready", async () => {
                   .setURL(
                     `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
                   )
-                  .setDescription(newItem.desc)
+                  .setDescription(newItem.desc || "N/A")
                   // TODO: extra text info
                   .setFooter({ text: newItem.video.id })
                   .setThumbnail(newItem.video.cover)
@@ -208,6 +208,7 @@ client.once("ready", async () => {
       }
       await page.close();
     });
+    await Promise.all(promises);
     await browser.close();
   }, 1000 * 60 * 5);
 
