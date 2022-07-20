@@ -1,7 +1,11 @@
 import { Notification, Statistic } from "@prisma/client";
 import axios from "axios";
-import { Guild, GuildMember, Permissions } from "discord.js";
-import { ChannelTypes } from "discord.js/typings/enums";
+import {
+  ChannelType,
+  Guild,
+  GuildMember,
+  PermissionFlagsBits,
+} from "discord.js";
 
 import { Router } from "express";
 
@@ -77,7 +81,7 @@ router.use("/:id", async (req, res, next) => {
       message: "Bot unable to fetch user.",
     });
 
-  if (!member.permissions.has(Permissions.FLAGS.ADMINISTRATOR))
+  if (!member.permissions.has(PermissionFlagsBits.Administrator))
     return res.status(401).json({
       message: "Unauthorized",
     });
@@ -161,7 +165,7 @@ router.get("/:id/channels", async (req, res) => {
   const discordGuild = res.locals.discordGuild as Guild;
 
   const channels = (await discordGuild.channels.fetch()).filter(
-    (channel) => channel.type === "GUILD_TEXT"
+    (channel) => channel.type === ChannelType.GuildText
   );
 
   res.json(channels);
@@ -171,7 +175,7 @@ router.get("/:id/channels/voice", async (req, res) => {
   const discordGuild = res.locals.discordGuild as Guild;
 
   const channels = (await discordGuild.channels.fetch()).filter(
-    (channel) => channel.type === "GUILD_VOICE"
+    (channel) => channel.type === ChannelType.GuildVoice
   );
 
   res.json(channels);

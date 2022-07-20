@@ -1,11 +1,12 @@
 import { Conversion } from "@prisma/client";
 import { WebhookPayload } from "@top-gg/sdk";
 import {
+  CommandInteraction,
+  EmbedBuilder,
   Guild,
   GuildChannel,
   Interaction,
   Message,
-  MessageEmbed,
   TextChannel,
   User,
   WebhookClient,
@@ -59,47 +60,55 @@ export async function logConversion(
     username,
     avatarURL,
     embeds: [
-      new MessageEmbed()
+      new EmbedBuilder()
         .setAuthor({
           name: `${author.username}#${author.discriminator}-${author.id}`,
           iconURL: author.avatarURL(),
         })
         .setDescription(`https://clicktok.xyz/v/${conversion.tiktok}`)
         .setThumbnail(thumbnail)
-        .addField(
-          "Conversions (User)",
-          mongoUser.conversions.length.toLocaleString(),
-          true
-        )
-        .addField(
-          "Conversions (Guild)",
-          mongoGuild.conversions.length.toLocaleString(),
-          true
-        )
-        .addField("Votes (User)", mongoUser.votes.toLocaleString(), true)
+        .addFields({
+          name: "Conversions (User)",
+          value: mongoUser.conversions.length.toLocaleString(),
+          inline: true,
+        })
+        .addFields({
+          name: "Conversions (Guild)",
+          value: mongoGuild.conversions.length.toLocaleString(),
+          inline: true,
+        })
+        .addFields({
+          name: "Votes (User)",
+          value: mongoUser.votes.toLocaleString(),
+          inline: true,
+        })
 
-        .addField(
-          "Last Converted (User)",
-          `<t:${Math.floor(mongoUser.lastConvertedAt?.getTime() / 1000)}:R>`,
-          true
-        )
-        .addField(
-          "Last Converted (Guild)",
-          `<t:${Math.floor(mongoGuild.lastConvertedAt?.getTime() / 1000)}:R>`,
-          true
-        )
-        .addField(
-          "Last Voted (User)",
-          `<t:${Math.floor(mongoUser.lastVotedAt?.getTime() / 1000)}:R>`,
-          true
-        )
-        .addField(
-          "Created (User)",
-          `<t:${Math.floor(author.createdAt?.getTime() / 1000)}>`,
-          true
-        )
-        .addField("Channel", channel.name, true)
-        .addField("Type", type, true)
+        .addFields({
+          name: "Last Converted (User)",
+          value: `<t:${Math.floor(
+            mongoUser.lastConvertedAt?.getTime() / 1000
+          )}:R>`,
+          inline: true,
+        })
+        .addFields({
+          name: "Last Converted (Guild)",
+          value: `<t:${Math.floor(
+            mongoGuild.lastConvertedAt?.getTime() / 1000
+          )}:R>`,
+          inline: true,
+        })
+        .addFields({
+          name: "Last Voted (User)",
+          value: `<t:${Math.floor(mongoUser.lastVotedAt?.getTime() / 1000)}:R>`,
+          inline: true,
+        })
+        .addFields({
+          name: "Created (User)",
+          value: `<t:${Math.floor(author.createdAt?.getTime() / 1000)}>`,
+          inline: true,
+        })
+        .addFields({ name: "Channel", value: channel.name, inline: true })
+        .addFields({ name: "Type", value: type, inline: true })
         .setFooter({
           text: `${guild.name}-${guild.id}`,
           iconURL: guild.iconURL(),
@@ -133,7 +142,7 @@ export async function logGuild(guild: Guild, joined = true) {
       username,
       avatarURL,
       embeds: [
-        new MessageEmbed()
+        new EmbedBuilder()
           .setAuthor({
             name: `${guildOwner.user.username}#${guildOwner.user.discriminator}-${guildOwner.user.id}`,
             iconURL: guildOwner.user.avatarURL(),
@@ -141,36 +150,48 @@ export async function logGuild(guild: Guild, joined = true) {
           .setTitle(guild.name)
 
           .setThumbnail(guild.iconURL())
-          .addField("Members", guild.memberCount.toLocaleString(), true)
-          .addField(
-            "Boosts",
-            guild.premiumSubscriptionCount.toLocaleString(),
-            true
-          )
-          .addField(
-            "Channels",
-            guild.channels.cache.size.toLocaleString(),
-            true
-          )
-          .addField("Roles", guild.roles.cache.size.toLocaleString(), true)
+          .addFields({
+            name: "Members",
+            value: guild.memberCount.toLocaleString(),
+            inline: true,
+          })
+          .addFields({
+            name: "Boosts",
+            value: guild.premiumSubscriptionCount.toLocaleString(),
+            inline: true,
+          })
+          .addFields({
+            name: "Channels",
+            value: guild.channels.cache.size.toLocaleString(),
+            inline: true,
+          })
+          .addFields({
+            name: "Roles",
+            value: guild.roles.cache.size.toLocaleString(),
+            inline: true,
+          })
 
-          .addField("Language", guild.preferredLocale, true)
-          .addField(
-            "Created",
-            `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
-            true
-          )
-          .addField("Guild ID", guild.id, true)
-          .addField(
-            "Owner",
-            `${guildOwner.user.username}#${guildOwner.user.discriminator}`,
-            true
-          )
-          .addField(
-            "Conversions",
-            mongoGuild.conversions.length.toLocaleString(),
-            true
-          )
+          .addFields({
+            name: "Language",
+            value: guild.preferredLocale,
+            inline: true,
+          })
+          .addFields({
+            name: "Created",
+            value: `<t:${Math.floor(guild.createdAt?.getTime() / 1000)}>`,
+            inline: true,
+          })
+          .addFields({ name: "Guild ID", value: guild.id, inline: true })
+          .addFields({
+            name: "Owner",
+            value: `${guildOwner.user.username}#${guildOwner.user.discriminator}`,
+            inline: true,
+          })
+          .addFields({
+            name: "Conversions",
+            value: mongoGuild.conversions.length.toLocaleString(),
+            inline: true,
+          })
           .setTimestamp()
           .setColor(joined ? "#00ff00" : "#ff0000")
           .setFooter({
@@ -184,10 +205,10 @@ export async function logGuild(guild: Guild, joined = true) {
 
 export async function logError(
   error: Error,
-  data: Interaction | Message | Guild = null,
+  data: Interaction | Message | Guild | any = null,
   ...args
 ) {
-  const errorEmbed = new MessageEmbed()
+  const errorEmbed = new EmbedBuilder()
     .setTitle("New error stupid")
     .setDescription(
       `${error.message}\n${error.stack}\n${args
@@ -210,26 +231,48 @@ export async function logError(
     });
     errorEmbed.setThumbnail(guild.iconURL());
     if (data instanceof Message) {
-      errorEmbed.addField("Message", data.content, true);
+      errorEmbed.addFields({
+        name: "Message",
+        value: data.content,
+        inline: true,
+      });
     } else {
-      if (data.isCommand()) {
-        errorEmbed.addField("Command", data.commandName, true);
-        errorEmbed.addField(
-          "Options",
-          data.options.data
+      if (data instanceof CommandInteraction) {
+        errorEmbed.addFields({
+          name: "Command",
+          value: data.commandName,
+          inline: true,
+        });
+        errorEmbed.addFields({
+          name: "Options",
+          value: data.options.data
             .map((option) => `${option.name} = \`${option.value}\``)
             .join(", "),
-          true
-        );
+          inline: true,
+        });
       } else if (data.isButton()) {
-        errorEmbed.addField("Button Id", data.customId, true);
-        errorEmbed.addField("Button Label", data.component.label, true);
+        errorEmbed.addFields({
+          name: "Button Id",
+          value: data.customId,
+          inline: true,
+        });
+        errorEmbed.addFields({
+          name: "Button Label",
+          value: data.component.label,
+          inline: true,
+        });
       }
     }
-    errorEmbed.addField("Channel Name", channel.name, true);
-    errorEmbed.addField("Channel Id", channel.id, true);
-    // @ts-ignore
-    errorEmbed.addField("Message", data?.message?.content || "N/A", true);
+    errorEmbed.addFields({
+      name: "Channel Name",
+      value: channel.name,
+      inline: true,
+    });
+    errorEmbed.addFields({
+      name: "Channel Id",
+      value: channel.id,
+      inline: true,
+    });
   } else {
     errorEmbed.setAuthor({
       name: data.name,
@@ -256,7 +299,7 @@ export async function logVote(vote: WebhookPayload) {
       username,
       avatarURL,
       embeds: [
-        new MessageEmbed()
+        new EmbedBuilder()
           .setAuthor({
             name: user.username + "#" + user.discriminator,
             iconURL: user.avatarURL(),

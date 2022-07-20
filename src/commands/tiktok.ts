@@ -31,13 +31,13 @@ export default {
       )
       .then(async (response) => {
         await interaction.editReply(
-          await getTikTokResponse(
+          (await getTikTokResponse(
             Type.COMMAND,
             response.data,
             interaction.user,
             interaction.guild,
             interaction.channel as TextChannel
-          )
+          )) as any
         );
       })
       .catch(async (e) => {
