@@ -6,9 +6,13 @@ import {
   ButtonInteraction,
   Client,
   CommandInteraction,
+  EmbedBuilder,
   GatewayIntentBits,
   Guild,
+  GuildTextBasedChannel,
   Message,
+  MessageOptions,
+  Role,
   TextChannel,
   VoiceChannel,
 } from "discord.js";
@@ -23,6 +27,7 @@ import validTikTokUrl from "./utils/validTikTokUrl";
 // import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
 import { launch } from "puppeteer";
 import server from "./server";
+import { ItemModule, Sigi } from "./types";
 
 server.listen(8080, () => {
   console.log("Server listening on port 8080");
@@ -96,12 +101,10 @@ client.once("ready", async () => {
 
   client.application.commands.set(commands.map((command) => command.data));
 
-  const browser = await launch({
-    headless: false,
-  });
-
-  /*
   setInterval(async () => {
+    const browser = await launch({
+      headless: false,
+    });
     const notifications = await prisma.notification.findMany({});
     notifications.forEach(async (notification) => {
       const page = await browser.newPage();
@@ -205,8 +208,8 @@ client.once("ready", async () => {
       }
       await page.close();
     });
+    await browser.close();
   }, 1000 * 60 * 5);
-  */
 
   setInterval(async () => {
     const statistics = await prisma.statistic.findMany({});
@@ -307,144 +310,144 @@ client.once("ready", async () => {
   // });
 });
 
-client.on("guildCreate", async (guild: Guild) => {
-  try {
-    let mongoGuild = await prisma.guild.findFirst({
-      where: { id: guild.id },
-      include: {
-        conversions: true,
-      },
-    });
+// client.on("guildCreate", async (guild: Guild) => {
+//   try {
+//     let mongoGuild = await prisma.guild.findFirst({
+//       where: { id: guild.id },
+//       include: {
+//         conversions: true,
+//       },
+//     });
 
-    if (!mongoGuild) {
-      mongoGuild = await prisma.guild.create({
-        data: { id: guild.id, settings: {}, lastConvertedAt: null },
-        include: {
-          conversions: true,
-        },
-      });
-    }
-    logGuild(guild);
-    let mongoUser = await prisma.user.findFirst({
-      where: { id: guild.ownerId },
-    });
+//     if (!mongoGuild) {
+//       mongoGuild = await prisma.guild.create({
+//         data: { id: guild.id, settings: {}, lastConvertedAt: null },
+//         include: {
+//           conversions: true,
+//         },
+//       });
+//     }
+//     logGuild(guild);
+//     let mongoUser = await prisma.user.findFirst({
+//       where: { id: guild.ownerId },
+//     });
 
-    if (!mongoUser) {
-      await prisma.user.create({
-        data: {
-          id: guild.ownerId,
-          lastConvertedAt: null,
-          lastVotedAt: null,
-        },
-      });
-    }
-  } catch (e) {
-    logError(e, guild).catch(console.error);
-  }
-});
+//     if (!mongoUser) {
+//       await prisma.user.create({
+//         data: {
+//           id: guild.ownerId,
+//           lastConvertedAt: null,
+//           lastVotedAt: null,
+//         },
+//       });
+//     }
+//   } catch (e) {
+//     logError(e, guild).catch(console.error);
+//   }
+// });
 
-client.on("guildDelete", async (guild: Guild) => {
-  try {
-    await logGuild(guild, false);
-    await prisma.notification.deleteMany({
-      where: { guild: guild.id },
-    });
-  } catch (e) {
-    logError(e, guild).catch(console.error);
-  }
-});
+// client.on("guildDelete", async (guild: Guild) => {
+//   try {
+//     await logGuild(guild, false);
+//     await prisma.notification.deleteMany({
+//       where: { guild: guild.id },
+//     });
+//   } catch (e) {
+//     logError(e, guild).catch(console.error);
+//   }
+// });
 
-async function handleMessage(message: Message) {
-  if (message.author.bot) return;
-  if (!validTikTokUrl(message.content)) return;
+// async function handleMessage(message: Message) {
+//   if (message.author.bot) return;
+//   if (!validTikTokUrl(message.content)) return;
 
-  try {
-    const guild = await getOrCreateGuild(message.guild);
+//   try {
+//     const guild = await getOrCreateGuild(message.guild);
 
-    if (guild.settings.autoEmbed) {
-      const id = await getIdFromText(message.content);
-      if (!id) return;
-      await axios
-        .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
-        .catch(async (e) => {
-          const messageResponse = {
-            content: "Invalid TikTok link.",
-          };
+//     if (guild.settings.autoEmbed) {
+//       const id = await getIdFromText(message.content);
+//       if (!id) return;
+//       await axios
+//         .get(`https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${id}`)
+//         .catch(async (e) => {
+//           const messageResponse = {
+//             content: "Invalid TikTok link.",
+//           };
 
-          if (message.deletable) {
-            await message.reply(messageResponse);
-          } else {
-            // message doesn't exist anymore
-            messageResponse.content = `${message.author} ${messageResponse.content}`;
-            await message.channel.send(messageResponse).catch((e) => {
-              // channel doesn't exist anymore (probably got kicked as message was sent lol)
-              logError(e, message).catch(console.error);
-            });
-          }
-        })
-        .then(async (response) => {
-          const messageResponse = (await getTikTokResponse(
-            Type.MESSAGE,
-            (response as any).data,
-            message.author,
-            message.guild,
-            message.channel as TextChannel
-          )) as any;
-          if (!messageResponse) return;
-          if (message.deletable) {
-            await message.reply(messageResponse);
-          } else {
-            // message doesn't exist anymore
-            messageResponse.content = `${message.author} ${messageResponse.content}`;
-            await message.channel.send(messageResponse).catch((e) => {
-              // channel doesn't exist anymore (probably got kicked as message was sent lol)
-              logError(e, message).catch(console.error);
-            });
-          }
+//           if (message.deletable) {
+//             await message.reply(messageResponse);
+//           } else {
+//             // message doesn't exist anymore
+//             messageResponse.content = `${message.author} ${messageResponse.content}`;
+//             await message.channel.send(messageResponse).catch((e) => {
+//               // channel doesn't exist anymore (probably got kicked as message was sent lol)
+//               logError(e, message).catch(console.error);
+//             });
+//           }
+//         })
+//         .then(async (response) => {
+//           const messageResponse = (await getTikTokResponse(
+//             Type.MESSAGE,
+//             (response as any).data,
+//             message.author,
+//             message.guild,
+//             message.channel as TextChannel
+//           )) as any;
+//           if (!messageResponse) return;
+//           if (message.deletable) {
+//             await message.reply(messageResponse);
+//           } else {
+//             // message doesn't exist anymore
+//             messageResponse.content = `${message.author} ${messageResponse.content}`;
+//             await message.channel.send(messageResponse).catch((e) => {
+//               // channel doesn't exist anymore (probably got kicked as message was sent lol)
+//               logError(e, message).catch(console.error);
+//             });
+//           }
 
-          if (guild.settings.deleteOrigin) {
-            if (message.deletable) await message.delete();
-          } else if (guild.settings.suppressEmbed) {
-            if (message.embeds.length)
-              await message.suppressEmbeds(true).catch((e) => {
-                // STUPID ASS MF NO MANAGE MESSAGE PERMS FUCK YOU SERVER OWNERS
-              });
-          }
-        });
-    }
-  } catch (e) {
-    logError(e, message).catch(console.error);
-  }
-}
+//           if (guild.settings.deleteOrigin) {
+//             if (message.deletable) await message.delete();
+//           } else if (guild.settings.suppressEmbed) {
+//             if (message.embeds.length)
+//               await message.suppressEmbeds(true).catch((e) => {
+//                 // STUPID ASS MF NO MANAGE MESSAGE PERMS FUCK YOU SERVER OWNERS
+//               });
+//           }
+//         });
+//     }
+//   } catch (e) {
+//     logError(e, message).catch(console.error);
+//   }
+// }
 
-client.on("messageCreate", handleMessage);
-client.on("messageUpdate", async (oldMessage, newMessage) => {
-  if (
-    (await getIdFromText(oldMessage.content)) ==
-    (await getIdFromText(newMessage.content))
-  )
-    return;
+// client.on("messageCreate", handleMessage);
+// client.on("messageUpdate", async (oldMessage, newMessage) => {
+//   if (
+//     (await getIdFromText(oldMessage.content)) ==
+//     (await getIdFromText(newMessage.content))
+//   )
+//     return;
 
-  await handleMessage(newMessage as Message);
-});
+//   await handleMessage(newMessage as Message);
+// });
 
-client.on("interactionCreate", async (interaction) => {
-  try {
-    if (interaction instanceof CommandInteraction) {
-      await commands
-        .find((c) => (c.data as any).name === interaction.commandName)
-        .run(interaction);
-      return;
-    }
-    if (interaction instanceof ButtonInteraction) {
-      await buttons
-        .find((button) => interaction.customId.startsWith(button.id))
-        .run(interaction);
-      return;
-    }
-  } catch (e) {
-    logError(e, interaction).catch(console.error);
-  }
-});
+// client.on("interactionCreate", async (interaction) => {
+//   try {
+//     if (interaction instanceof CommandInteraction) {
+//       await commands
+//         .find((c) => (c.data as any).name === interaction.commandName)
+//         .run(interaction);
+//       return;
+//     }
+//     if (interaction instanceof ButtonInteraction) {
+//       await buttons
+//         .find((button) => interaction.customId.startsWith(button.id))
+//         .run(interaction);
+//       return;
+//     }
+//   } catch (e) {
+//     logError(e, interaction).catch(console.error);
+//   }
+// });
 
 client.login(process.env.TOKEN_JR || process.env.TOKEN);
