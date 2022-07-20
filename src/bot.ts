@@ -370,7 +370,7 @@ async function handleMessage(message: Message) {
           const messageResponse = {
             content: "Invalid TikTok link.",
           };
-          await message.reply(messageResponse);
+
           if (message.deletable) {
             await message.reply(messageResponse);
           } else {
