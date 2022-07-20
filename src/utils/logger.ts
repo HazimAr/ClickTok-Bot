@@ -203,7 +203,7 @@ export async function logGuild(guild: Guild, joined = true) {
     .catch(console.error);
 }
 
-export async function logError(
+export async function logErrorWebhook(
   error: Error,
   data: Interaction | Message | Guild | any = null,
   ...args
@@ -316,4 +316,8 @@ export async function logVote(vote: WebhookPayload) {
       ],
     })
     .catch(console.error);
+}
+
+export async function logError(...args){
+  
 }

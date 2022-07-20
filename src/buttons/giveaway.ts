@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { prisma } from "../bot";
 import { getOrCreateUser } from "../utils/db";
-import { logError } from "../utils/logger";
+import { logErrorWebhook } from "../utils/logger";
 
 export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
@@ -108,5 +108,5 @@ export default async function (interaction: ButtonInteraction) {
 
   (interaction.member.roles as GuildMemberRoleManager)
     .add("995768453170462800")
-    .catch((e) => logError(e, interaction));
+    .catch((e) => logErrorWebhook(e, interaction));
 }

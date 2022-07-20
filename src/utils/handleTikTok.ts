@@ -6,7 +6,6 @@ import {
   EmbedBuilder,
   Guild,
   GuildChannel,
-  MessagePayload,
   TextChannel,
   User,
 } from "discord.js";

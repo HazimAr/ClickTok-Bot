@@ -1,3 +1,8 @@
+// @ts-ignore
+BigInt.prototype.toJSON = function () {
+  return this.toString();
+};
+
 import { PrismaClient } from "@prisma/client";
 import axios from "axios";
 import {
@@ -6,13 +11,10 @@ import {
   ButtonInteraction,
   Client,
   CommandInteraction,
-  EmbedBuilder,
   GatewayIntentBits,
   Guild,
-  GuildTextBasedChannel,
+  Interaction,
   Message,
-  MessageOptions,
-  Role,
   TextChannel,
   VoiceChannel,
 } from "discord.js";
@@ -22,14 +24,22 @@ import humanFormat from "human-format";
 import { AutoPoster } from "topgg-autoposter";
 import { getOrCreateGuild } from "./utils/db";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
-import { logError, logGuild } from "./utils/logger";
+import { logErrorWebhook, logGuild } from "./utils/logger";
 import validTikTokUrl from "./utils/validTikTokUrl";
 // import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
-import { launch } from "puppeteer";
 import server from "./server";
-import { ItemModule, Sigi } from "./types";
 
-server.listen(8080, () => {
+const opts = {
+  errorEventName: "error",
+  logDirectory: "logs", // NOTE: folder must exist and be writable...
+  fileNamePattern: "<DATE>.log",
+  dateFormat: "YYYY.MM.DD",
+  timestampFormat: "HH:mm:ss.SSS",
+};
+import { createRollingFileLogger } from "simple-node-logger";
+const log = createRollingFileLogger(opts);
+
+server.listen(!process.env.TOKEN_JR ? 8080 : 8081, () => {
   console.log("Server listening on port 8080");
 });
 
@@ -84,6 +94,8 @@ client.once("ready", async () => {
   //     guild.leave();
   //   }
   // });
+
+  // client.guilds.cache.get("997851091599364106").leave();
 
   readdirSync("./src/buttons").forEach(async (buttonFile) => {
     const buttonFunction = (await import(`./buttons/${buttonFile}`)).default;
@@ -312,6 +324,7 @@ client.once("ready", async () => {
 });
 
 client.on("guildCreate", async (guild: Guild) => {
+  log.info("guildCreate: ", guild);
   try {
     let mongoGuild = await prisma.guild.findFirst({
       where: { id: guild.id },
@@ -322,7 +335,26 @@ client.on("guildCreate", async (guild: Guild) => {
 
     if (!mongoGuild) {
       mongoGuild = await prisma.guild.create({
-        data: { id: guild.id, settings: {}, lastConvertedAt: null },
+        data: {
+          id: guild.id,
+          settings: {
+            lists: {
+              channels: {
+                values: [],
+                whitelist: false,
+              },
+              users: {
+                values: [],
+                whitelist: false,
+              },
+              roles: {
+                values: [],
+                whitelist: false,
+              },
+            },
+          },
+          lastConvertedAt: null,
+        },
         include: {
           conversions: true,
         },
@@ -343,25 +375,26 @@ client.on("guildCreate", async (guild: Guild) => {
       });
     }
   } catch (e) {
-    logError(e, guild).catch(console.error);
+    logErrorWebhook(e, guild).catch(console.error);
   }
 });
 
 client.on("guildDelete", async (guild: Guild) => {
+  log.info("guildDelete: ", guild);
   try {
     await logGuild(guild, false);
     await prisma.notification.deleteMany({
       where: { guild: guild.id },
     });
   } catch (e) {
-    logError(e, guild).catch(console.error);
+    logErrorWebhook(e, guild).catch(console.error);
   }
 });
 
 async function handleMessage(message: Message) {
   if (message.author.bot) return;
   if (!validTikTokUrl(message.content)) return;
-
+  log.info("message: ", message);
   try {
     const guild = await getOrCreateGuild(message.guild);
 
@@ -382,7 +415,7 @@ async function handleMessage(message: Message) {
             messageResponse.content = `${message.author} ${messageResponse.content}`;
             await message.channel.send(messageResponse).catch((e) => {
               // channel doesn't exist anymore (probably got kicked as message was sent lol)
-              logError(e, message).catch(console.error);
+              logErrorWebhook(e, message).catch(console.error);
             });
           }
         })
@@ -402,7 +435,7 @@ async function handleMessage(message: Message) {
             messageResponse.content = `${message.author} ${messageResponse.content}`;
             await message.channel.send(messageResponse).catch((e) => {
               // channel doesn't exist anymore (probably got kicked as message was sent lol)
-              logError(e, message).catch(console.error);
+              logErrorWebhook(e, message).catch(console.error);
             });
           }
 
@@ -417,7 +450,7 @@ async function handleMessage(message: Message) {
         });
     }
   } catch (e) {
-    logError(e, message).catch(console.error);
+    logErrorWebhook(e, message).catch(console.error);
   }
 }
 
@@ -432,22 +465,21 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
   await handleMessage(newMessage as Message);
 });
 
-client.on("interactionCreate", async (interaction) => {
+client.on("interactionCreate", async (interaction: Interaction) => {
+  log.info("interactionCreate: ", interaction);
   try {
     if (interaction instanceof CommandInteraction) {
       await commands
         .find((c) => (c.data as any).name === interaction.commandName)
         .run(interaction);
-      return;
     }
     if (interaction instanceof ButtonInteraction) {
       await buttons
         .find((button) => interaction.customId.startsWith(button.id))
         .run(interaction);
-      return;
     }
   } catch (e) {
-    logError(e, interaction).catch(console.error);
+    logErrorWebhook(e, interaction).catch(console.error);
   }
 });
 

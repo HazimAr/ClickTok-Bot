@@ -20,6 +20,7 @@
     "human-format": "^1.0.0",
     "npm": "^8.13.2",
     "puppeteer": "^15.4.0",
+    "simple-node-logger": "^21.8.12",
     "topgg-autoposter": "^2.0.1",
     "ts-node": "^10.8.2"
   },
