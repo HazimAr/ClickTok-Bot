@@ -9,7 +9,8 @@ import {
 
 import { Router } from "express";
 
-import { client, prisma } from "../bot";
+import { prisma } from "../bot";
+import { getDiscordGuild, getDiscordUser } from "../utils/clients";
 import { getOrCreateGuild } from "../utils/db";
 const router = Router();
 
@@ -35,7 +36,7 @@ router.use(async (req, res, next) => {
 router.get("/", async (req, res) => {
   // get all guilds user from discord
 
-  const user = await client.users.fetch(res.locals.user.id);
+  const user = await getDiscordUser(res.locals.user.id);
   if (!user) return res.status(404).send({ error: "Bot unable to see user" });
 
   const response = await axios
@@ -55,7 +56,7 @@ router.get("/", async (req, res) => {
   await Promise.all(
     response.data.map(async (guild) => {
       if (guild.permissions & 0x8) {
-        if (client.guilds.cache.get(guild.id)) return botGuilds.push(guild);
+        if (await getDiscordGuild(guild.id)) return botGuilds.push(guild);
         normalGuilds.push(guild);
       }
     })
@@ -68,9 +69,7 @@ router.get("/", async (req, res) => {
 });
 
 router.use("/:id", async (req, res, next) => {
-  const discordGuild = await client.guilds
-    .fetch(req.params.id)
-    .catch(() => null);
+  const discordGuild = await getDiscordGuild(req.params.id).catch(() => null);
   if (!discordGuild)
     return res.status(404).json({ message: "Bot not in specified guild." });
   const member = (await discordGuild.members

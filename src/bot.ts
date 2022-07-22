@@ -11,10 +11,14 @@ import {
   ButtonInteraction,
   Client,
   CommandInteraction,
+  EmbedBuilder,
   GatewayIntentBits,
   Guild,
+  GuildTextBasedChannel,
   Interaction,
   Message,
+  MessageOptions,
+  Role,
   TextChannel,
   VoiceChannel,
 } from "discord.js";
@@ -37,6 +41,9 @@ const opts = {
   timestampFormat: "HH:mm:ss.SSS",
 };
 import { createRollingFileLogger } from "simple-node-logger";
+import { launch } from "puppeteer";
+import { ItemModule, Sigi } from "./types";
+import { getDiscordGuild } from "./utils/clients";
 const log = createRollingFileLogger(opts);
 
 server.listen(!process.env.TOKEN_JR ? 8080 : 8081, () => {
@@ -53,7 +60,7 @@ prisma
   .catch(console.error);
 
 const bots = [process.env.TOKEN, process.env.TOKEN2];
-const clients = bots.map((token, index) => {
+export const clients = bots.map((token, index) => {
   const client = new Client({
     intents: [
       GatewayIntentBits.GuildMembers,
@@ -96,8 +103,6 @@ const clients = bots.map((token, index) => {
     //   }
     // });
 
-    // client.guilds.cache.get("780435741650059264").leave();
-
     readdirSync("./src/buttons").forEach(async (buttonFile) => {
       const buttonFunction = (await import(`./buttons/${buttonFile}`)).default;
       buttons.push({ id: buttonFile.split(".")[0], run: buttonFunction });
@@ -113,187 +118,7 @@ const clients = bots.map((token, index) => {
     );
 
     client.application.commands.set(commands.map((command) => command.data));
-    /*
-  setInterval(async () => {
-    const browser = await launch({
-      headless: false,
-    });
-    const notifications = await prisma.notification.findMany({});
-    const promises = notifications.map(async (notification) => {
-      const page = await browser.newPage();
-      try {
-        await page.goto(`https://tiktok.com/@${notification.creator}`, {
-          referer: "https://tiktok.com",
-        });
-        const element = await page.waitForSelector("#SIGI_STATE");
-        if (!element) return;
 
-        const sigi: Sigi = JSON.parse(
-          await element.evaluate((e) => e.textContent)
-        );
-
-        let mongoCreator = await prisma.creator.findFirst({
-          where: { id: sigi.UserPage.uniqueId },
-        });
-
-        const keys = Object.keys(sigi.ItemModule);
-        const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
-        if (!mongoCreator) {
-          return await prisma.creator.create({
-            data: {
-              id: sigi.UserPage.uniqueId,
-              videos: keys,
-              statistics: {
-                followers: creatorStats.followerCount,
-                likes: creatorStats.heart,
-                videos: creatorStats.videoCount,
-              },
-            },
-          });
-        }
-        const newItems: ItemModule[] = [];
-
-        keys.map((key) => {
-          const item = sigi.ItemModule[key];
-
-          if (!mongoCreator.videos.find((v) => v == item.video.id)) {
-            newItems.push(item);
-            return;
-          }
-        });
-
-        mongoCreator = await prisma.creator.update({
-          where: { id: sigi.UserPage.uniqueId },
-          data: {
-            videos: keys,
-            statistics: {
-              followers: creatorStats.followerCount,
-              likes: creatorStats.heart,
-              videos: creatorStats.videoCount,
-            },
-          },
-        });
-
-        if (newItems.length) {
-          const guild = await client.guilds.fetch(notification.guild);
-          const channel = (await guild.channels.fetch(
-            notification.channel
-          )) as GuildTextBasedChannel;
-          let role: Role = null;
-          if (notification.role)
-            role = await guild.roles.fetch(notification.role);
-          newItems.forEach(async (newItem) => {
-            const message: MessageOptions = {
-              embeds: [
-                new EmbedBuilder()
-                  .setAuthor({
-                    name: newItem.nickname,
-                    iconURL: newItem.avatarThumb,
-                    url: `https://tiktok.com/@${newItem.author}`,
-                  })
-                  .setTitle(`${newItem.nickname} just posted a new TikTok`)
-                  .setURL(
-                    `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
-                  )
-                  .setDescription(newItem.desc || "N/A")
-                  // TODO: extra text info
-                  .setFooter({ text: newItem.video.id })
-                  .setThumbnail(newItem.video.cover)
-                  .setTimestamp()
-                  .setColor("#9b77e9"),
-              ],
-            };
-
-            if (notification.preview || role)
-              await channel.send({
-                content: `${role ? `${role} ` : ""}${
-                  notification.preview
-                    ? `https://clicktok.xyz/api/v/${newItem.video.id}`
-                    : ""
-                }`,
-              });
-
-            await channel.send(message);
-          });
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      await page.close();
-    });
-    await Promise.all(promises);
-    await browser.close();
-  }, 1000 * 60 * 5);
-*/
-    setInterval(async () => {
-      const statistics = await prisma.statistic.findMany({});
-      statistics.forEach(async (statistic) => {
-        try {
-          const creator = await prisma.creator.findFirst({
-            where: { id: statistic.creator },
-          });
-          if (statistic.followers) {
-            const channel = (await client.channels
-              .fetch(statistic.followers)
-              .catch(() => null)) as VoiceChannel;
-
-            if (channel) {
-              await channel
-                .edit({
-                  name: `${
-                    statistic.followersPrefix || "Followers: "
-                  }${humanFormat(creator.statistics.followers)}`,
-                })
-                .catch(() =>
-                  console.error(
-                    `Unable to edit channel ${channel.name}-${statistic.followers}`
-                  )
-                );
-            }
-          }
-          if (statistic.likes) {
-            const channel = (await client.channels
-              .fetch(statistic.likes)
-              .catch(() => null)) as VoiceChannel;
-
-            if (channel) {
-              await channel
-                .edit({
-                  name: `${statistic.likesPrefix || "Likes: "}${humanFormat(
-                    creator.statistics.likes
-                  )}`,
-                })
-                .catch(() =>
-                  console.error(
-                    `Unable to edit channel ${channel.name}-${statistic.likes}`
-                  )
-                );
-            }
-          }
-          if (statistic.videos) {
-            const channel = (await client.channels
-              .fetch(statistic.videos)
-              .catch(() => null)) as VoiceChannel;
-
-            if (channel) {
-              await channel
-                .edit({
-                  name: `${statistic.videosPrefix || "Videos: "}${humanFormat(
-                    creator.statistics.videos
-                  )}`,
-                })
-                .catch(() =>
-                  console.error(
-                    `Unable to edit channel ${channel.name}-${statistic.videos}`
-                  )
-                );
-            }
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      });
-    }, 1000 * 60 * 10);
     // const giveawayMessage = await (
     //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
     // ).messages.fetch("992304881643831297");
@@ -490,4 +315,185 @@ const clients = bots.map((token, index) => {
 
 export const client = clients[0];
 
+setInterval(async () => {
+  const browser = await launch({
+    headless: false,
+  });
+  const notifications = await prisma.notification.findMany({});
+  const promises = notifications.map(async (notification) => {
+    const page = await browser.newPage();
+    try {
+      await page.goto(`https://tiktok.com/@${notification.creator}`, {
+        referer: "https://tiktok.com",
+      });
+      const element = await page.waitForSelector("#SIGI_STATE");
+      if (!element) return;
+
+      const sigi: Sigi = JSON.parse(
+        await element.evaluate((e) => e.textContent)
+      );
+
+      let mongoCreator = await prisma.creator.findFirst({
+        where: { id: sigi.UserPage.uniqueId },
+      });
+
+      const keys = Object.keys(sigi.ItemModule);
+      const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
+      if (!mongoCreator) {
+        return await prisma.creator.create({
+          data: {
+            id: sigi.UserPage.uniqueId,
+            videos: keys,
+            statistics: {
+              followers: creatorStats.followerCount,
+              likes: creatorStats.heart,
+              videos: creatorStats.videoCount,
+            },
+          },
+        });
+      }
+      const newItems: ItemModule[] = [];
+
+      keys.map((key) => {
+        const item = sigi.ItemModule[key];
+
+        if (!mongoCreator.videos.find((v) => v == item.video.id)) {
+          newItems.push(item);
+          return;
+        }
+      });
+
+      mongoCreator = await prisma.creator.update({
+        where: { id: sigi.UserPage.uniqueId },
+        data: {
+          videos: keys,
+          statistics: {
+            followers: creatorStats.followerCount,
+            likes: creatorStats.heart,
+            videos: creatorStats.videoCount,
+          },
+        },
+      });
+
+      if (newItems.length) {
+        const guild = await getDiscordGuild(notification.guild);
+        const channel = (await guild.channels.fetch(
+          notification.channel
+        )) as GuildTextBasedChannel;
+        let role: Role = null;
+        if (notification.role)
+          role = await guild.roles.fetch(notification.role);
+        newItems.forEach(async (newItem) => {
+          const message: MessageOptions = {
+            embeds: [
+              new EmbedBuilder()
+                .setAuthor({
+                  name: newItem.nickname,
+                  iconURL: newItem.avatarThumb,
+                  url: `https://tiktok.com/@${newItem.author}`,
+                })
+                .setTitle(`${newItem.nickname} just posted a new TikTok`)
+                .setURL(
+                  `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
+                )
+                .setDescription(newItem.desc || "N/A")
+                // TODO: extra text info
+                .setFooter({ text: newItem.video.id })
+                .setThumbnail(newItem.video.cover)
+                .setTimestamp()
+                .setColor("#9b77e9"),
+            ],
+          };
+
+          if (notification.preview || role)
+            await channel.send({
+              content: `${role ? `${role} ` : ""}${
+                notification.preview
+                  ? `https://clicktok.xyz/api/v/${newItem.video.id}`
+                  : ""
+              }`,
+            });
+
+          await channel.send(message);
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    await page.close();
+  });
+  await Promise.all(promises);
+  await browser.close();
+}, 1000 * 60 * 5);
+
+setInterval(async () => {
+  const statistics = await prisma.statistic.findMany({});
+  statistics.forEach(async (statistic) => {
+    try {
+      const creator = await prisma.creator.findFirst({
+        where: { id: statistic.creator },
+      });
+      const guild = await getDiscordGuild(statistic.guild);
+      if (statistic.followers) {
+        const channel = (await guild.channels
+          .fetch(statistic.followers)
+          .catch(() => null)) as VoiceChannel;
+
+        if (channel) {
+          await channel
+            .edit({
+              name: `${statistic.followersPrefix || "Followers: "}${humanFormat(
+                creator.statistics.followers
+              )}`,
+            })
+            .catch(() =>
+              console.error(
+                `Unable to edit channel ${channel.name}-${statistic.followers}`
+              )
+            );
+        }
+      }
+      if (statistic.likes) {
+        const channel = (await guild.channels
+          .fetch(statistic.likes)
+          .catch(() => null)) as VoiceChannel;
+
+        if (channel) {
+          await channel
+            .edit({
+              name: `${statistic.likesPrefix || "Likes: "}${humanFormat(
+                creator.statistics.likes
+              )}`,
+            })
+            .catch(() =>
+              console.error(
+                `Unable to edit channel ${channel.name}-${statistic.likes}`
+              )
+            );
+        }
+      }
+      if (statistic.videos) {
+        const channel = (await guild.channels
+          .fetch(statistic.videos)
+          .catch(() => null)) as VoiceChannel;
+
+        if (channel) {
+          await channel
+            .edit({
+              name: `${statistic.videosPrefix || "Videos: "}${humanFormat(
+                creator.statistics.videos
+              )}`,
+            })
+            .catch(() =>
+              console.error(
+                `Unable to edit channel ${channel.name}-${statistic.videos}`
+              )
+            );
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
+}, 1000 * 60 * 10);
 // client.login(process.env.TOKEN);

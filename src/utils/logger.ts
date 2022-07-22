@@ -11,7 +11,7 @@ import {
   User,
   WebhookClient,
 } from "discord.js";
-import { client } from "../bot";
+import { getDiscordGuild, getDiscordUser } from "./clients";
 import { getOrCreateGuild, getOrCreateUser } from "./db";
 
 const conversionWebhook = new WebhookClient({
@@ -46,11 +46,11 @@ export async function logConversion(
   const author =
     conversion.user instanceof User
       ? conversion.user
-      : client.users.cache.get(conversion.user);
+      : await getDiscordUser(conversion.user);
   const guild =
     conversion.guild instanceof Guild
       ? conversion.guild
-      : client.guilds.cache.get(conversion.guild);
+      : await getDiscordGuild(conversion.guild);
 
   const mongoUser = await getOrCreateUser(author);
   const mongoGuild = await getOrCreateGuild(guild);
@@ -293,7 +293,7 @@ export async function logErrorWebhook(
 }
 
 export async function logVote(vote: WebhookPayload) {
-  const user = await client.users.fetch(vote.user);
+  const user = await getDiscordUser(vote.user);
   voteWebhook
     .send({
       username,
@@ -318,6 +318,4 @@ export async function logVote(vote: WebhookPayload) {
     .catch(console.error);
 }
 
-export async function logError(...args){
-  
-}
+export async function logError(...args) {}
