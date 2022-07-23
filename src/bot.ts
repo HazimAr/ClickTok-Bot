@@ -30,6 +30,7 @@ import { getOrCreateGuild } from "./utils/db";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
 import { logErrorWebhook, logGuild } from "./utils/logger";
 import validTikTokUrl from "./utils/validTikTokUrl";
+import topgg from "@top-gg/sdk";
 // import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
 import server from "./server";
 
@@ -316,9 +317,7 @@ export const clients = bots.map((token, index) => {
 export const client = clients[0];
 
 setInterval(async () => {
-  const browser = await launch({
-    headless: false,
-  });
+  const browser = await launch();
   const notifications = await prisma.notification.findMany({});
   const promises = notifications.map(async (notification) => {
     const page = await browser.newPage();
@@ -326,7 +325,9 @@ setInterval(async () => {
       await page.goto(`https://tiktok.com/@${notification.creator}`, {
         referer: "https://tiktok.com",
       });
-      const element = await page.waitForSelector("#SIGI_STATE");
+      const element = await page.waitForSelector("#SIGI_STATE", {
+        timeout: 60000,
+      });
       if (!element) return;
 
       const sigi: Sigi = JSON.parse(
@@ -418,7 +419,7 @@ setInterval(async () => {
         });
       }
     } catch (e) {
-      console.error(e);
+      console.error(notification.creator, e);
     }
     await page.close();
   });
