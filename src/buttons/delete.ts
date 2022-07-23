@@ -15,13 +15,12 @@ export default async function (interaction: ButtonInteraction) {
       ephemeral: true,
     });
 
-  await (interaction.message as Message)
-    .delete()
-    .catch((e) =>
-      interaction.reply({
-        content:
-          "Oops! It looks like I don't have permission to manage messages to delete this message",
-        ephemeral: true,
-      })
-    );
+  if (!interaction.message.deletable) {
+    return await interaction.reply({
+      content:
+        "Oops! It looks like I don't have permission to manage messages to delete this message",
+      ephemeral: true,
+    });
+  }
+  await (interaction.message as Message).delete();
 }

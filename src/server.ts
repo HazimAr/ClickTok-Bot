@@ -1,9 +1,18 @@
 import express, { json } from "express";
 import cors from "cors";
 import { readdirSync } from "fs";
+import { log } from "./bot";
 const app = express();
 app.use(cors());
 app.use(json());
+app.use(async (err, req, res, next) => {
+  try {
+    await next();
+  } catch (err) {
+    log.error("server: ", err);
+    res.status(500).send(err.message);
+  }
+});
 
 for (const route of readdirSync("./src/server")) {
   if (route.includes(".")) {

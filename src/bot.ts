@@ -45,7 +45,7 @@ import { createRollingFileLogger } from "simple-node-logger";
 import { launch } from "puppeteer";
 import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
-const log = createRollingFileLogger(opts);
+export const log = createRollingFileLogger(opts);
 
 server.listen(!process.env.TOKEN_JR ? 8080 : 8081, () => {
   console.log("Server listening on port 8080");
@@ -419,11 +419,11 @@ setInterval(async () => {
             });
 
           await channel.send(message);
-          log.info("notification: ", )
+          log.info("notification: ", notification);
         });
       }
     } catch (e) {
-      log.error(`${notification.creator}: ${e}`);
+      log.error("notification: ", e, notification);
     }
     await page.close();
   });
@@ -496,8 +496,9 @@ setInterval(async () => {
             );
         }
       }
+      log.info("statistic: ", statistic);
     } catch (e) {
-      console.error(e);
+      log.error("statistic: ", e, statistic);
     }
   });
 }, 1000 * 60 * 10);
