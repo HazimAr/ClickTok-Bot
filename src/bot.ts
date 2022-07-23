@@ -260,19 +260,13 @@ export const clients = bots.map((token, index) => {
             } else {
               // message doesn't exist anymore
               messageResponse.content = `${message.author} ${messageResponse.content}`;
-              await message.channel.send(messageResponse).catch((e) => {
-                // channel doesn't exist anymore (probably got kicked as message was sent lol)
-                logErrorWebhook(e, message).catch(console.error);
-              });
+              await message.channel.send(messageResponse);
             }
 
             if (guild.settings.deleteOrigin) {
               if (message.deletable) await message.delete();
             } else if (guild.settings.suppressEmbed) {
-              if (message.embeds.length)
-                await message.suppressEmbeds(true).catch((e) => {
-                  // STUPID ASS MF NO MANAGE MESSAGE PERMS FUCK YOU SERVER OWNERS
-                });
+              if (message.embeds.length) await message.suppressEmbeds(true);
             }
           });
       }
