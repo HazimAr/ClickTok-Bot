@@ -152,7 +152,7 @@ export default async function (
           },
         },
       },
-      lastConvertedAt: null,
+      lastConvertedAt,
     },
   });
 
