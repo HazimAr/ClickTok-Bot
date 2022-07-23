@@ -497,14 +497,18 @@ setInterval(async () => {
   });
 }, 1000 * 60 * 10);
 
-setInterval(() => {
+setInterval(async () => {
   let serverCount = 0;
   for (const client of clients) {
     serverCount += client.guilds.cache.size;
   }
-  api.postStats({
-    serverCount,
-  });
+  try {
+    await api.postStats({
+      serverCount,
+    });
+  } catch (e) {
+    log.error("stats: ", e);
+  }
 }, 1000 * 60 * 5);
 
 // client.login(process.env.TOKEN);
