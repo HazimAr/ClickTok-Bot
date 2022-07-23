@@ -326,7 +326,7 @@ setInterval(async () => {
         referer: "https://tiktok.com",
       });
       const element = await page.waitForSelector("#SIGI_STATE", {
-        timeout: 60000,
+        timeout: 120000,
       });
       if (!element) return;
 
