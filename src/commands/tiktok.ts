@@ -22,7 +22,7 @@ export default {
       });
       return;
     }
-    interaction.deferReply().catch((e) => logErrorWebhook(e, interaction));
+    await interaction.deferReply().catch((e) => logErrorWebhook(e, interaction));
     await axios
       .get(
         `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${await getIdFromText(
