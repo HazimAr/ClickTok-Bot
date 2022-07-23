@@ -30,12 +30,12 @@ import { getOrCreateGuild } from "./utils/db";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
 import { logErrorWebhook, logGuild } from "./utils/logger";
 import validTikTokUrl from "./utils/validTikTokUrl";
-import topgg from "@top-gg/sdk";
+import { Api } from "@top-gg/sdk";
+const api = new Api(process.env.TOPGG_TOKEN);
 // import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
 import server from "./server";
 
 const opts = {
-  errorEventName: "error",
   logDirectory: "logs", // NOTE: folder must exist and be writable...
   fileNamePattern: "<DATE>.log",
   dateFormat: "YYYY.MM.DD",
@@ -59,7 +59,7 @@ prisma
     console.log("Connected to Prisma");
   })
   .catch(console.error);
-
+let guildCount = 0;
 const bots = [process.env.TOKEN, process.env.TOKEN2];
 export const clients = bots.map((token, index) => {
   const client = new Client({
@@ -70,7 +70,6 @@ export const clients = bots.map((token, index) => {
       GatewayIntentBits.MessageContent,
     ],
   });
-  if (!index) AutoPoster(process.env.TOPGG_TOKEN, client);
 
   let commands: {
     data: ApplicationCommandDataResolvable;
@@ -151,7 +150,6 @@ export const clients = bots.map((token, index) => {
   });
 
   client.on("guildCreate", async (guild: Guild) => {
-    log.info("guildCreate: ", guild);
     try {
       let mongoGuild = await prisma.guild.findFirst({
         where: { id: guild.id },
@@ -201,19 +199,22 @@ export const clients = bots.map((token, index) => {
           },
         });
       }
+      log.info("guildCreate: ", guild);
     } catch (e) {
+      log.error("guildCreate: ", e, guild);
       logErrorWebhook(e, guild).catch(console.error);
     }
   });
 
   client.on("guildDelete", async (guild: Guild) => {
-    log.info("guildDelete: ", guild);
     try {
       await logGuild(guild, false);
       await prisma.notification.deleteMany({
         where: { guild: guild.id },
       });
+      log.info("guildDelete: ", guild);
     } catch (e) {
+      log.error("guildDelete: ", e, guild);
       logErrorWebhook(e, guild).catch(console.error);
     }
   });
@@ -221,7 +222,6 @@ export const clients = bots.map((token, index) => {
   async function handleMessage(message: Message) {
     if (message.author.bot) return;
     if (!validTikTokUrl(message.content)) return;
-    log.info("message: ", message);
     try {
       const guild = await getOrCreateGuild(message.guild);
 
@@ -276,7 +276,9 @@ export const clients = bots.map((token, index) => {
             }
           });
       }
+      log.info("message: ", message);
     } catch (e) {
+      log.error("message: ", e, message);
       logErrorWebhook(e, message).catch(console.error);
     }
   }
@@ -417,6 +419,7 @@ setInterval(async () => {
             });
 
           await channel.send(message);
+          log.info("notification: ", )
         });
       }
     } catch (e) {
@@ -498,4 +501,15 @@ setInterval(async () => {
     }
   });
 }, 1000 * 60 * 10);
+
+setInterval(() => {
+  let serverCount = 0;
+  for (const client of clients) {
+    serverCount += client.guilds.cache.size;
+  }
+  api.postStats({
+    serverCount,
+  });
+}, 1000 * 60 * 5);
+
 // client.login(process.env.TOKEN);
