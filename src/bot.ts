@@ -293,7 +293,6 @@ export const clients = bots.map((token, index) => {
   });
 
   client.on("interactionCreate", async (interaction: Interaction) => {
-    log.info("interactionCreate: ", interaction);
     try {
       if (interaction instanceof CommandInteraction) {
         await commands
@@ -305,7 +304,9 @@ export const clients = bots.map((token, index) => {
           .find((button) => interaction.customId.startsWith(button.id))
           .run(interaction);
       }
+      log.info("interactionCreate: ", interaction);
     } catch (e) {
+      log.error("interactionCreate: ", e, interaction);
       logErrorWebhook(e, interaction).catch(console.error);
     }
   });
@@ -419,7 +420,7 @@ setInterval(async () => {
         });
       }
     } catch (e) {
-      console.error(notification.creator, e);
+      log.error(`${notification.creator}: ${e}`);
     }
     await page.close();
   });
