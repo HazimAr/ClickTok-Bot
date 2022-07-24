@@ -47,7 +47,7 @@ import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
 export const log = createRollingFileLogger(opts);
 
-server.listen(80, () => {
+server.listen(process.env.PORT || 80, () => {
   console.log("Server listening on port 80");
 });
 
