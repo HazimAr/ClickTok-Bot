@@ -490,7 +490,6 @@ setInterval(async () => {
             );
         }
       }
-      log.info("statistic: ", statistic);
     } catch (e) {
       log.error("statistic: ", e, statistic);
     }
