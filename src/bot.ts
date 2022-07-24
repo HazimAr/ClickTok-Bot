@@ -61,7 +61,7 @@ prisma
   .catch(console.error);
 
 const bots = [process.env.TOKEN, process.env.TOKEN2];
-export const clients = bots.map((token, index) => {
+export const clients = bots.map((token) => {
   const client = new Client({
     intents: [
       GatewayIntentBits.GuildMembers,
