@@ -9,25 +9,29 @@ router.post(
   "/",
   topggWebhook.listener(async (vote) => {
     if (vote.type === "upvote") {
+      log.info("vote: ", vote);
       try {
-        await prisma.user.upsert({
-          where: { id: vote.user },
-          update: {
-            votes: {
-              increment: 1,
+        await logVote(vote);
+        try {
+          await prisma.user.upsert({
+            where: { id: vote.user },
+            update: {
+              votes: {
+                increment: 1,
+              },
+              lastVotedAt: new Date(Date.now()),
             },
-            lastVotedAt: new Date(Date.now()),
-          },
-          create: {
-            id: vote.user,
-            lastConvertedAt: null,
-            lastVotedAt: null,
-          },
-        });
-        log.info("vote: ", vote);
-        logVote(vote);
+            create: {
+              id: vote.user,
+              lastConvertedAt: null,
+              lastVotedAt: null,
+            },
+          });
+        } catch (e) {
+          log.error("vote: ", e, vote);
+        }
       } catch (e) {
-        log.error("vote: ", e);
+        log.error("vote: ", e, vote);
       }
     }
   })
