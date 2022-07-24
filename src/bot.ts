@@ -47,8 +47,8 @@ import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
 export const log = createRollingFileLogger(opts);
 
-server.listen(!process.env.TOKEN_JR ? 8080 : 8081, () => {
-  console.log("Server listening on port 8080");
+server.listen(80, () => {
+  console.log("Server listening on port 80");
 });
 
 export const prisma = new PrismaClient();
