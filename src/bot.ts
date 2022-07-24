@@ -59,7 +59,7 @@ prisma
     console.log("Connected to Prisma");
   })
   .catch(console.error);
-let guildCount = 0;
+
 const bots = [process.env.TOKEN, process.env.TOKEN2];
 export const clients = bots.map((token, index) => {
   const client = new Client({
@@ -417,7 +417,7 @@ setInterval(async () => {
         });
       }
     } catch (e) {
-      log.error("notification: ", e, notification);
+      // log.error("notification: ", e, notification);
     }
     await page.close();
   });

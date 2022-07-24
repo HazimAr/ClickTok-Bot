@@ -1,7 +1,7 @@
 import { Webhook } from "@top-gg/sdk";
 import { logVote } from "../utils/logger";
 import { Router } from "express";
-import { prisma } from "../bot";
+import { log, prisma } from "../bot";
 const router = Router();
 const topggWebhook = new Webhook(process.env.TOPGG_PASSWORD);
 
@@ -24,8 +24,11 @@ router.post(
             lastVotedAt: null,
           },
         });
+        log.info("vote: ", vote);
         logVote(vote);
-      } catch {}
+      } catch (e) {
+        log.error("vote: ", e);
+      }
     }
   })
 );
