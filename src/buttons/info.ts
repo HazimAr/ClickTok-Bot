@@ -56,7 +56,7 @@ export default async function (interaction: ButtonInteraction) {
           name: author?.nickname || "N/A",
           iconURL: author?.avatar_thumb?.url_list?.[0],
         })
-        .setTitle(description)
+        .setTitle(description || "N/A")
         .setThumbnail(tiktok.aweme_detail.video.cover.url_list[0])
         .setDescription(
           `https://clicktok.xyz/v/${tiktok.aweme_detail.aweme_id}`
