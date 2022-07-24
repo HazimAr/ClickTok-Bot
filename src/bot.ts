@@ -266,7 +266,10 @@ export const clients = bots.map((token) => {
             if (guild.settings.deleteOrigin) {
               if (message.deletable) await message.delete();
             } else if (guild.settings.suppressEmbed) {
-              if (message.embeds.length) await message.suppressEmbeds(true);
+              if (message.embeds.length)
+                await message.suppressEmbeds(true).catch(() => {
+                  log.error("suppressEmbeds: ", message);
+                });
             }
           });
       }
