@@ -9,7 +9,7 @@ app.use(json());
 app.use((req, res, next) => {
   try {
     next();
-    log.info("server: ", circular.stringify(req));
+    if (!req.url.includes("vote")) log.info("server: ", circular.stringify(req));
   } catch (err) {
     log.error("server: ", err, circular.stringify(req));
     res.status(500).send(err.message);
@@ -31,19 +31,19 @@ app.get("/", (_, res) => res.send("Hello, World!"));
 
 export default app;
 
-function simpleStringify (object){
-    var simpleObject = {};
-    for (var prop in object ){
-        if (!object.hasOwnProperty(prop)){
-            continue;
-        }
-        if (typeof(object[prop]) == 'object'){
-            continue;
-        }
-        if (typeof(object[prop]) == 'function'){
-            continue;
-        }
-        simpleObject[prop] = object[prop];
+function simpleStringify(object) {
+  var simpleObject = {};
+  for (var prop in object) {
+    if (!object.hasOwnProperty(prop)) {
+      continue;
     }
-    return JSON.stringify(simpleObject); // returns cleaned up JSON
-};
+    if (typeof object[prop] == "object") {
+      continue;
+    }
+    if (typeof object[prop] == "function") {
+      continue;
+    }
+    simpleObject[prop] = object[prop];
+  }
+  return JSON.stringify(simpleObject); // returns cleaned up JSON
+}
