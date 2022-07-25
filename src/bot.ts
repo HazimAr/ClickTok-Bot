@@ -35,17 +35,20 @@ const api = new Api(process.env.TOPGG_TOKEN);
 // import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
 import server from "./server";
 
-const opts = {
+export const options: SimpleLogger.ISimpleLoggerOptions &
+  SimpleLogger.IRollingFileAppenderOptions & {
+    readLoggerConfig?: Function;
+  } = {
   logDirectory: "logs", // NOTE: folder must exist and be writable...
   fileNamePattern: "<DATE>.log",
   dateFormat: "YYYY.MM.DD",
   timestampFormat: "HH:mm:ss.SSS",
 };
-import { createRollingFileLogger } from "simple-node-logger";
+import SimpleLogger, { createRollingFileLogger } from "simple-node-logger";
 import { launch } from "puppeteer";
 import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
-export const log = createRollingFileLogger(opts);
+export const log = createRollingFileLogger(options);
 
 server.listen(process.env.PORT || 80, () => {
   console.log("Server listening on port 80");
@@ -83,7 +86,7 @@ export const clients = bots.map((token) => {
 
   client.once("ready", async () => {
     console.log(
-      `${client.user.username} has logged in with ${client.guilds.cache.size} guilds`
+      `${client.user.tag} has logged in with ${client.guilds.cache.size} guilds`
     );
     client.user.setActivity({
       type: ActivityType.Playing,
