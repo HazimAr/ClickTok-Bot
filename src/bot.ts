@@ -8,6 +8,7 @@ import axios from "axios";
 import {
   ActivityType,
   ApplicationCommandDataResolvable,
+  BaseGuildTextChannel,
   ButtonInteraction,
   ChannelType,
   Client,
@@ -158,33 +159,41 @@ export const clients = bots.map((token) => {
   });
 
   client.on("guildCreate", async (guild: Guild) => {
-    (
-      guild.channels.cache
-        .filter(
-          (channel) =>
-            channel.type === ChannelType.GuildText &&
-            channel
-              .permissionsFor(client.user)
-              .has(PermissionFlagsBits.SendMessages)
-        )
-        .first() as GuildTextBasedChannel
-    ).send({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("Thank you for using Clicktok!")
-          .setDescription(
-            "Clicktok offers many different TikTok related features.\n\n**Features**\n> Embed TikToks `/tiktok`\n> Recieve Notifications for a specific creator `/notifications`\n> Setup statistics for a creator `/statistics`\n\n**Setup**\n> Configure the bot `/settings`\n\n**Legal**\n_Public data is sourced from TikTok, but the presentation is not controlled by them. Use of the name TikTok is for context, not claiming any ownership._\n_ClickTok is an approved app on the TikTok for developers portal. Using official APIs. By using our service you agree to our [Terms of Service](https://clicktok.xyz/terms.pdf) and [Privacy Policy](https://clicktok.xyz/privacypolicy.pdf) as well as TikTok's [Terms of Service](https://tiktok.com/legal/terms-of-service-us)_\n\nhttps://clicktok.xyz"
-          )
-          .setColor("#9b77e9"),
-      ],
-    });
     try {
-      await getOrCreateGuild(guild);
-      await logGuild(guild);
-      await getOrCreateUser(await client.users.fetch(guild.ownerId));
+      await logGuild(guild).catch(() => {});
+      await getOrCreateGuild(guild).catch(() => {});
+      await getOrCreateUser(await client.users.fetch(guild.ownerId)).catch(
+        () => {}
+      );
       log.info("guildCreate: ", guild);
     } catch (e) {
       log.error("guildCreate: ", e, "\n", guild);
+      logErrorWebhook(e, guild).catch(console.error);
+    }
+    try {
+      const channels = await guild.channels.fetch();
+      await (
+        channels
+          .filter(
+            (channel) =>
+              channel.type === ChannelType.GuildText &&
+              channel
+                .permissionsFor(client.user)
+                .has(PermissionFlagsBits.SendMessages)
+          )
+          .first() as GuildTextBasedChannel
+      ).send({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle("Thank you for using Clicktok!")
+            .setDescription(
+              "Clicktok offers many different TikTok related features.\n\n**Features**\n> Embed TikToks `/tiktok`\n> Recieve Notifications for a specific creator `/notifications`\n> Setup statistics for a creator `/statistics`\n\n**Setup**\n> Configure the bot `/settings`\n\n**Legal**\n_Public data is sourced from TikTok, but the presentation is not controlled by them. Use of the name TikTok is for context, not claiming any ownership._\n_ClickTok is an approved app on the TikTok for developers portal. Using official APIs. By using our service you agree to our [Terms of Service](https://clicktok.xyz/terms.pdf) and [Privacy Policy](https://clicktok.xyz/privacypolicy.pdf) as well as TikTok's [Terms of Service](https://tiktok.com/legal/terms-of-service-us)_\n\nhttps://clicktok.xyz"
+            )
+            .setColor("#9b77e9"),
+        ],
+      });
+    } catch (e) {
+      log.error("guildCreateMessage: ", e, "\n", guild);
       logErrorWebhook(e, guild).catch(console.error);
     }
   });
@@ -203,6 +212,12 @@ export const clients = bots.map((token) => {
 
   async function handleMessage(message: Message) {
     if (message.author.bot) return;
+    if (
+      !(message.channel as BaseGuildTextChannel)
+        .permissionsFor(client.user)
+        .has(PermissionFlagsBits.SendMessages)
+    )
+      return;
     if (!validTikTokUrl(message.content)) return;
     try {
       const guild = await getOrCreateGuild(message.guild);
@@ -298,7 +313,9 @@ export const clients = bots.map((token) => {
 
 export const client = clients[0];
 (async () => {
-  const browser = await launch();
+  const browser = await launch({
+    headless: false,
+  });
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
