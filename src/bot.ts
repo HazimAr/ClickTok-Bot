@@ -314,6 +314,7 @@ export const client = clients[0];
 (async () => {
   const browser = await launch({
     headless: false,
+    timeout: 60000,
   });
 
   setInterval(async () => {
@@ -323,6 +324,7 @@ export const client = clients[0];
       try {
         await page.goto(`https://tiktok.com/@${notification.creator}`, {
           referer: "https://tiktok.com",
+          timeout: 60000,
         });
         const element = await page.waitForSelector("#SIGI_STATE", {
           timeout: 60000,

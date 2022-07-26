@@ -24,8 +24,9 @@ router.post(
             },
             create: {
               id: vote.user,
+              votes: 1,
               lastConvertedAt: null,
-              lastVotedAt: null,
+              lastVotedAt: new Date(Date.now()),
             },
           });
         } catch (e) {
