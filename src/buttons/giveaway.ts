@@ -6,9 +6,8 @@ import {
   EmbedBuilder,
   GuildMemberRoleManager,
 } from "discord.js";
-import { prisma } from "../bot";
+import { log, prisma } from "../bot";
 import { getOrCreateUser } from "../utils/db";
-import { logErrorWebhook } from "../utils/logger";
 
 export default async function (interaction: ButtonInteraction) {
   const mongoUser = await getOrCreateUser(interaction.user);
@@ -108,5 +107,5 @@ export default async function (interaction: ButtonInteraction) {
 
   (interaction.member.roles as GuildMemberRoleManager)
     .add("995768453170462800")
-    .catch((e) => logErrorWebhook(e, interaction));
+    .catch((e) => log.error("giveawayRole: ", e, "\n", interaction));
 }

@@ -7,7 +7,7 @@ export default async function (interaction: ButtonInteraction) {
 
   if (
     interaction.user.id != userThatCanDelete.id &&
-    !interaction.memberPermissions.has(PermissionFlagsBits.Administrator)
+    !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)
   )
     return await interaction.reply({
       content:

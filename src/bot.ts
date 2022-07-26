@@ -31,7 +31,7 @@ import humanFormat from "human-format";
 import { AutoPoster } from "topgg-autoposter";
 import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
-import { logErrorWebhook, logGuild } from "./utils/logger";
+import { logGuild } from "./utils/logger";
 import validTikTokUrl from "./utils/validTikTokUrl";
 import { Api } from "@top-gg/sdk";
 const api = new Api(process.env.TOPGG_TOKEN);
@@ -63,9 +63,6 @@ prisma
   .$connect()
   .then(async () => {
     console.log("Connected to Prisma");
-    await prisma.notification.deleteMany({
-      where: { guild: "934319752468385863" },
-    });
   })
   .catch(console.error);
 
@@ -167,7 +164,6 @@ export const clients = bots.map((token) => {
       );
     } catch (e) {
       log.error("guildCreate: ", e, "\n", guild);
-      logErrorWebhook(e, guild).catch(console.error);
     }
     try {
       const channels = await guild.channels.fetch();
@@ -181,19 +177,20 @@ export const clients = bots.map((token) => {
         )
         .first() as GuildTextBasedChannel;
       if (!channel) return;
-      await channel.send({
-        embeds: [
-          new EmbedBuilder()
-            .setTitle("Thank you for using Clicktok!")
-            .setDescription(
-              "Clicktok offers many different TikTok related features.\n\n**Features**\n> Embed TikToks `/tiktok`\n> Recieve Notifications for a specific creator `/notifications`\n> Setup statistics for a creator `/statistics`\n\n**Setup**\n> Configure the bot `/settings`\n\n**Legal**\n_Public data is sourced from TikTok, but the presentation is not controlled by them. Use of the name TikTok is for context, not claiming any ownership._\n_ClickTok is an approved app on the TikTok for developers portal. Using official APIs. By using our service you agree to our [Terms of Service](https://clicktok.xyz/terms.pdf) and [Privacy Policy](https://clicktok.xyz/privacypolicy.pdf) as well as TikTok's [Terms of Service](https://tiktok.com/legal/terms-of-service-us)_\n\nhttps://clicktok.xyz"
-            )
-            .setColor("#9b77e9"),
-        ],
-      });
+      await channel
+        .send({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("Thank you for using Clicktok!")
+              .setDescription(
+                "Clicktok offers many different TikTok related features.\n\n**Features**\n> Embed TikToks `/tiktok`\n> Recieve Notifications for a specific creator `/notifications`\n> Setup statistics for a creator `/statistics`\n\n**Setup**\n> Configure the bot `/settings`\n\n**Legal**\n_Public data is sourced from TikTok, but the presentation is not controlled by them. Use of the name TikTok is for context, not claiming any ownership._\n_ClickTok is an approved app on the TikTok for developers portal. Using official APIs. By using our service you agree to our [Terms of Service](https://clicktok.xyz/terms.pdf) and [Privacy Policy](https://clicktok.xyz/privacypolicy.pdf) as well as TikTok's [Terms of Service](https://tiktok.com/legal/terms-of-service-us)_\n\nhttps://clicktok.xyz"
+              )
+              .setColor("#9b77e9"),
+          ],
+        })
+        .catch(() => {});
     } catch (e) {
       log.error("guildCreateMessage: ", e, "\n", guild);
-      logErrorWebhook(e, guild).catch(console.error);
     }
   });
   client.on("guildDelete", async (guild: Guild) => {
@@ -205,7 +202,6 @@ export const clients = bots.map((token) => {
       log.info("guildDelete: ", guild);
     } catch (e) {
       log.error("guildDelete: ", e, "\n", guild);
-      logErrorWebhook(e, guild).catch(console.error);
     }
   });
 
@@ -238,7 +234,7 @@ export const clients = bots.map((token) => {
               messageResponse.content = `${message.author} ${messageResponse.content}`;
               await message.channel.send(messageResponse).catch((e) => {
                 // channel doesn't exist anymore (probably got kicked as message was sent lol)
-                logErrorWebhook(e, message).catch(console.error);
+                log.error("message: ", e, "\n", message);
               });
             }
           })
@@ -272,7 +268,6 @@ export const clients = bots.map((token) => {
       log.info("message: ", message);
     } catch (e) {
       log.error("message: ", e, "\n", message);
-      logErrorWebhook(e, message).catch(console.error);
     }
   }
 
@@ -293,16 +288,22 @@ export const clients = bots.map((token) => {
         await commands
           .find((c) => (c.data as any).name === interaction.commandName)
           .run(interaction);
+        log.info(
+          `interactionCreate: command-${interaction.commandName}`,
+          interaction
+        );
       }
       if (interaction instanceof ButtonInteraction) {
         await buttons
           .find((button) => interaction.customId.startsWith(button.id))
           .run(interaction);
+        log.info(
+          `interactionCreate: button-${interaction.customId}`,
+          interaction
+        );
       }
-      log.info("interactionCreate: ", interaction);
     } catch (e) {
       log.error("interactionCreate: ", e, "\n", interaction);
-      logErrorWebhook(e, interaction).catch(console.error);
     }
   });
 

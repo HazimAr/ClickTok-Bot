@@ -80,7 +80,7 @@ router.use("/:id", async (req, res, next) => {
       message: "Bot unable to fetch user.",
     });
 
-  if (!member.permissions.has(PermissionFlagsBits.Administrator))
+  if (!member.permissions?.has(PermissionFlagsBits.Administrator))
     return res.status(401).json({
       message: "Unauthorized",
     });
