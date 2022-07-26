@@ -28,10 +28,10 @@ router.post(
             },
           });
         } catch (e) {
-          log.error("vote: ", e, vote);
+          log.error("vote: ", e, "\n", vote);
         }
       } catch (e) {
-        log.error("vote: ", e, vote);
+        log.error("vote: ", e, "\n", vote);
       }
     }
   })

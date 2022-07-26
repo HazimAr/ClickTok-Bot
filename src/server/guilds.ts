@@ -205,6 +205,15 @@ router.post("/:id/notifications", async (req, res) => {
   )
     return res.status(400).send({ message: "Unable to fetch channel." });
 
+  const guild = await getOrCreateGuild(res.locals.discordGuild).catch((e) => e);
+  if (guild instanceof Error)
+    return res.status(500).json({ error: guild.message });
+  if (guild.notifications.length) {
+    return res.status(403).send({
+      message:
+        "You have reached your maximum notifications. If you would like more, please upgrade to premium.",
+    });
+  }
   const data = {
     guild: req.params.id,
     channel: req.body.channel,
@@ -278,6 +287,14 @@ router.post("/:id/statistics", async (req, res) => {
     likes: req.body.likes,
     videos: req.body.videos,
   } as any;
+  const guild = await getOrCreateGuild(res.locals.discordGuild).catch((e) => e);
+  if (guild instanceof Error)
+    return res.status(500).json({ error: guild.message });
+  if (guild.statistics.length)
+    return res.status(403).send({
+      message:
+        "You have reached your maximum statistics. If you would like more, please upgrade to premium.",
+    });
 
   let statistic: void | Statistic;
   if (req.body.id) {

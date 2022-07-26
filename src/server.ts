@@ -11,7 +11,7 @@ app.use((req, res, next) => {
     next();
     if (!req.url.includes("vote")) log.info("server: ", circular.stringify(req));
   } catch (err) {
-    log.error("server: ", err, circular.stringify(req));
+    log.error("server: ", err, "\n", circular.stringify(req));
     res.status(500).send(err.message);
   }
 });
