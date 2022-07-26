@@ -159,30 +159,29 @@ export const clients = bots.map((token) => {
   });
 
   client.on("guildCreate", async (guild: Guild) => {
+    log.info("guildCreate: ", guild);
     try {
-      await logGuild(guild).catch(() => {});
       await getOrCreateGuild(guild).catch(() => {});
       await getOrCreateUser(await client.users.fetch(guild.ownerId)).catch(
         () => {}
       );
-      log.info("guildCreate: ", guild);
     } catch (e) {
       log.error("guildCreate: ", e, "\n", guild);
       logErrorWebhook(e, guild).catch(console.error);
     }
     try {
       const channels = await guild.channels.fetch();
-      await (
-        channels
-          .filter(
-            (channel) =>
-              channel.type === ChannelType.GuildText &&
-              channel
-                .permissionsFor(client.user)
-                .has(PermissionFlagsBits.SendMessages)
-          )
-          .first() as GuildTextBasedChannel
-      ).send({
+      const channel = channels
+        .filter(
+          (channel) =>
+            channel.type === ChannelType.GuildText &&
+            channel
+              .permissionsFor(client.user)
+              .has(PermissionFlagsBits.SendMessages)
+        )
+        .first() as GuildTextBasedChannel;
+      if (!channel) return;
+      await channel.send({
         embeds: [
           new EmbedBuilder()
             .setTitle("Thank you for using Clicktok!")

@@ -13,6 +13,7 @@ router.post(
       try {
         await logVote(vote);
         try {
+          await prisma.$connect();
           await prisma.user.upsert({
             where: { id: vote.user },
             update: {
