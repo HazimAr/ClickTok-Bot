@@ -320,6 +320,18 @@ export const client = clients[0];
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
     notifications.forEach(async (notification, index) => {
+      const guild = await getDiscordGuild(notification.guild).catch(() => {});
+      if (!guild) return;
+      const channel = (await guild.channels.fetch(
+        notification.channel
+      )) as GuildTextBasedChannel;
+      if (!channel) return;
+      if (
+        !channel
+          .permissionsFor(client.user)
+          .has(PermissionFlagsBits.SendMessages)
+      )
+        return;
       const page = await browser.newPage();
       try {
         await page.goto(`https://tiktok.com/@${notification.creator}`, {
@@ -366,16 +378,6 @@ export const client = clients[0];
         });
 
         if (newItems.length) {
-          const guild = await getDiscordGuild(notification.guild);
-          const channel = (await guild.channels.fetch(
-            notification.channel
-          )) as GuildTextBasedChannel;
-          if (
-            !channel
-              .permissionsFor(client.user)
-              .has(PermissionFlagsBits.SendMessages)
-          )
-            return;
           let role: Role = null;
           if (notification.role)
             role = await guild.roles.fetch(notification.role);
