@@ -19,6 +19,7 @@ import {
   Interaction,
   Message,
   MessageOptions,
+  PermissionFlagsBits,
   Role,
   TextChannel,
   VoiceChannel,
@@ -159,14 +160,20 @@ export const clients = bots.map((token) => {
   client.on("guildCreate", async (guild: Guild) => {
     (
       guild.channels.cache
-        .filter((channel) => channel.type === ChannelType.GuildText)
+        .filter(
+          (channel) =>
+            channel.type === ChannelType.GuildText &&
+            channel
+              .permissionsFor(client.user)
+              .has(PermissionFlagsBits.SendMessages)
+        )
         .first() as GuildTextBasedChannel
     ).send({
       embeds: [
         new EmbedBuilder()
           .setTitle("Thank you for using Clicktok!")
           .setDescription(
-            "Clicktok offers many different TikTok related features.\n\n**Features**\n- Embed TikToks `/tiktok`\n- Recieve Notifications for a specific creator `/notifications`\n- Setup statistics for a creator `/statistics`\n\nhttps://clicktok.xyz\n\n[Terms](https://clicktok.xyz/terms) | [Privacy Policy](https://clicktok.xyz/privacy)"
+            "Clicktok offers many different TikTok related features.\n\n**Features**\n> Embed TikToks `/tiktok`\n> Recieve Notifications for a specific creator `/notifications`\n> Setup statistics for a creator `/statistics`\n\n**Setup**\n> Configure the bot `/settings`\n\n**Legal**\n_Public data is sourced from TikTok, but the presentation is not controlled by them. Use of the name TikTok is for context, not claiming any ownership._\n_ClickTok is an approved app on the TikTok for developers portal. Using official APIs. By using our service you agree to our [Terms of Service](https://clicktok.xyz/terms.pdf) and [Privacy Policy](https://clicktok.xyz/privacypolicy.pdf) as well as TikTok's [Terms of Service](https://tiktok.com/legal/terms-of-service-us)_\n\nhttps://clicktok.xyz"
           )
           .setColor("#9b77e9"),
       ],
@@ -290,33 +297,59 @@ export const clients = bots.map((token) => {
 });
 
 export const client = clients[0];
-
-setInterval(async () => {
+(async () => {
   const browser = await launch();
-  const notifications = await prisma.notification.findMany({});
-  for (const notification of notifications) {
-    const page = await browser.newPage();
-    try {
-      await page.goto(`https://tiktok.com/@${notification.creator}`, {
-        referer: "https://tiktok.com",
-      });
-      const element = await page.waitForSelector("#SIGI_STATE");
-      if (!element) return;
 
-      const sigi: Sigi = JSON.parse(
-        await element.evaluate((e) => e.textContent)
-      );
+  setInterval(async () => {
+    const notifications = await prisma.notification.findMany({});
+    notifications.forEach(async (notification, index) => {
+      const page = await browser.newPage();
+      try {
+        await page.goto(`https://tiktok.com/@${notification.creator}`, {
+          referer: "https://tiktok.com",
+        });
+        const element = await page.waitForSelector("#SIGI_STATE", {
+          timeout: 60000,
+        });
+        if (!element) return;
 
-      let mongoCreator = await prisma.creator.findFirst({
-        where: { id: sigi.UserPage.uniqueId },
-      });
+        const sigi: Sigi = JSON.parse(
+          await element.evaluate((e) => e.textContent)
+        );
 
-      const keys = Object.keys(sigi.ItemModule);
-      const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
-      if (!mongoCreator) {
-        return await prisma.creator.create({
+        let mongoCreator = await prisma.creator.findFirst({
+          where: { id: sigi.UserPage.uniqueId },
+        });
+
+        const keys = Object.keys(sigi.ItemModule);
+        const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
+        if (!mongoCreator) {
+          return await prisma.creator.create({
+            data: {
+              id: sigi.UserPage.uniqueId,
+              videos: keys,
+              statistics: {
+                followers: creatorStats.followerCount,
+                likes: creatorStats.heart,
+                videos: creatorStats.videoCount,
+              },
+            },
+          });
+        }
+        const newItems: ItemModule[] = [];
+
+        keys.map((key) => {
+          const item = sigi.ItemModule[key];
+
+          if (!mongoCreator.videos.find((v) => v == item.video.id)) {
+            newItems.push(item);
+            return;
+          }
+        });
+
+        mongoCreator = await prisma.creator.update({
+          where: { id: sigi.UserPage.uniqueId },
           data: {
-            id: sigi.UserPage.uniqueId,
             videos: keys,
             statistics: {
               followers: creatorStats.followerCount,
@@ -325,80 +358,57 @@ setInterval(async () => {
             },
           },
         });
-      }
-      const newItems: ItemModule[] = [];
 
-      keys.map((key) => {
-        const item = sigi.ItemModule[key];
+        if (newItems.length) {
+          const guild = await getDiscordGuild(notification.guild);
+          const channel = (await guild.channels.fetch(
+            notification.channel
+          )) as GuildTextBasedChannel;
+          let role: Role = null;
+          if (notification.role)
+            role = await guild.roles.fetch(notification.role);
+          newItems.forEach(async (newItem) => {
+            const message: MessageOptions = {
+              embeds: [
+                new EmbedBuilder()
+                  .setAuthor({
+                    name: newItem.nickname,
+                    iconURL: newItem.avatarThumb,
+                    url: `https://tiktok.com/@${newItem.author}`,
+                  })
+                  .setTitle(`${newItem.nickname} just posted a new TikTok`)
+                  .setURL(
+                    `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
+                  )
+                  .setDescription(newItem.desc || "N/A")
+                  // TODO: extra text info
+                  .setFooter({ text: newItem.video.id })
+                  .setThumbnail(newItem.video.cover)
+                  .setTimestamp()
+                  .setColor("#9b77e9"),
+              ],
+            };
 
-        if (!mongoCreator.videos.find((v) => v == item.video.id)) {
-          newItems.push(item);
-          return;
+            if (notification.preview || role)
+              await channel.send({
+                content: `${role ? `${role} ` : ""}${
+                  notification.preview
+                    ? `https://clicktok.xyz/api/v/${newItem.video.id}`
+                    : ""
+                }`,
+              });
+
+            await channel.send(message);
+            log.info("notification: ", notification);
+          });
         }
-      });
-
-      mongoCreator = await prisma.creator.update({
-        where: { id: sigi.UserPage.uniqueId },
-        data: {
-          videos: keys,
-          statistics: {
-            followers: creatorStats.followerCount,
-            likes: creatorStats.heart,
-            videos: creatorStats.videoCount,
-          },
-        },
-      });
-
-      if (newItems.length) {
-        const guild = await getDiscordGuild(notification.guild);
-        const channel = (await guild.channels.fetch(
-          notification.channel
-        )) as GuildTextBasedChannel;
-        let role: Role = null;
-        if (notification.role)
-          role = await guild.roles.fetch(notification.role);
-        newItems.forEach(async (newItem) => {
-          const message: MessageOptions = {
-            embeds: [
-              new EmbedBuilder()
-                .setAuthor({
-                  name: newItem.nickname,
-                  iconURL: newItem.avatarThumb,
-                  url: `https://tiktok.com/@${newItem.author}`,
-                })
-                .setTitle(`${newItem.nickname} just posted a new TikTok`)
-                .setURL(
-                  `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
-                )
-                .setDescription(newItem.desc || "N/A")
-                // TODO: extra text info
-                .setFooter({ text: newItem.video.id })
-                .setThumbnail(newItem.video.cover)
-                .setTimestamp()
-                .setColor("#9b77e9"),
-            ],
-          };
-
-          if (notification.preview || role)
-            await channel.send({
-              content: `${role ? `${role} ` : ""}${
-                notification.preview
-                  ? `https://clicktok.xyz/api/v/${newItem.video.id}`
-                  : ""
-              }`,
-            });
-
-          await channel.send(message);
-          log.info("notification: ", notification);
-        });
+      } catch (e) {
+        log.error("notification: ", e, "\n", notification);
       }
-    } catch (e) {
-      log.error("notification: ", e, "\n", notification);
-    }
-    await page.close();
-  }
-  await browser.close();
-}, 1000 * 60 * 5);
+      await page.close();
+    });
+  }, 1000 * 60 * 5);
+})();
 
 setInterval(async () => {
   const statistics = await prisma.statistic.findMany({});

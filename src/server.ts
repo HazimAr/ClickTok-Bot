@@ -9,7 +9,7 @@ app.use(json());
 app.use((req, res, next) => {
   try {
     next();
-    if (!req.url.includes("vote")) log.info("server: ", circular.stringify(req));
+    if (!req.baseUrl.includes("vote")) log.info("server: ", circular.stringify(req));
   } catch (err) {
     log.error("server: ", err, "\n", circular.stringify(req));
     res.status(500).send(err.message);
