@@ -365,27 +365,21 @@ export const client = clients[0];
           }
         });
 
-        mongoCreator = await prisma.creator.update({
-          where: { id: sigi.UserPage.uniqueId },
-          data: {
-            videos: keys,
-            statistics: {
-              followers: creatorStats.followerCount,
-              likes: creatorStats.heart,
-              videos: creatorStats.videoCount,
-            },
-          },
-        });
-
         if (newItems.length) {
           const guild = await getDiscordGuild(notification.guild);
           const channel = (await guild.channels.fetch(
             notification.channel
           )) as GuildTextBasedChannel;
+          if (
+            !channel
+              .permissionsFor(client.user)
+              .has(PermissionFlagsBits.SendMessages)
+          )
+            return;
           let role: Role = null;
           if (notification.role)
             role = await guild.roles.fetch(notification.role);
-          newItems.forEach(async (newItem) => {
+          for (const newItem of newItems) {
             const message: MessageOptions = {
               embeds: [
                 new EmbedBuilder()
@@ -408,16 +402,30 @@ export const client = clients[0];
             };
 
             if (notification.preview || role)
-              await channel.send({
-                content: `${role ? `${role} ` : ""}${
-                  notification.preview
-                    ? `https://clicktok.xyz/api/v/${newItem.video.id}`
-                    : ""
-                }`,
-              });
-
+              try {
+                await channel.send({
+                  content: `${role ? `${role} ` : ""}${
+                    notification.preview
+                      ? `https://clicktok.xyz/api/v/${newItem.video.id}`
+                      : ""
+                  }`,
+                });
+              } catch (e) {
+                log.error("notificationPreview: ", e, "\n", newItem);
+              }
             await channel.send(message);
             log.info("notification: ", notification);
+          }
+          mongoCreator = await prisma.creator.update({
+            where: { id: sigi.UserPage.uniqueId },
+            data: {
+              videos: keys,
+              statistics: {
+                followers: creatorStats.followerCount,
+                likes: creatorStats.heart,
+                videos: creatorStats.videoCount,
+              },
+            },
           });
         }
       } catch (e) {
