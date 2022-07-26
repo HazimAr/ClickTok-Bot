@@ -1,6 +1,6 @@
 @echo off
 echo Starting..
 :main
-npm run start
+ts-node ./src/bot.ts
 echo Restarting Bot..
 goto main

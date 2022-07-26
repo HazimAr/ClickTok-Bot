@@ -173,7 +173,7 @@ export const clients = bots.map((token) => {
             channel.type === ChannelType.GuildText &&
             channel
               .permissionsFor(client.user)
-              .has(PermissionFlagsBits.SendMessages)
+              ?.has(PermissionFlagsBits.SendMessages)
         )
         .first() as GuildTextBasedChannel;
       if (!channel) return;
@@ -210,7 +210,7 @@ export const clients = bots.map((token) => {
     if (
       !(message.channel as BaseGuildTextChannel)
         .permissionsFor(client.user)
-        .has(PermissionFlagsBits.SendMessages)
+        ?.has(PermissionFlagsBits.SendMessages)
     )
       return;
     if (!validTikTokUrl(message.content)) return;
@@ -283,6 +283,8 @@ export const clients = bots.map((token) => {
   });
 
   client.on("interactionCreate", async (interaction: Interaction) => {
+    //@ts-ignore
+    // console.log(s.s);
     try {
       if (interaction instanceof CommandInteraction) {
         await commands
@@ -292,8 +294,7 @@ export const clients = bots.map((token) => {
           `interactionCreate: command-${interaction.commandName}`,
           interaction
         );
-      }
-      if (interaction instanceof ButtonInteraction) {
+      } else if (interaction instanceof ButtonInteraction) {
         await buttons
           .find((button) => interaction.customId.startsWith(button.id))
           .run(interaction);
@@ -330,7 +331,7 @@ export const client = clients[0];
       if (
         !channel
           .permissionsFor(client.user)
-          .has(PermissionFlagsBits.SendMessages)
+          ?.has(PermissionFlagsBits.SendMessages)
       )
         return;
       const page = await browser.newPage();
