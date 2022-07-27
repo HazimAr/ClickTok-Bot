@@ -250,9 +250,15 @@ router.post("/:id/notifications", async (req, res) => {
         .status(409)
         .send({ message: "Notification for that creator already exists." });
     }
+    const { guild, ...rest } = data;
     notification = await prisma.notification
       .create({
-        data,
+        data: {
+          ...rest,
+          Guild: {
+            connect: { id: req.params.id },
+          },
+        },
       })
       .catch(console.error);
   }

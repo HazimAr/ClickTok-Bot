@@ -312,8 +312,8 @@ export const client = clients[0];
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
-    // notifications.forEach(async (notification, index) => {
-    for (const notification of notifications) {
+    notifications.forEach(async (notification, index) => {
+      // for (const notification of notifications) {
       const guild = await getDiscordGuild(notification.guild).catch(() => {});
       if (!guild) return;
 
@@ -426,10 +426,12 @@ export const client = clients[0];
         }
       } catch (e) {
         log.error("notification: ", e, "\n", notification);
+      } finally {
+        await page.close();
       }
-      await page.close();
-    }
-    // });
+
+      // }
+    });
   }, 1000 * 60 * 5);
 })();
 
