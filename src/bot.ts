@@ -308,12 +308,12 @@ export const client = clients[0];
 (async () => {
   const browser = await launch({
     headless: false,
-    timeout: 60000,
   });
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
-    notifications.forEach(async (notification, index) => {
+    // notifications.forEach(async (notification, index) => {
+    for (const notification of notifications) {
       const guild = await getDiscordGuild(notification.guild).catch(() => {});
       if (!guild) return;
 
@@ -321,12 +321,9 @@ export const client = clients[0];
       try {
         await page.goto(`https://tiktok.com/@${notification.creator}`, {
           referer: "https://tiktok.com",
-          timeout: 60000,
         });
 
-        const element = await page.waitForSelector("#SIGI_STATE", {
-          timeout: 60000,
-        });
+        const element = await page.waitForSelector("#SIGI_STATE");
         if (!element) return;
 
         const channel = (await guild.channels.fetch(
@@ -431,7 +428,8 @@ export const client = clients[0];
         log.error("notification: ", e, "\n", notification);
       }
       await page.close();
-    });
+    }
+    // });
   }, 1000 * 60 * 5);
 })();
 
