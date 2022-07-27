@@ -2,7 +2,6 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import axios from "axios";
 import { CommandInteraction, TextChannel } from "discord.js";
 import getTikTokResponse, { getIdFromText, Type } from "../utils/handleTikTok";
-import { logErrorWebhook } from "../utils/logger";
 import validTikTokUrl from "../utils/validTikTokUrl";
 export default {
   data: new SlashCommandBuilder()
@@ -22,7 +21,7 @@ export default {
       });
       return;
     }
-    await interaction.deferReply().catch((e) => logErrorWebhook(e, interaction));
+    await interaction.deferReply()
     await axios
       .get(
         `https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=${await getIdFromText(

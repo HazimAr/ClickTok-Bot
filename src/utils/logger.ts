@@ -317,5 +317,3 @@ export async function logVote(vote: WebhookPayload) {
     })
     .catch(console.error);
 }
-
-export async function logError(...args) {}

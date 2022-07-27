@@ -291,7 +291,7 @@ export const clients = bots.map((token) => {
           .find((c) => (c.data as any).name === interaction.commandName)
           .run(interaction);
         log.info(
-          `interactionCreate: command-${interaction.commandName}`,
+          `interactionCreate: command-${interaction.commandName} `,
           interaction
         );
       } else if (interaction instanceof ButtonInteraction) {
@@ -299,7 +299,7 @@ export const clients = bots.map((token) => {
           .find((button) => interaction.customId.startsWith(button.id))
           .run(interaction);
         log.info(
-          `interactionCreate: button-${interaction.customId}`,
+          `interactionCreate: button-${interaction.customId} `,
           interaction
         );
       }
