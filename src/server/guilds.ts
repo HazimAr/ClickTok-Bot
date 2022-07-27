@@ -295,7 +295,14 @@ router.post("/:id/statistics", async (req, res) => {
   const guild = await getOrCreateGuild(res.locals.discordGuild).catch((e) => e);
   if (guild instanceof Error)
     return res.status(500).json({ error: guild.message });
-  if (guild.statistics.length)
+  const editing =
+    req.body.id &&
+    (await prisma.statistic.findFirst({
+      where: {
+        id: req.body.id,
+      },
+    }));
+  if (!editing && guild.statistics.length)
     return res.status(403).send({
       message:
         "You have reached your maximum statistics. If you would like more, please upgrade to premium.",

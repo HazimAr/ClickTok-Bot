@@ -6,12 +6,16 @@ BigInt.prototype.toJSON = function () {
 import { PrismaClient } from "@prisma/client";
 import axios from "axios";
 import {
+  ActionRowBuilder,
   ActivityType,
   ApplicationCommandDataResolvable,
   BaseGuildTextChannel,
+  ButtonBuilder,
   ButtonInteraction,
+  ButtonStyle,
   ChannelType,
   Client,
+  Collection,
   CommandInteraction,
   EmbedBuilder,
   GatewayIntentBits,
@@ -28,7 +32,6 @@ import {
 import "dotenv/config";
 import { readdirSync } from "fs";
 import humanFormat from "human-format";
-import { AutoPoster } from "topgg-autoposter";
 import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
 import { logGuild } from "./utils/logger";
@@ -62,11 +65,26 @@ export const prisma = new PrismaClient();
 prisma
   .$connect()
   .then(async () => {
+    await prisma.conversion.deleteMany({
+      where: {
+        user: "220594587117289472",
+      },
+    });
+    await prisma.conversion.deleteMany({
+      where: {
+        user: "808077132420349982",
+      },
+    });
+    await prisma.conversion.deleteMany({
+      where: {
+        user: "808218003837026335",
+      },
+    });
     console.log("Connected to Prisma");
   })
   .catch(console.error);
 
-const bots = [process.env.TOKEN, process.env.TOKEN2];
+const bots = [process.env.TOKEN, process.env.TOKEN2, process.env.TOKEN3];
 export const clients = bots.map((token) => {
   const client = new Client({
     intents: [
@@ -124,35 +142,6 @@ export const clients = bots.map((token) => {
     );
 
     client.application.commands.set(commands.map((command) => command.data));
-
-    // const giveawayMessage = await (
-    //   client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
-    // ).messages.fetch("992304881643831297");
-
-    // giveawayMessage.edit({
-    //   embeds: [
-    //     new EmbedBuilder()
-    //       .setTitle("🥳 **Free Nitro** 🥳")
-    //       .setDescription(
-    //         "To enter into the giveaway click the button below, you can enter the giveaway every time you vote resulting in a higher chance of receiving the reward. You are able to vote every 12 hours. [Vote Here](https://top.gg/bot/990688037853872159/vote)"
-    //       )
-    //       .setColor("#00ff00"),
-    //   ],
-    //   components: [
-    //     new ActionRowBuilder().addComponents(
-    //       new ButtonBuilder()
-    //         .setCustomId("giveaway")
-    //         .setLabel("Enter Giveaway")
-    //         .setEmoji("🎉")
-    //         .setStyle("SUCCESS"),
-    //       new ButtonBuilder()
-    //         .setURL("https://top.gg/bot/990688037853872159/vote")
-    //         .setLabel("Vote Here")
-    //         .setStyle("LINK")
-    //         .setEmoji("🎁")
-    //     ),
-    //   ],
-    // });
   });
 
   client.on("guildCreate", async (guild: Guild) => {
@@ -195,11 +184,14 @@ export const clients = bots.map((token) => {
   });
   client.on("guildDelete", async (guild: Guild) => {
     try {
+      log.info("guildDelete: ", guild);
       await logGuild(guild, false);
       await prisma.notification.deleteMany({
         where: { guild: guild.id },
       });
-      log.info("guildDelete: ", guild);
+      await prisma.statistic.deleteMany({
+        where: { guild: guild.id },
+      });
     } catch (e) {
       log.error("guildDelete: ", e, "\n", guild);
     }
@@ -291,7 +283,7 @@ export const clients = bots.map((token) => {
           .find((c) => (c.data as any).name === interaction.commandName)
           .run(interaction);
         log.info(
-          `interactionCreate: command-${interaction.commandName} `,
+          `interactionCreate: command_${interaction.commandName} `,
           interaction
         );
       } else if (interaction instanceof ButtonInteraction) {
@@ -299,7 +291,7 @@ export const clients = bots.map((token) => {
           .find((button) => interaction.customId.startsWith(button.id))
           .run(interaction);
         log.info(
-          `interactionCreate: button-${interaction.customId} `,
+          `interactionCreate: button_${interaction.customId} `,
           interaction
         );
       }
@@ -324,26 +316,23 @@ export const client = clients[0];
     notifications.forEach(async (notification, index) => {
       const guild = await getDiscordGuild(notification.guild).catch(() => {});
       if (!guild) return;
-      const channel = (await guild.channels.fetch(
-        notification.channel
-      )) as GuildTextBasedChannel;
-      if (!channel) return;
-      if (
-        !channel
-          .permissionsFor(client.user)
-          ?.has(PermissionFlagsBits.SendMessages)
-      )
-        return;
+
       const page = await browser.newPage();
       try {
         await page.goto(`https://tiktok.com/@${notification.creator}`, {
           referer: "https://tiktok.com",
           timeout: 60000,
         });
+
         const element = await page.waitForSelector("#SIGI_STATE", {
           timeout: 60000,
         });
         if (!element) return;
+
+        const channel = (await guild.channels.fetch(
+          notification.channel
+        )) as GuildTextBasedChannel;
+        if (!channel) return;
 
         const sigi: Sigi = JSON.parse(
           await element.evaluate((e) => e.textContent)
@@ -378,7 +367,24 @@ export const client = clients[0];
             return;
           }
         });
+        mongoCreator = await prisma.creator.update({
+          where: { id: sigi.UserPage.uniqueId },
+          data: {
+            videos: keys,
+            statistics: {
+              followers: creatorStats.followerCount,
+              likes: creatorStats.heart,
+              videos: creatorStats.videoCount,
+            },
+          },
+        });
 
+        if (
+          !channel
+            .permissionsFor(client.user)
+            ?.has(PermissionFlagsBits.SendMessages)
+        )
+          return;
         if (newItems.length) {
           let role: Role = null;
           if (notification.role)
@@ -420,17 +426,6 @@ export const client = clients[0];
             await channel.send(message);
             log.info("notification: ", notification);
           }
-          mongoCreator = await prisma.creator.update({
-            where: { id: sigi.UserPage.uniqueId },
-            data: {
-              videos: keys,
-              statistics: {
-                followers: creatorStats.followerCount,
-                likes: creatorStats.heart,
-                videos: creatorStats.videoCount,
-              },
-            },
-          });
         }
       } catch (e) {
         log.error("notification: ", e, "\n", notification);
@@ -477,7 +472,7 @@ setInterval(async () => {
             .edit({
               name: `${statistic.likesPrefix || "Likes: "}${humanFormat(
                 creator.statistics.likes
-              )}`,
+              ).replace("G", "B")}`,
             })
             .catch(() =>
               console.error(
@@ -523,6 +518,62 @@ setInterval(async () => {
   } catch (e) {
     log.error("topgg: ", e, "\n", { serverCount });
   }
-}, 1000 * 60 * 5);
+}, 1000 * 60 * 15);
 
+setInterval(async () => {
+  const giveawayMessage = await (
+    client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
+  ).messages.fetch("992304881643831297");
+
+  const giveawayEntries = await prisma.giveawayEntries.findMany();
+  const giveawayEntriesUsers = new Collection<string, number>();
+  for (const giveawayEntry of giveawayEntries) {
+    const user = giveawayEntriesUsers.get(giveawayEntry.user);
+    if (user) giveawayEntriesUsers.set(giveawayEntry.user, user + 1);
+    else giveawayEntriesUsers.set(giveawayEntry.user, 1);
+  }
+  const giveawayEntriesUsersArr = Array.from(
+    giveawayEntriesUsers.sort((a, b) => b - a)
+  ).splice(0, 5);
+
+  const rankings = await Promise.all(
+    giveawayEntriesUsersArr.map(async ([user, entries], index) => {
+      const userTag = (await client.users.fetch(user)).tag;
+      return `${index + 1} | ${
+        entries +
+        new Array(6 - entries.toLocaleString().length).fill("᲼").join("")
+      } | ${userTag}`;
+    })
+  );
+  giveawayMessage.edit({
+    embeds: [
+      new EmbedBuilder()
+        .setTitle("🥳 **Free Nitro** 🥳")
+        .setDescription(
+          "To enter into the giveaway click the button below, you can enter the giveaway every time you vote resulting in a higher chance of receiving the reward. You are able to vote every 12 hours. [Vote Here](https://top.gg/bot/990688037853872159/vote)"
+        )
+        .setColor("#00ff00"),
+      new EmbedBuilder()
+        .setTitle("Leaderboards")
+        .setDescription(`# | Entries | User\n${rankings.join("\n")}`)
+        .setColor("#9b77e9")
+        .setFooter({ text: "Updated Every 5 Minutes" }),
+    ],
+    components: [
+      // @ts-ignore
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("giveaway")
+          .setLabel("Enter Giveaway")
+          .setEmoji("🎉")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setURL("https://top.gg/bot/990688037853872159/vote")
+          .setLabel("Vote Here")
+          .setStyle(ButtonStyle.Link)
+          .setEmoji("🎁")
+      ),
+    ],
+  });
+}, 1000 * 60 * 5);
 // client.login(process.env.TOKEN);
