@@ -254,6 +254,7 @@ export const clients = bots.map((token) => {
               messageResponse.content = `${message.author} ${messageResponse.content}`;
               await message.channel.send(messageResponse);
             }
+            log.info("message: ", message);
 
             if (guild.settings.deleteOrigin) {
               if (message.deletable) await message.delete();
@@ -265,7 +266,6 @@ export const clients = bots.map((token) => {
             }
           });
       }
-      log.info("message: ", message);
     } catch (e) {
       log.error("message: ", e, "\n", message);
     }
