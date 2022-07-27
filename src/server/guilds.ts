@@ -90,10 +90,15 @@ router.use("/:id", async (req, res, next) => {
 
   next();
 });
-router.get("/:id", async (req, res) => {
-  const mongoGuild = await getOrCreateGuild(res.locals.discordGuild);
 
-  res.json(mongoGuild);
+router.get("/:id", async (req, res) => {
+  try {
+    const mongoGuild = await getOrCreateGuild(res.locals.discordGuild);
+
+    res.json(mongoGuild);
+  } catch (e) {
+    res.status(500).send(e);
+  }
 });
 
 router.get("/:id/settings", async (req, res) => {
