@@ -51,7 +51,7 @@ export const options: SimpleLogger.ISimpleLoggerOptions &
   timestampFormat: "HH:mm:ss.SSS",
 };
 import SimpleLogger, { createRollingFileLogger } from "simple-node-logger";
-import { launch } from "puppeteer";
+import { launch, TimeoutError } from "puppeteer";
 import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
 export const log = createRollingFileLogger(options);
@@ -65,21 +65,6 @@ export const prisma = new PrismaClient();
 prisma
   .$connect()
   .then(async () => {
-    await prisma.conversion.deleteMany({
-      where: {
-        user: "220594587117289472",
-      },
-    });
-    await prisma.conversion.deleteMany({
-      where: {
-        user: "808077132420349982",
-      },
-    });
-    await prisma.conversion.deleteMany({
-      where: {
-        user: "808218003837026335",
-      },
-    });
     console.log("Connected to Prisma");
   })
   .catch(console.error);
@@ -331,6 +316,13 @@ export const client = clients[0];
         )) as GuildTextBasedChannel;
         if (!channel) return;
 
+        if (
+          !channel
+            .permissionsFor(client.user)
+            ?.has(PermissionFlagsBits.SendMessages)
+        )
+          return;
+
         const sigi: Sigi = JSON.parse(
           await element.evaluate((e) => e.textContent)
         );
@@ -376,12 +368,6 @@ export const client = clients[0];
           },
         });
 
-        if (
-          !channel
-            .permissionsFor(client.user)
-            ?.has(PermissionFlagsBits.SendMessages)
-        )
-          return;
         if (newItems.length) {
           let role: Role = null;
           if (notification.role)
@@ -425,7 +411,8 @@ export const client = clients[0];
           }
         }
       } catch (e) {
-        log.error("notification: ", e, "\n", notification);
+        if (!(e instanceof TimeoutError))
+          log.error("notification: ", e, "\n", notification);
       } finally {
         await page.close();
       }
