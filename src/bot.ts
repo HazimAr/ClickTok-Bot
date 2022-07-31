@@ -294,7 +294,9 @@ export const clients = bots.map((token) => {
 
 export const client = clients[0];
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    headless: false,
+  });
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
@@ -306,9 +308,10 @@ export const client = clients[0];
           referer: "https://tiktok.com",
         });
 
-        const element = await page.$("#SIGI_STATE");
+        const element = await page.waitForSelector("#SIGI_STATE");
 
         const sigi: Sigi = JSON.parse(await element.innerHTML());
+        console.log(sigi);
 
         let mongoCreator = await prisma.creator.findFirst({
           where: { id: sigi.UserPage.uniqueId },
@@ -339,6 +342,7 @@ export const client = clients[0];
             return;
           }
         });
+
         mongoCreator = await prisma.creator.update({
           where: { id: sigi.UserPage.uniqueId },
           data: {
@@ -436,9 +440,10 @@ export const client = clients[0];
             referer: "https://tiktok.com",
           });
 
-          const element = await page.$("#SIGI_STATE");
+          const element = await page.waitForSelector("#SIGI_STATE");
 
           const sigi: Sigi = JSON.parse(await element.innerHTML());
+          await page.close();
           if (sigi.UserModule.stats) return;
           const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
 

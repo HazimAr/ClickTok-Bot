@@ -213,7 +213,14 @@ router.post("/:id/notifications", async (req, res) => {
   const guild = await getOrCreateGuild(res.locals.discordGuild).catch((e) => e);
   if (guild instanceof Error)
     return res.status(500).json({ error: guild.message });
-  if (guild.notifications.length) {
+  const editing =
+    req.body.id &&
+    (await prisma.notification.findFirst({
+      where: {
+        id: req.body.id,
+      },
+    }));
+  if (!editing && guild.notifications.length) {
     return res.status(403).send({
       message:
         "You have reached your maximum notifications. If you would like more, please upgrade to premium.",
