@@ -51,8 +51,8 @@ export const options: SimpleLogger.ISimpleLoggerOptions &
   timestampFormat: "HH:mm:ss.SSS",
 };
 import SimpleLogger, { createRollingFileLogger } from "simple-node-logger";
-import { launch, TimeoutError } from "puppeteer";
-import { chromium } from "playwright";
+
+import { chromium, firefox, errors } from "playwright";
 import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
 export const log = createRollingFileLogger(options);
@@ -294,24 +294,21 @@ export const clients = bots.map((token) => {
 
 export const client = clients[0];
 (async () => {
-  const browser = await chromium.launch({
+  const browser = await firefox.launch({
     headless: false,
   });
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
-    notifications.forEach(async (notification, index) => {
+    notifications.slice(0, 10).forEach(async (notification, index) => {
       // for (const notification of notifications) {
       const page = await browser.newPage();
       try {
-        await page.goto(`https://tiktok.com/@${notification.creator}`, {
-          referer: "https://tiktok.com",
-        });
+        await page.goto(`https://tiktok.com/@${notification.creator}`);
 
-        const element = await page.waitForSelector("#SIGI_STATE");
+        const element = await page.$("#SIGI_STATE");
 
         const sigi: Sigi = JSON.parse(await element.innerHTML());
-        console.log(sigi);
 
         let mongoCreator = await prisma.creator.findFirst({
           where: { id: sigi.UserPage.uniqueId },
@@ -363,13 +360,6 @@ export const client = clients[0];
           .catch(() => {})) as GuildTextBasedChannel;
         if (!channel) return;
 
-        if (
-          !channel
-            .permissionsFor(client.user)
-            ?.has(PermissionFlagsBits.SendMessages)
-        )
-          return;
-
         if (newItems.length) {
           let role: Role = null;
           if (notification.role)
@@ -410,7 +400,7 @@ export const client = clients[0];
           }
         }
       } catch (e) {
-        if (!(e instanceof TimeoutError))
+        if (!(e instanceof errors.TimeoutError))
           log.error("notification: ", e, "\n", notification);
       } finally {
         await page.close();
@@ -436,24 +426,27 @@ export const client = clients[0];
           });
         else {
           const page = await browser.newPage();
-          await page.goto(`https://tiktok.com/@${statistic.creator}`, {
-            referer: "https://tiktok.com",
-          });
+          try {
+            await page.goto(`https://tiktok.com/@${statistic.creator}`, {
+              referer: "https://tiktok.com",
+            });
 
-          const element = await page.waitForSelector("#SIGI_STATE");
+            const element = await page.$("#SIGI_STATE");
 
-          const sigi: Sigi = JSON.parse(await element.innerHTML());
-          await page.close();
-          if (sigi.UserModule.stats) return;
-          const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
+            const sigi: Sigi = JSON.parse(await element.innerHTML());
+            if (sigi.UserModule.stats) return;
+            const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
 
-          creator = {
-            statistics: {
-              followers: creatorStats.followerCount,
-              likes: creatorStats.heart,
-              videos: creatorStats.videoCount,
-            },
-          };
+            creator = {
+              statistics: {
+                followers: creatorStats.followerCount,
+                likes: creatorStats.heart,
+                videos: creatorStats.videoCount,
+              },
+            };
+          } finally {
+            await page.close();
+          }
         }
         const guild = await getDiscordGuild(statistic.guild);
         if (statistic.followers) {
