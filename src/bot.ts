@@ -52,7 +52,7 @@ export const options: SimpleLogger.ISimpleLoggerOptions &
 };
 import SimpleLogger, { createRollingFileLogger } from "simple-node-logger";
 
-import { chromium, firefox, errors } from "playwright";
+import { chromium, firefox, errors, webkit } from "playwright";
 import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
 export const log = createRollingFileLogger(options);
@@ -294,9 +294,7 @@ export const clients = bots.map((token) => {
 
 export const client = clients[0];
 (async () => {
-  const browser = await firefox.launch({
-    headless: false,
-  });
+  let browser = await chromium.launch();
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
@@ -304,7 +302,9 @@ export const client = clients[0];
       // for (const notification of notifications) {
       const page = await browser.newPage();
       try {
-        await page.goto(`https://tiktok.com/@${notification.creator}`);
+        await page.goto(`https://tiktok.com/@${notification.creator}`, {
+          timeout: 120000,
+        });
 
         const element = await page.$("#SIGI_STATE");
 
@@ -402,6 +402,22 @@ export const client = clients[0];
       } catch (e) {
         if (!(e instanceof errors.TimeoutError))
           log.error("notification: ", e, "\n", notification);
+        else {
+          try {
+            if (browser.browserType.name === "chromium") {
+              await browser.close();
+              browser = await firefox.launch();
+            } else if (browser.browserType.name === "firefox") {
+              await browser.close();
+              browser = await webkit.launch();
+            } else {
+              await browser.close();
+              browser = await chromium.launch();
+            }
+          } finally {
+            log.info("browser: ", browser.browserType.name);
+          }
+        }
       } finally {
         await page.close();
       }
@@ -428,7 +444,7 @@ export const client = clients[0];
           const page = await browser.newPage();
           try {
             await page.goto(`https://tiktok.com/@${statistic.creator}`, {
-              referer: "https://tiktok.com",
+              timeout: 120000,
             });
 
             const element = await page.$("#SIGI_STATE");
