@@ -400,24 +400,22 @@ export const client = clients[0];
           }
         }
       } catch (e) {
-        if (!(e instanceof errors.TimeoutError))
-          log.error("notification: ", e, "\n", notification);
-        else {
-          try {
-            if (browser.browserType.name === "chromium") {
-              await browser.close();
-              browser = await firefox.launch();
-            } else if (browser.browserType.name === "firefox") {
-              await browser.close();
-              browser = await webkit.launch();
-            } else {
-              await browser.close();
-              browser = await chromium.launch();
-            }
-          } finally {
-            log.info("browser: ", browser.browserType.name);
+        try {
+          if (browser.browserType.name === "chromium") {
+            await browser.close();
+            browser = await firefox.launch();
+          } else if (browser.browserType.name === "firefox") {
+            await browser.close();
+            browser = await webkit.launch();
+          } else {
+            await browser.close();
+            browser = await chromium.launch();
           }
+        } finally {
+          log.info("browser: ", browser.browserType.name);
         }
+        // if (!(e instanceof errors.TimeoutError))
+        log.error("notification: ", e, "\n", notification);
       } finally {
         await page.close();
       }
