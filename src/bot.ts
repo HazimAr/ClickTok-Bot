@@ -294,32 +294,59 @@ export const clients = bots.map((token) => {
 
 export const client = clients[0];
 (async () => {
-  let browser = await chromium.launch();
+  let browser = await chromium.launch({
+    headless: false,
+  });
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
     notifications.forEach(async (notification) => {
       // for (const notification of notifications) {
-      const page = await browser.newPage();
+      let page;
       try {
-        await page.goto(`https://tiktok.com/@${notification.creator}`, {
-          timeout: 120000,
-        });
+        page = await browser.newPage();
+        try {
+          await page.goto(`https://tiktok.com/@${notification.creator}`, {
+            timeout: 120000,
+          });
 
-        const element = await page.$("#SIGI_STATE");
+          const element = await page.$("#SIGI_STATE");
 
-        const sigi: Sigi = JSON.parse(await element.innerHTML());
+          const sigi: Sigi = JSON.parse(await element.innerHTML());
 
-        let mongoCreator = await prisma.creator.findFirst({
-          where: { id: sigi.UserPage.uniqueId },
-        });
+          let mongoCreator = await prisma.creator.findFirst({
+            where: { id: sigi.UserPage.uniqueId },
+          });
 
-        const keys = Object.keys(sigi.ItemModule);
-        const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
-        if (!mongoCreator) {
-          return await prisma.creator.create({
+          const keys = Object.keys(sigi.ItemModule);
+          const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
+          if (!mongoCreator) {
+            return await prisma.creator.create({
+              data: {
+                id: sigi.UserPage.uniqueId,
+                videos: keys,
+                statistics: {
+                  followers: creatorStats.followerCount,
+                  likes: creatorStats.heart,
+                  videos: creatorStats.videoCount,
+                },
+              },
+            });
+          }
+          const newItems: ItemModule[] = [];
+
+          keys.map((key) => {
+            const item = sigi.ItemModule[key];
+
+            if (!mongoCreator.videos.find((v) => v == item.video.id)) {
+              newItems.push(item);
+              return;
+            }
+          });
+
+          mongoCreator = await prisma.creator.update({
+            where: { id: sigi.UserPage.uniqueId },
             data: {
-              id: sigi.UserPage.uniqueId,
               videos: keys,
               statistics: {
                 followers: creatorStats.followerCount,
@@ -328,96 +355,75 @@ export const client = clients[0];
               },
             },
           });
-        }
-        const newItems: ItemModule[] = [];
 
-        keys.map((key) => {
-          const item = sigi.ItemModule[key];
+          const guild = await getDiscordGuild(notification.guild).catch(
+            () => {}
+          );
+          if (!guild) return;
 
-          if (!mongoCreator.videos.find((v) => v == item.video.id)) {
-            newItems.push(item);
-            return;
+          const channel = (await guild.channels
+            .fetch(notification.channel)
+            .catch(() => {})) as GuildTextBasedChannel;
+          if (!channel) return;
+
+          if (newItems.length) {
+            let role: Role = null;
+            if (notification.role)
+              role = await guild.roles.fetch(notification.role);
+            for (const newItem of newItems) {
+              const message: MessageOptions = {
+                content: role ? `${role}` : "",
+                embeds: [
+                  new EmbedBuilder()
+                    .setAuthor({
+                      name: newItem.nickname,
+                      iconURL: newItem.avatarThumb,
+                      url: `https://tiktok.com/@${newItem.author}`,
+                    })
+                    .setTitle(`${newItem.nickname} just posted a new TikTok`)
+                    .setURL(
+                      `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
+                    )
+                    .setDescription(newItem.desc || "N/A")
+                    // TODO: extra text info
+                    .setFooter({ text: newItem.video.id })
+                    .setThumbnail(newItem.video.cover)
+                    .setTimestamp()
+                    .setColor("#9b77e9"),
+                ],
+              };
+
+              if (notification.preview)
+                try {
+                  await channel.send({
+                    content: `https://clicktok.xyz/api/v/${newItem.video.id}`,
+                  });
+                } catch (e) {
+                  log.error("notificationPreview: ", e, "\n", newItem);
+                }
+              await channel.send(message);
+              log.info("notification: ", notification);
+            }
           }
-        });
-
-        mongoCreator = await prisma.creator.update({
-          where: { id: sigi.UserPage.uniqueId },
-          data: {
-            videos: keys,
-            statistics: {
-              followers: creatorStats.followerCount,
-              likes: creatorStats.heart,
-              videos: creatorStats.videoCount,
-            },
-          },
-        });
-
-        const guild = await getDiscordGuild(notification.guild).catch(() => {});
-        if (!guild) return;
-
-        const channel = (await guild.channels
-          .fetch(notification.channel)
-          .catch(() => {})) as GuildTextBasedChannel;
-        if (!channel) return;
-
-        if (newItems.length) {
-          let role: Role = null;
-          if (notification.role)
-            role = await guild.roles.fetch(notification.role);
-          for (const newItem of newItems) {
-            const message: MessageOptions = {
-              content: role ? `${role}` : "",
-              embeds: [
-                new EmbedBuilder()
-                  .setAuthor({
-                    name: newItem.nickname,
-                    iconURL: newItem.avatarThumb,
-                    url: `https://tiktok.com/@${newItem.author}`,
-                  })
-                  .setTitle(`${newItem.nickname} just posted a new TikTok`)
-                  .setURL(
-                    `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
-                  )
-                  .setDescription(newItem.desc || "N/A")
-                  // TODO: extra text info
-                  .setFooter({ text: newItem.video.id })
-                  .setThumbnail(newItem.video.cover)
-                  .setTimestamp()
-                  .setColor("#9b77e9"),
-              ],
-            };
-
-            if (notification.preview)
-              try {
-                await channel.send({
-                  content: `https://clicktok.xyz/api/v/${newItem.video.id}`,
-                });
-              } catch (e) {
-                log.error("notificationPreview: ", e, "\n", newItem);
-              }
-            await channel.send(message);
-            log.info("notification: ", notification);
+        } catch (e) {
+          try {
+            await page.close();
+            await browser.close();
+            if (browser.browserType.name === "chromium") {
+              browser = await firefox.launch();
+            } else if (browser.browserType.name === "firefox") {
+              browser = await webkit.launch();
+            } else {
+              browser = await chromium.launch();
+            }
+          } finally {
+            log.info("browser: ", browser.browserType.name);
           }
+          // if (!(e instanceof errors.TimeoutError))
+          log.error("notification: ", e, "\n", notification);
         }
-      } catch (e) {
-        try {
-          if (browser.browserType.name === "chromium") {
-            await browser.close();
-            browser = await firefox.launch();
-          } else if (browser.browserType.name === "firefox") {
-            await browser.close();
-            browser = await webkit.launch();
-          } else {
-            await browser.close();
-            browser = await chromium.launch();
-          }
-        } finally {
-          log.info("browser: ", browser.browserType.name);
-        }
-        // if (!(e instanceof errors.TimeoutError))
-        log.error("notification: ", e, "\n", notification);
       } finally {
-        await page.close();
+        if (page) await page.close();
       }
       // }
     });
