@@ -102,7 +102,7 @@ export default async function (
           new EmbedBuilder()
             .setTitle("Thank you for using ClickTok!")
             .setDescription(
-              "You have converted for the first time 🥳!\nAs a sign of our gratitude, we are hosting a nitro giveaway for the first 1000 users that sign up 🤯.\nTo get your chance at winning nitro for **FREE**, join our support server https://discord.gg/tg2QTMEc9g and follow the directions inside of the giveaway channel 🤗. Hope to see you there!"
+              "You have converted for the first time 🥳!\nAs a sign of our gratitude, we are hosting a nitro giveaway for users that sign up 🤯.\nTo get your chance at winning nitro for **FREE**, join our support server https://discord.gg/tg2QTMEc9g and follow the directions inside of the giveaway channel 🤗. Hope to see you there!"
             )
             .setAuthor({
               name: "ClickTok",

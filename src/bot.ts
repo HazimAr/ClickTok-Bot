@@ -36,9 +36,6 @@ import { getOrCreateGuild, getOrCreateUser } from "./utils/db";
 import getTikTokResponse, { getIdFromText, Type } from "./utils/handleTikTok";
 import { logGuild } from "./utils/logger";
 import validTikTokUrl from "./utils/validTikTokUrl";
-import { Api } from "@top-gg/sdk";
-const api = new Api(process.env.TOPGG_TOKEN);
-// import { fetchAllVideosFromUser, IVideo } from "tiktok-scraper-ts";
 import server from "./server";
 
 export const options: SimpleLogger.ISimpleLoggerOptions &
@@ -51,7 +48,7 @@ export const options: SimpleLogger.ISimpleLoggerOptions &
   timestampFormat: "HH:mm:ss.SSS",
 };
 import SimpleLogger, { createRollingFileLogger } from "simple-node-logger";
-
+import AutoPoster from "topgg-autoposter";
 import { chromium, firefox, errors, webkit } from "playwright";
 import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
@@ -80,6 +77,7 @@ export const clients = bots.map((token, index) => {
       GatewayIntentBits.MessageContent,
     ],
   });
+  if (!index) AutoPoster(process.env.TOPGG_TOKEN, client);
 
   let commands: {
     data: ApplicationCommandDataResolvable;
@@ -95,6 +93,7 @@ export const clients = bots.map((token, index) => {
     console.log(
       `${client.user.tag} has logged in with ${client.guilds.cache.size} guilds`
     );
+
     client.user.setActivity({
       type: ActivityType.Playing,
       name: "clicktok.xyz | /tiktok",
@@ -195,7 +194,7 @@ export const clients = bots.map((token, index) => {
 
     try {
       if (index) {
-        message.channel.send(
+        await message.channel.send(
           `Hello everyone, thank you for your continued support of **ClickTok**. 
 
 Currently you're running a secondary bot with the same functions as the main; This was done because bots have a server cap prior to verification. However, our main bot just got verified by Discord **(As of August 1st, 2022)**. In order to continue using this bot, we urge you to invite it to your server using this link: https://clicktok.xyz/invite. 
@@ -262,22 +261,20 @@ Thank you all and we hope to grow even further with your support!`
   });
 
   client.on("interactionCreate", async (interaction: Interaction) => {
-    //@ts-ignore
-    // console.log(s.s);
-    if (index) {
-      // @ts-ignore
-      interaction.reply({
-        content: `Hello everyone, thank you for your continued support of **ClickTok**. 
+    try {
+      if (index) {
+        // @ts-ignore
+        await interaction.reply({
+          content: `Hello everyone, thank you for your continued support of **ClickTok**. 
 
 Currently you're running a secondary bot with the same functions as the main; This was done because bots have a server cap prior to verification. However, our main bot just got verified by Discord **(As of August 1st, 2022)**. In order to continue using this bot, we urge you to invite it to your server using this link: https://clicktok.xyz/invite. 
 
 Thank you all and we hope to grow even further with your support!`,
-        ephemeral: true,
-      });
-      log.info("newBot: ", interaction);
-      return;
-    }
-    try {
+          ephemeral: true,
+        });
+        log.info("newBot: ", interaction);
+        return;
+      }
       if (interaction instanceof CommandInteraction) {
         await commands
           .find((c) => (c.data as any).name === interaction.commandName)
@@ -308,13 +305,14 @@ Thank you all and we hope to grow even further with your support!`,
 
 export const client = clients[0];
 (async () => {
-  let browser = await chromium.launch({
+  let browser = await webkit.launch({
     headless: false,
+    ignoreDefaultArgs: ["--mute-audio"],
   });
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
-    notifications.slice(0, 50).forEach(async (notification) => {
+    notifications.forEach(async (notification) => {
       // for (const notification of notifications) {
       let page;
       try {
@@ -447,7 +445,7 @@ export const client = clients[0];
 
   setInterval(async () => {
     const statistics = await prisma.statistic.findMany({});
-    statistics.slice(0, 50).forEach(async (statistic) => {
+    statistics.slice(0, 40).forEach(async (statistic) => {
       try {
         let creator: { statistics: any; id?: string; videos?: string[] };
         if (
@@ -548,20 +546,6 @@ export const client = clients[0];
     });
   }, 1000 * 60 * 10);
 })();
-
-setInterval(async () => {
-  let serverCount = 0;
-  for (const client of clients) {
-    serverCount += client.guilds.cache.size;
-  }
-  try {
-    await api.postStats({
-      serverCount,
-    });
-  } catch (e) {
-    log.error("topgg: ", e, "\n", { serverCount });
-  }
-}, 1000 * 60 * 15);
 
 setInterval(async () => {
   try {
