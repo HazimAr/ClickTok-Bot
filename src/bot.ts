@@ -55,6 +55,7 @@ import SimpleLogger, { createRollingFileLogger } from "simple-node-logger";
 import { chromium, firefox, errors, webkit } from "playwright";
 import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
+import { info } from "console";
 export const log = createRollingFileLogger(options);
 
 server.listen(process.env.PORT || 80, () => {
@@ -71,10 +72,9 @@ prisma
   .catch(console.error);
 
 const bots = [process.env.TOKEN, process.env.TOKEN2, process.env.TOKEN3];
-export const clients = bots.map((token) => {
+export const clients = bots.map((token, index) => {
   const client = new Client({
     intents: [
-      GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildMessages,
       GatewayIntentBits.Guilds,
       GatewayIntentBits.MessageContent,
@@ -183,7 +183,7 @@ export const clients = bots.map((token) => {
     }
   });
 
-  async function handleMessage(message: Message) {
+  client.on("messageCreate", async (message: Message) => {
     if (message.author.bot) return;
     if (
       !(message.channel as BaseGuildTextChannel)
@@ -192,7 +192,19 @@ export const clients = bots.map((token) => {
     )
       return;
     if (!validTikTokUrl(message.content)) return;
+
     try {
+      if (index) {
+        message.channel.send(
+          `Hello everyone, thank you for your continued support of **ClickTok**. 
+
+Currently you're running a secondary bot with the same functions as the main; This was done because bots have a server cap prior to verification. However, our main bot just got verified by Discord **(As of August 1st, 2022)**. In order to continue using this bot, we urge you to invite it to your server using this link: https://clicktok.xyz/invite. 
+
+Thank you all and we hope to grow even further with your support!`
+        );
+        log.info("newBot: ", message);
+        return;
+      }
       const guild = await getOrCreateGuild(message.guild);
 
       if (guild.settings.autoEmbed) {
@@ -247,22 +259,24 @@ export const clients = bots.map((token) => {
     } catch (e) {
       log.error("message: ", e, "\n", message);
     }
-  }
-
-  client.on("messageCreate", handleMessage);
-  client.on("messageUpdate", async (oldMessage, newMessage) => {
-    if (
-      (await getIdFromText(oldMessage.content)) ==
-      (await getIdFromText(newMessage.content))
-    )
-      return;
-
-    await handleMessage(newMessage as Message);
   });
 
   client.on("interactionCreate", async (interaction: Interaction) => {
     //@ts-ignore
     // console.log(s.s);
+    if (index) {
+      // @ts-ignore
+      interaction.reply({
+        content: `Hello everyone, thank you for your continued support of **ClickTok**. 
+
+Currently you're running a secondary bot with the same functions as the main; This was done because bots have a server cap prior to verification. However, our main bot just got verified by Discord **(As of August 1st, 2022)**. In order to continue using this bot, we urge you to invite it to your server using this link: https://clicktok.xyz/invite. 
+
+Thank you all and we hope to grow even further with your support!`,
+        ephemeral: true,
+      });
+      log.info("newBot: ", interaction);
+      return;
+    }
     try {
       if (interaction instanceof CommandInteraction) {
         await commands
@@ -300,14 +314,14 @@ export const client = clients[0];
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
-    notifications.forEach(async (notification) => {
+    notifications.slice(0, 50).forEach(async (notification) => {
       // for (const notification of notifications) {
       let page;
       try {
         page = await browser.newPage();
         try {
           await page.goto(`https://tiktok.com/@${notification.creator}`, {
-            timeout: 120000,
+            timeout: 240000,
           });
 
           const element = await page.$("#SIGI_STATE");
@@ -321,7 +335,7 @@ export const client = clients[0];
           const keys = Object.keys(sigi.ItemModule);
           const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
           if (!mongoCreator) {
-            return await prisma.creator.create({
+            await prisma.creator.create({
               data: {
                 id: sigi.UserPage.uniqueId,
                 videos: keys,
@@ -332,6 +346,7 @@ export const client = clients[0];
                 },
               },
             });
+            return;
           }
           const newItems: ItemModule[] = [];
 
@@ -406,22 +421,23 @@ export const client = clients[0];
             }
           }
         } catch (e) {
-          try {
-            await page.close();
-            await browser.close();
-            if (browser.browserType.name === "chromium") {
-              browser = await firefox.launch();
-            } else if (browser.browserType.name === "firefox") {
-              browser = await webkit.launch();
-            } else {
-              browser = await chromium.launch();
-            }
-          } finally {
-            log.info("browser: ", browser.browserType.name);
-          }
+          // try {
+          //   await page.close();
+          //   await browser.close();
+          //   if (browser.browserType.name === "chromium") {
+          //     browser = await firefox.launch();
+          //   } else if (browser.browserType.name === "firefox") {
+          //     browser = await webkit.launch();
+          //   } else {
+          //     browser = await chromium.launch();
+          //   }
+          // } finally {
+          //   log.info("browser: ", browser.browserType.name);
+          // }
           // if (!(e instanceof errors.TimeoutError))
           log.error("notification: ", e, "\n", notification);
         }
+      } catch {
       } finally {
         if (page) await page.close();
       }
@@ -431,7 +447,7 @@ export const client = clients[0];
 
   setInterval(async () => {
     const statistics = await prisma.statistic.findMany({});
-    statistics.forEach(async (statistic) => {
+    statistics.slice(0, 50).forEach(async (statistic) => {
       try {
         let creator: { statistics: any; id?: string; videos?: string[] };
         if (
@@ -448,7 +464,7 @@ export const client = clients[0];
           const page = await browser.newPage();
           try {
             await page.goto(`https://tiktok.com/@${statistic.creator}`, {
-              timeout: 120000,
+              timeout: 240000,
             });
 
             const element = await page.$("#SIGI_STATE");
@@ -548,60 +564,64 @@ setInterval(async () => {
 }, 1000 * 60 * 15);
 
 setInterval(async () => {
-  const giveawayMessage = await (
-    client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
-  ).messages.fetch("992304881643831297");
+  try {
+    const giveawayMessage = await (
+      client.channels.cache.get("992154733206851614") as GuildTextBasedChannel
+    ).messages.fetch("992304881643831297");
 
-  const giveawayEntries = await prisma.giveawayEntries.findMany();
-  const giveawayEntriesUsers = new Collection<string, number>();
-  for (const giveawayEntry of giveawayEntries) {
-    const user = giveawayEntriesUsers.get(giveawayEntry.user);
-    if (user) giveawayEntriesUsers.set(giveawayEntry.user, user + 1);
-    else giveawayEntriesUsers.set(giveawayEntry.user, 1);
+    const giveawayEntries = await prisma.giveawayEntries.findMany();
+    const giveawayEntriesUsers = new Collection<string, number>();
+    for (const giveawayEntry of giveawayEntries) {
+      const user = giveawayEntriesUsers.get(giveawayEntry.user);
+      if (user) giveawayEntriesUsers.set(giveawayEntry.user, user + 1);
+      else giveawayEntriesUsers.set(giveawayEntry.user, 1);
+    }
+    const giveawayEntriesUsersArr = Array.from(
+      giveawayEntriesUsers.sort((a, b) => b - a)
+    ).splice(0, 5);
+
+    const rankings = await Promise.all(
+      giveawayEntriesUsersArr.map(async ([user, entries], index) => {
+        const userTag = (await client.users.fetch(user)).tag;
+        return `${index + 1} | ${
+          entries +
+          new Array(6 - entries.toLocaleString().length).fill("᲼").join("")
+        } | ${userTag}`;
+      })
+    );
+    giveawayMessage.edit({
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("🥳 **Free Nitro** 🥳")
+          .setDescription(
+            "To enter into the giveaway click the button below, you can enter the giveaway every time you vote resulting in a higher chance of receiving the reward. You are able to vote every 12 hours. [Vote Here](https://top.gg/bot/990688037853872159/vote)"
+          )
+          .setColor("#00ff00"),
+        new EmbedBuilder()
+          .setTitle("Leaderboards")
+          .setDescription(`# | Entries | User\n${rankings.join("\n")}`)
+          .setColor("#9b77e9")
+          .setFooter({ text: "Updated Every 5 Minutes" }),
+      ],
+      components: [
+        // @ts-ignore
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("giveaway")
+            .setLabel("Enter Giveaway")
+            .setEmoji("🎉")
+            .setStyle(ButtonStyle.Success),
+          new ButtonBuilder()
+            .setURL("https://top.gg/bot/990688037853872159/vote")
+            .setLabel("Vote Here")
+            .setStyle(ButtonStyle.Link)
+            .setEmoji("🎁")
+        ),
+      ],
+    });
+  } catch (e) {
+    log.error("giveaway: ", e);
   }
-  const giveawayEntriesUsersArr = Array.from(
-    giveawayEntriesUsers.sort((a, b) => b - a)
-  ).splice(0, 5);
-
-  const rankings = await Promise.all(
-    giveawayEntriesUsersArr.map(async ([user, entries], index) => {
-      const userTag = (await client.users.fetch(user)).tag;
-      return `${index + 1} | ${
-        entries +
-        new Array(6 - entries.toLocaleString().length).fill("᲼").join("")
-      } | ${userTag}`;
-    })
-  );
-  giveawayMessage.edit({
-    embeds: [
-      new EmbedBuilder()
-        .setTitle("🥳 **Free Nitro** 🥳")
-        .setDescription(
-          "To enter into the giveaway click the button below, you can enter the giveaway every time you vote resulting in a higher chance of receiving the reward. You are able to vote every 12 hours. [Vote Here](https://top.gg/bot/990688037853872159/vote)"
-        )
-        .setColor("#00ff00"),
-      new EmbedBuilder()
-        .setTitle("Leaderboards")
-        .setDescription(`# | Entries | User\n${rankings.join("\n")}`)
-        .setColor("#9b77e9")
-        .setFooter({ text: "Updated Every 5 Minutes" }),
-    ],
-    components: [
-      // @ts-ignore
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("giveaway")
-          .setLabel("Enter Giveaway")
-          .setEmoji("🎉")
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setURL("https://top.gg/bot/990688037853872159/vote")
-          .setLabel("Vote Here")
-          .setStyle(ButtonStyle.Link)
-          .setEmoji("🎁")
-      ),
-    ],
-  });
 }, 1000 * 60 * 5);
 
 client.login(process.env.TOKEN);
