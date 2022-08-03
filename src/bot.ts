@@ -312,7 +312,7 @@ export const client = clients[0];
 
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
-    notifications.forEach(async (notification) => {
+    notifications.slice(0, 50).forEach(async (notification) => {
       // for (const notification of notifications) {
       let page;
       try {
