@@ -55,7 +55,7 @@ import { getDiscordGuild } from "./utils/clients";
 import { fetchAllVideosFromUser, fetchUser, IVideo } from "tiktok-scraper-ts";
 export const log = createRollingFileLogger(options);
 
-server.listen(process.env.PORT || 80, () => {
+server.listen(process.env.PORT || 8080, () => {
   console.log("Server listening on port 80");
 });
 
