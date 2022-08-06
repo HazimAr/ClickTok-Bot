@@ -52,7 +52,7 @@ import AutoPoster from "topgg-autoposter";
 import { chromium, firefox, errors, webkit } from "playwright";
 import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
-import { fetchUser } from "tiktok-scraper-ts";
+import { fetchAllVideosFromUser, fetchUser, IVideo } from "tiktok-scraper-ts";
 export const log = createRollingFileLogger(options);
 
 server.listen(process.env.PORT || 80, () => {
@@ -320,156 +320,99 @@ Thank you all and we hope to grow even further with your support!`,
 });
 
 export const client = clients[0];
-(async function getNotifications() {
-  // setTimeout(async () => {
-  //   const notifications = await prisma.notification.findMany({});
-  //   let start = 0;
-  //   for (
-  //     let end = 25;
-  //     end < notifications.length;
-  //     end + 25 > notifications.length
-  //       ? (end = notifications.length - end + 1)
-  //       : (end += 25)
-  //   ) {
-  //     const wait = notifications.slice(start, end).map(async (notification) => {
-  //       let page;
-  //       try {
-  //         page = await browser.newPage();
-  //         try {
-  //           await page.goto(`https://tiktok.com/@${notification.creator}`, {
-  //             timeout: 240000,
-  //           });
+(async () => {
+  setInterval(async () => {
+    const notifications = await prisma.notification.findMany({});
+    notifications.forEach(async (notification) => {
+      try {
+        const creatorVideos = await fetchAllVideosFromUser(
+          notification.creator
+        );
+        if (!creatorVideos.length) return;
 
-  //           const element = await page.$("#SIGI_STATE");
+        let mongoCreator = await prisma.creator.findFirst({
+          where: { id: notification.creator },
+        });
 
-  //           const sigi: Sigi = JSON.parse(await element.innerHTML());
+        if (!mongoCreator) {
+          await prisma.creator.create({
+            data: {
+              id: notification.creator,
+              videos: creatorVideos.map((video) => video.id),
+            },
+          });
+          return;
+        }
 
-  //           let mongoCreator = await prisma.creator.findFirst({
-  //             where: { id: sigi.UserPage.uniqueId },
-  //           });
+        const newVideos: IVideo[] = [];
 
-  //           const keys = Object.keys(sigi.ItemModule);
-  //           const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
-  //           if (!mongoCreator) {
-  //             await prisma.creator.create({
-  //               data: {
-  //                 id: sigi.UserPage.uniqueId,
-  //                 videos: keys,
-  //                 statistics: {
-  //                   followers: creatorStats.followerCount,
-  //                   likes: creatorStats.heart,
-  //                   videos: creatorStats.videoCount,
-  //                 },
-  //               },
-  //             });
-  //             await page.close();
-  //             return;
-  //           }
-  //           const newItems: ItemModule[] = [];
+        creatorVideos.map((video) => {
+          if (!mongoCreator.videos.find((v) => v == video.id)) {
+            newVideos.push(video);
+            return;
+          }
+        });
 
-  //           keys.map((key) => {
-  //             const item = sigi.ItemModule[key];
+        mongoCreator = await prisma.creator.update({
+          where: { id: notification.creator },
+          data: {
+            videos: creatorVideos.map((video) => video.id),
+          },
+        });
 
-  //             if (!mongoCreator.videos.find((v) => v == item.video.id)) {
-  //               newItems.push(item);
-  //               return;
-  //             }
-  //           });
+        const guild = await getDiscordGuild(notification.guild).catch(() => {});
+        if (!guild) return;
 
-  //           mongoCreator = await prisma.creator.update({
-  //             where: { id: sigi.UserPage.uniqueId },
-  //             data: {
-  //               videos: keys,
-  //               statistics: {
-  //                 followers: creatorStats.followerCount,
-  //                 likes: creatorStats.heart,
-  //                 videos: creatorStats.videoCount,
-  //               },
-  //             },
-  //           });
+        const channel = (await guild.channels
+          .fetch(notification.channel)
+          .catch(() => {})) as GuildTextBasedChannel;
+        if (!channel) return;
 
-  //           const guild = await getDiscordGuild(notification.guild).catch(
-  //             () => {}
-  //           );
-  //           if (!guild) {
-  //             await page.close();
-  //             return;
-  //           }
+        if (newVideos.length) {
+          let role: Role = null;
+          if (notification.role)
+            role = await guild.roles.fetch(notification.role);
+          const creator = await fetchUser(notification.creator);
+          for (const newVideo of newVideos) {
+            const message: MessageOptions = {
+              content: role ? `${role}` : "",
+              embeds: [
+                new EmbedBuilder()
+                  .setAuthor({
+                    name: creator.nickname,
+                    iconURL: creator.avatar,
+                    url: `https://tiktok.com/@${notification.creator}`,
+                  })
+                  .setTitle(`${creator.nickname} just posted a new TikTok`)
+                  .setURL(
+                    `https://tiktok.com/@${newVideo.author}/video/${newVideo.id}`
+                  )
+                  .setDescription(newVideo.description || "N/A")
+                  // TODO: extra text info
+                  .setFooter({ text: newVideo.id })
+                  .setThumbnail(newVideo.cover)
+                  .setTimestamp()
+                  .setColor("#9b77e9"),
+              ],
+            };
 
-  //           const channel = (await guild.channels
-  //             .fetch(notification.channel)
-  //             .catch(() => {})) as GuildTextBasedChannel;
-  //           if (!channel) {
-  //             await page.close();
-  //             return;
-  //           }
-
-  //           if (newItems.length) {
-  //             let role: Role = null;
-  //             if (notification.role)
-  //               role = await guild.roles.fetch(notification.role);
-  //             for (const newItem of newItems) {
-  //               const message: MessageOptions = {
-  //                 content: role ? `${role}` : "",
-  //                 embeds: [
-  //                   new EmbedBuilder()
-  //                     .setAuthor({
-  //                       name: newItem.nickname,
-  //                       iconURL: newItem.avatarThumb,
-  //                       url: `https://tiktok.com/@${newItem.author}`,
-  //                     })
-  //                     .setTitle(`${newItem.nickname} just posted a new TikTok`)
-  //                     .setURL(
-  //                       `https://tiktok.com/@${newItem.author}/video/${newItem.video.id}`
-  //                     )
-  //                     .setDescription(newItem.desc || "N/A")
-  //                     // TODO: extra text info
-  //                     .setFooter({ text: newItem.video.id })
-  //                     .setThumbnail(newItem.video.cover)
-  //                     .setTimestamp()
-  //                     .setColor("#9b77e9"),
-  //                 ],
-  //               };
-
-  //               if (notification.preview)
-  //                 try {
-  //                   await channel.send({
-  //                     content: `https://clicktok.xyz/api/v/${newItem.video.id}`,
-  //                   });
-  //                 } catch (e) {
-  //                   log.error("notificationPreview: ", e, "\n", newItem);
-  //                 }
-  //               await channel.send(message);
-  //               log.info("notification: ", notification);
-  //             }
-  //           }
-  //         } catch (e) {
-  //           try {
-  //             await page.close();
-  //             await browser.close();
-  //             if (browser.browserType.name === "chromium") {
-  //               browser = await firefox.launch();
-  //             } else if (browser.browserType.name === "firefox") {
-  //               browser = await webkit.launch();
-  //             } else {
-  //               browser = await chromium.launch();
-  //             }
-  //           } finally {
-  //             log.info("browser: ", browser.browserType.name);
-  //           }
-  //           // if (!(e instanceof errors.TimeoutError))
-  //           log.error("notification: ", e, "\n", notification);
-  //         }
-  //       } catch {
-  //       } finally {
-  //         try {
-  //           await page.close();
-  //         } catch {}
-  //       }
-  //     });
-  //     await Promise.all(wait);
-  //   }
-  // }, 1000 * 60 * 5);
+            if (notification.preview)
+              try {
+                await channel.send({
+                  content: `https://clicktok.xyz/api/v/${newVideo.id}`,
+                });
+              } catch (e) {
+                log.error("notificationPreview: ", e, "\n", newVideo);
+              }
+            await channel.send(message);
+            log.info("notification: ", notification);
+          }
+        }
+      } catch (e) {
+        log.error("notification: ", e, "\n", notification);
+      }
+    });
+  }, 1000 * 60 * 5);
 
   setInterval(async () => {
     const statistics = await prisma.statistic.findMany({});
