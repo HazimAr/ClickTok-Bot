@@ -52,6 +52,7 @@ import AutoPoster from "topgg-autoposter";
 import { chromium, firefox, errors, webkit } from "playwright";
 import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
+import { fetchUser } from "tiktok-scraper-ts";
 export const log = createRollingFileLogger(options);
 
 server.listen(process.env.PORT || 80, () => {
@@ -320,7 +321,6 @@ Thank you all and we hope to grow even further with your support!`,
 
 export const client = clients[0];
 (async function getNotifications() {
-
   // setTimeout(async () => {
   //   const notifications = await prisma.notification.findMany({});
   //   let start = 0;
@@ -475,40 +475,7 @@ export const client = clients[0];
     const statistics = await prisma.statistic.findMany({});
     statistics.forEach(async (statistic) => {
       try {
-        if (
-          await prisma.notification.findFirst({
-            where: {
-              creator: statistic.creator,
-            },
-          })
-        )
-          creator = await prisma.creator.findFirst({
-            where: { id: statistic.creator },
-          });
-        else {
-          const page = await browser.newPage();
-          try {
-            await page.goto(`https://tiktok.com/@${statistic.creator}`, {
-              timeout: 240000,
-            });
-
-            const element = await page.$("#SIGI_STATE");
-
-            const sigi: Sigi = JSON.parse(await element.innerHTML());
-            if (sigi.UserModule.stats) return;
-            const creatorStats = sigi.UserModule.stats[sigi.UserPage.uniqueId];
-
-            creator = {
-              statistics: {
-                followers: creatorStats.followerCount,
-                likes: creatorStats.heart,
-                videos: creatorStats.videoCount,
-              },
-            };
-          } finally {
-            await page.close();
-          }
-        }
+        const creator = await fetchUser(statistic.creator);
         const guild = await getDiscordGuild(statistic.guild);
         if (statistic.followers) {
           const channel = (await guild.channels
@@ -525,7 +492,7 @@ export const client = clients[0];
               .edit({
                 name: `${
                   statistic.followersPrefix || "Followers: "
-                }${humanFormat(creator.statistics.followers)}`,
+                }${humanFormat(creator.followers)}`,
               })
               .catch(() =>
                 console.error(
@@ -548,7 +515,7 @@ export const client = clients[0];
             await channel
               .edit({
                 name: `${statistic.likesPrefix || "Likes: "}${humanFormat(
-                  creator.statistics.likes
+                  creator.hearts
                 ).replace("G", "B")}`,
               })
               .catch(() =>
@@ -573,7 +540,7 @@ export const client = clients[0];
             await channel
               .edit({
                 name: `${statistic.videosPrefix || "Videos: "}${humanFormat(
-                  creator.statistics.videos
+                  creator.videos
                 )}`,
               })
               .catch(() =>
