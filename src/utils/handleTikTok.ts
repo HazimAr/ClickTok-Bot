@@ -9,7 +9,7 @@ import {
   TextChannel,
   User,
 } from "discord.js";
-import { prisma } from "../bot";
+import { log, prisma } from "../bot";
 import { getOrCreateUser } from "./db";
 import { logConversion } from "./logger";
 
@@ -117,8 +117,11 @@ export default async function (
             .setTimestamp(),
         ],
       })
+      .then(() => {
+        log.info(`giveawayMessage: ${user}`);
+      })
       .catch(() => {
-        console.error(`Failed to send welcome message to ${user.tag}`);
+        log.error(`giveawayMessage: ${user}`);
       });
   }
   const lastConvertedAt = new Date(Date.now());
