@@ -50,7 +50,6 @@ export const options: SimpleLogger.ISimpleLoggerOptions &
 import SimpleLogger, { createRollingFileLogger } from "simple-node-logger";
 import AutoPoster from "topgg-autoposter";
 import { chromium, firefox, errors, webkit } from "playwright";
-import { ItemModule, Sigi } from "./types";
 import { getDiscordGuild } from "./utils/clients";
 import { fetchAllVideosFromUser, fetchUser, IVideo } from "tiktok-scraper-ts";
 export const log = createRollingFileLogger(options);

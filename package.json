@@ -22,7 +22,7 @@
     "npm": "^8.13.2",
     "playwright": "^1.24.2",
     "simple-node-logger": "^21.8.12",
-    "tiktok-scraper-ts": "^1.3.4",
+    "tiktok-scraper-ts": "^1.3.7",
     "topgg-autoposter": "^2.0.1",
     "ts-node": "^10.8.2"
   },
