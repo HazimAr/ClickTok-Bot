@@ -56,7 +56,7 @@ import { fetchAllVideosFromUser, fetchUser, IVideo } from "tiktok-scraper-ts";
 export const log = createRollingFileLogger(options);
 
 server.listen(process.env.PORT || 8080, () => {
-  console.log("Server listening on port 80");
+  console.log("Server listening on port 8080");
 });
 
 export const prisma = new PrismaClient();
@@ -323,7 +323,8 @@ export const client = clients[0];
 (async () => {
   setInterval(async () => {
     const notifications = await prisma.notification.findMany({});
-    notifications.forEach(async (notification) => {
+    // notifications.forEach(async (notification) => {
+    for (const notification of notifications) {
       try {
         const creatorVideos = await fetchAllVideosFromUser(
           notification.creator
@@ -411,12 +412,14 @@ export const client = clients[0];
       } catch (e) {
         log.error("notification: ", e, "\n", notification);
       }
-    });
+    }
+    // });
   }, 1000 * 60 * 5);
 
   setInterval(async () => {
     const statistics = await prisma.statistic.findMany({});
-    statistics.forEach(async (statistic) => {
+    // statistics.forEach(async (statistic) => {
+    for (const statistic of statistics) {
       try {
         const creator = await fetchUser(statistic.creator);
         const guild = await getDiscordGuild(statistic.guild);
@@ -428,8 +431,8 @@ export const client = clients[0];
 
           if (
             channel
-              .permissionsFor(client.user)
-              .has(PermissionFlagsBits.ManageChannels)
+              ?.permissionsFor(client.user)
+              ?.has(PermissionFlagsBits.ManageChannels)
           ) {
             await channel
               .edit({
@@ -452,8 +455,8 @@ export const client = clients[0];
 
           if (
             channel
-              .permissionsFor(client.user)
-              .has(PermissionFlagsBits.ManageChannels)
+              ?.permissionsFor(client.user)
+              ?.has(PermissionFlagsBits.ManageChannels)
           ) {
             await channel
               .edit({
@@ -477,8 +480,8 @@ export const client = clients[0];
 
           if (
             channel
-              .permissionsFor(client.user)
-              .has(PermissionFlagsBits.ManageChannels)
+              ?.permissionsFor(client.user)
+              ?.has(PermissionFlagsBits.ManageChannels)
           ) {
             await channel
               .edit({
@@ -496,7 +499,8 @@ export const client = clients[0];
       } catch (e) {
         log.error("statistic: ", e, "\n", statistic);
       }
-    });
+    }
+    // });
   }, 1000 * 60 * 10);
 })();
 
