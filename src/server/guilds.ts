@@ -169,7 +169,7 @@ router.get("/:id/channels", async (req, res) => {
   const discordGuild = res.locals.discordGuild as Guild;
 
   const channels = (await discordGuild.channels.fetch()).filter(
-    (channel) => channel.type === ChannelType.GuildText
+    (channel) => channel?.type === ChannelType.GuildText
   );
 
   res.json(channels);
@@ -178,10 +178,8 @@ router.get("/:id/channels", async (req, res) => {
 router.get("/:id/channels/voice", async (req, res) => {
   const discordGuild = res.locals.discordGuild as Guild;
 
-  let channels = await discordGuild.channels.fetch();
-  if (!channels.size) return res.json([]);
-  channels = channels.filter(
-    (channel) => channel.type === ChannelType.GuildVoice
+  let channels = (await discordGuild.channels.fetch()).filter(
+    (channel) => channel?.type === ChannelType.GuildVoice
   );
 
   res.json(channels);
