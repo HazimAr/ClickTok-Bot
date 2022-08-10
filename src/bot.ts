@@ -251,9 +251,9 @@ Thank you all and we hope to grow even further with your support!`
               message.channel as TextChannel
             )) as any;
             if (!messageResponse) return;
-            if (message.deletable) {
+            try {
               await message.reply(messageResponse);
-            } else {
+            } catch {
               // message doesn't exist anymore
               messageResponse.content = `${message.author} ${messageResponse.content}`;
               await message.channel.send(messageResponse);
