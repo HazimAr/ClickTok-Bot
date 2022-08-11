@@ -22,5 +22,6 @@ export default async function (interaction: ButtonInteraction) {
       ephemeral: true,
     });
   }
+
   await (interaction.message as Message).delete();
 }
