@@ -90,7 +90,6 @@ router.use("/:id", async (req, res, next) => {
 
   next();
 });
-
 router.get("/:id", async (req, res) => {
   try {
     const mongoGuild = await getOrCreateGuild(res.locals.discordGuild);
@@ -128,7 +127,6 @@ router.post("/:id/settings", async (req, res) => {
     });
   res.status(204).send();
 });
-
 router.post("/:id/settings/lists/:setting", async (req, res) => {
   if (!req.body) return res.status(400).send();
   const guild = await prisma.guild
@@ -174,7 +172,6 @@ router.get("/:id/channels", async (req, res) => {
 
   res.json(channels);
 });
-
 router.get("/:id/channels/voice", async (req, res) => {
   const discordGuild = res.locals.discordGuild as Guild;
 
