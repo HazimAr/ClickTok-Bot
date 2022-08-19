@@ -185,7 +185,9 @@ export const clients = bots.map((token, index) => {
   client.on("guildDelete", async (guild: Guild) => {
     try {
       log.info("guildDelete: ", guild);
-      await logGuild(guild, false);
+      await logGuild(guild, false).catch(() => {
+        //rip
+      });
       await prisma.notification.deleteMany({
         where: { guild: guild.id },
       });
