@@ -319,189 +319,189 @@ Thank you all and we hope to grow even further with your support!`,
 });
 
 export const client = clients[0];
-// (async () => {
-//   setInterval(async () => {
-//     const notifications = await prisma.notification.findMany({});
-//     // notifications.forEach(async (notification) => {
-//     for (const notification of notifications) {
-//       try {
-//         const creatorVideos = await fetchAllVideosFromUser(
-//           notification.creator
-//         );
-//         if (!creatorVideos.length) return;
+(async () => {
+  setInterval(async () => {
+    const notifications = await prisma.notification.findMany({});
+    // notifications.forEach(async (notification) => {
+    for (const notification of notifications) {
+      try {
+        const creatorVideos = await fetchAllVideosFromUser(
+          notification.creator
+        );
+        if (!creatorVideos.length) return;
 
-//         let mongoCreator = await prisma.creator.findFirst({
-//           where: { id: notification.creator },
-//         });
+        let mongoCreator = await prisma.creator.findFirst({
+          where: { id: notification.creator },
+        });
 
-//         if (!mongoCreator) {
-//           await prisma.creator.create({
-//             data: {
-//               id: notification.creator,
-//               videos: creatorVideos.map((video) => video.id),
-//             },
-//           });
-//           return;
-//         }
+        if (!mongoCreator) {
+          await prisma.creator.create({
+            data: {
+              id: notification.creator,
+              videos: creatorVideos.map((video) => video.id),
+            },
+          });
+          return;
+        }
 
-//         const newVideos: IVideo[] = [];
+        const newVideos: IVideo[] = [];
 
-//         creatorVideos.map((video) => {
-//           if (!mongoCreator.videos.find((v) => v == video.id)) {
-//             newVideos.push(video);
-//             return;
-//           }
-//         });
+        creatorVideos.map((video) => {
+          if (!mongoCreator.videos.find((v) => v == video.id)) {
+            newVideos.push(video);
+            return;
+          }
+        });
 
-//         mongoCreator = await prisma.creator.update({
-//           where: { id: notification.creator },
-//           data: {
-//             videos: creatorVideos.map((video) => video.id),
-//           },
-//         });
+        mongoCreator = await prisma.creator.update({
+          where: { id: notification.creator },
+          data: {
+            videos: creatorVideos.map((video) => video.id),
+          },
+        });
 
-//         const guild = await getDiscordGuild(notification.guild).catch(() => {});
-//         if (!guild) return;
+        const guild = await getDiscordGuild(notification.guild).catch(() => {});
+        if (!guild) return;
 
-//         const channel = (await guild.channels
-//           .fetch(notification.channel)
-//           .catch(() => {})) as GuildTextBasedChannel;
-//         if (!channel) return;
+        const channel = (await guild.channels
+          .fetch(notification.channel)
+          .catch(() => {})) as GuildTextBasedChannel;
+        if (!channel) return;
 
-//         if (newVideos.length) {
-//           let role: Role = null;
-//           if (notification.role)
-//             role = await guild.roles.fetch(notification.role);
-//           const creator = await fetchUser(notification.creator);
-//           for (const newVideo of newVideos) {
-//             const message: MessageOptions = {
-//               content: role ? `${role}` : "",
-//               embeds: [
-//                 new EmbedBuilder()
-//                   .setAuthor({
-//                     name: creator.nickname,
-//                     iconURL: creator.avatar,
-//                     url: `https://tiktok.com/@${notification.creator}`,
-//                   })
-//                   .setTitle(`${creator.nickname} just posted a new TikTok`)
-//                   .setURL(
-//                     `https://tiktok.com/@${newVideo.author}/video/${newVideo.id}`
-//                   )
-//                   .setDescription(newVideo.description || "N/A")
-//                   // TODO: extra text info
-//                   .setFooter({ text: newVideo.id })
-//                   .setThumbnail(newVideo.cover)
-//                   .setTimestamp()
-//                   .setColor("#9b77e9"),
-//               ],
-//             };
+        if (newVideos.length) {
+          let role: Role = null;
+          if (notification.role)
+            role = await guild.roles.fetch(notification.role);
+          const creator = await fetchUser(notification.creator);
+          for (const newVideo of newVideos) {
+            const message: MessageOptions = {
+              content: role ? `${role}` : "",
+              embeds: [
+                new EmbedBuilder()
+                  .setAuthor({
+                    name: creator.nickname,
+                    iconURL: creator.avatar,
+                    url: `https://tiktok.com/@${notification.creator}`,
+                  })
+                  .setTitle(`${creator.nickname} just posted a new TikTok`)
+                  .setURL(
+                    `https://tiktok.com/@${newVideo.author}/video/${newVideo.id}`
+                  )
+                  .setDescription(newVideo.description || "N/A")
+                  // TODO: extra text info
+                  .setFooter({ text: newVideo.id })
+                  .setThumbnail(newVideo.cover)
+                  .setTimestamp()
+                  .setColor("#9b77e9"),
+              ],
+            };
 
-//             if (notification.preview)
-//               try {
-//                 await channel.send({
-//                   content: `https://clicktok.xyz/api/v/${newVideo.id}`,
-//                 });
-//               } catch (e) {
-//                 log.error("notificationPreview: ", e, "\n", newVideo);
-//               }
-//             await channel.send(message);
-//             log.info("notification: ", notification);
-//           }
-//         }
-//       } catch (e) {
-//         log.error("notification: ", e, "\n", notification);
-//       }
-//     }
-//     // });
-//   }, 1000 * 60 * 5);
+            if (notification.preview)
+              try {
+                await channel.send({
+                  content: `https://clicktok.xyz/api/v/${newVideo.id}`,
+                });
+              } catch (e) {
+                log.error("notificationPreview: ", e, "\n", newVideo);
+              }
+            await channel.send(message);
+            log.info("notification: ", notification);
+          }
+        }
+      } catch (e) {
+        log.error("notification: ", e, "\n", notification);
+      }
+    }
+    // });
+  }, 1000 * 60 * 5);
 
-//   setInterval(async () => {
-//     const statistics = await prisma.statistic.findMany({});
-//     // statistics.forEach(async (statistic) => {
-//     for (const statistic of statistics) {
-//       try {
-//         const creator = await fetchUser(statistic.creator);
-//         const guild = await getDiscordGuild(statistic.guild);
-//         if (statistic.followers) {
-//           const channel = (await guild.channels
-//             .fetch(statistic.followers)
-//             .catch(() => null)) as VoiceChannel;
-//           if (!channel) return;
+  setInterval(async () => {
+    const statistics = await prisma.statistic.findMany({});
+    // statistics.forEach(async (statistic) => {
+    for (const statistic of statistics) {
+      try {
+        const creator = await fetchUser(statistic.creator);
+        const guild = await getDiscordGuild(statistic.guild);
+        if (statistic.followers) {
+          const channel = (await guild.channels
+            .fetch(statistic.followers)
+            .catch(() => null)) as VoiceChannel;
+          if (!channel) return;
 
-//           if (
-//             channel
-//               ?.permissionsFor(client.user)
-//               ?.has(PermissionFlagsBits.ManageChannels)
-//           ) {
-//             await channel
-//               .edit({
-//                 name: `${
-//                   statistic.followersPrefix || "Followers: "
-//                 }${humanFormat(creator.followers)}`,
-//               })
-//               .catch(() =>
-//                 console.error(
-//                   `Unable to edit channel ${channel.name}-${statistic.followers}`
-//                 )
-//               );
-//           }
-//         }
-//         if (statistic.likes) {
-//           const channel = (await guild.channels
-//             .fetch(statistic.likes)
-//             .catch(() => null)) as VoiceChannel;
-//           if (!channel) return;
+          if (
+            channel
+              ?.permissionsFor(client.user)
+              ?.has(PermissionFlagsBits.ManageChannels)
+          ) {
+            await channel
+              .edit({
+                name: `${
+                  statistic.followersPrefix || "Followers: "
+                }${humanFormat(creator.followers)}`,
+              })
+              .catch(() =>
+                console.error(
+                  `Unable to edit channel ${channel.name}-${statistic.followers}`
+                )
+              );
+          }
+        }
+        if (statistic.likes) {
+          const channel = (await guild.channels
+            .fetch(statistic.likes)
+            .catch(() => null)) as VoiceChannel;
+          if (!channel) return;
 
-//           if (
-//             channel
-//               ?.permissionsFor(client.user)
-//               ?.has(PermissionFlagsBits.ManageChannels)
-//           ) {
-//             await channel
-//               .edit({
-//                 name: `${statistic.likesPrefix || "Likes: "}${humanFormat(
-//                   creator.hearts
-//                 ).replace("G", "B")}`,
-//               })
-//               .catch(() =>
-//                 console.error(
-//                   `Unable to edit channel ${channel.name}-${statistic.likes}`
-//                 )
-//               );
-//           }
-//         }
-//         if (statistic.videos) {
-//           const channel = (await guild.channels
-//             .fetch(statistic.videos)
-//             .catch(() => null)) as VoiceChannel;
+          if (
+            channel
+              ?.permissionsFor(client.user)
+              ?.has(PermissionFlagsBits.ManageChannels)
+          ) {
+            await channel
+              .edit({
+                name: `${statistic.likesPrefix || "Likes: "}${humanFormat(
+                  creator.hearts
+                ).replace("G", "B")}`,
+              })
+              .catch(() =>
+                console.error(
+                  `Unable to edit channel ${channel.name}-${statistic.likes}`
+                )
+              );
+          }
+        }
+        if (statistic.videos) {
+          const channel = (await guild.channels
+            .fetch(statistic.videos)
+            .catch(() => null)) as VoiceChannel;
 
-//           if (!channel) return;
+          if (!channel) return;
 
-//           if (
-//             channel
-//               ?.permissionsFor(client.user)
-//               ?.has(PermissionFlagsBits.ManageChannels)
-//           ) {
-//             await channel
-//               .edit({
-//                 name: `${statistic.videosPrefix || "Videos: "}${humanFormat(
-//                   creator.videos
-//                 )}`,
-//               })
-//               .catch(() =>
-//                 console.error(
-//                   `Unable to edit channel ${channel.name}-${statistic.videos}`
-//                 )
-//               );
-//           }
-//         }
-//       } catch (e) {
-//         log.error("statistic: ", e, "\n", statistic);
-//       }
-//     }
-//     // });
-//   }, 1000 * 60 * 10);
-// })();
+          if (
+            channel
+              ?.permissionsFor(client.user)
+              ?.has(PermissionFlagsBits.ManageChannels)
+          ) {
+            await channel
+              .edit({
+                name: `${statistic.videosPrefix || "Videos: "}${humanFormat(
+                  creator.videos
+                )}`,
+              })
+              .catch(() =>
+                console.error(
+                  `Unable to edit channel ${channel.name}-${statistic.videos}`
+                )
+              );
+          }
+        }
+      } catch (e) {
+        log.error("statistic: ", e, "\n", statistic);
+      }
+    }
+    // });
+  }, 1000 * 60 * 10);
+})();
 
 setInterval(async () => {
   try {

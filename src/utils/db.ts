@@ -1,5 +1,5 @@
 import { Guild, User } from "discord.js";
-import { prisma } from "../bot";
+import { log, prisma } from "../bot";
 import { logErrorWebhook, logGuild } from "./logger";
 
 export async function getOrCreateGuild(guild: Guild) {
@@ -12,7 +12,7 @@ export async function getOrCreateGuild(guild: Guild) {
         statistics: true,
       },
     })
-    .catch((e) => logErrorWebhook(e, guild).catch(console.error));
+    .catch((e) => log.error("guildFetch: ", e, "\n", guild));
 
   if (!mongoGuild) {
     mongoGuild = await prisma.guild.create({
